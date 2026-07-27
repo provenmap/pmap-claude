@@ -2,10 +2,10 @@ Business Source License 1.1
 
 Parameters
 
-Licensor:             ContextDx
+Licensor:             ProvenMap
 
-Licensed Work:        cdx-plugins
-                      The Licensed Work is (c) 2026 ContextDx.
+Licensed Work:        prov-plugins
+                      The Licensed Work is (c) 2026 ProvenMap.
 
 Additional Use Grant: You may make production use of the Licensed Work,
                       provided that such use does not include offering
@@ -15,14 +15,14 @@ Additional Use Grant: You may make production use of the Licensed Work,
                       or substantially, from the functionality of the
                       Licensed Work. Internal use by your organization
                       and use of the Licensed Work to interoperate with
-                      a ContextDx-operated service are permitted.
+                      a ProvenMap-operated service are permitted.
 
 Change Date:          2030-05-29
 
 Change License:       Apache License, Version 2.0
 
 For information about alternative licensing arrangements for the Licensed
-Work, please contact licensing@contextdx.com.
+Work, please contact licensing@provenmap.com.
 
 -----------------------------------------------------------------------------
 

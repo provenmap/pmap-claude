@@ -1,33 +1,33 @@
 {
-  "name": "contextdx",
-  "description": "ContextDX plugins for codebase and knowledge architecture analysis, visualization, and sync to ContextDX Portal.",
+  "name": "provenmap",
+  "description": "ProvenMap plugins for codebase and knowledge architecture analysis, visualization, and sync to ProvenMap Portal.",
   "owner": {
-    "name": "ContextDx",
-    "email": "contact@contextdx.com"
+    "name": "ProvenMap",
+    "email": "contact@provenmap.com"
   },
   "metadata": {
-    "description": "ContextDX plugins for codebase and knowledge architecture analysis, visualization, and sync to ContextDX Portal.",
-    "version": "0.6.20"
+    "description": "ProvenMap plugins for codebase and knowledge architecture analysis, visualization, and sync to ProvenMap Portal.",
+    "version": "0.7.1"
   },
   "plugins": [
     {
-      "name": "cdx-code",
-      "displayName": "Cdx Code",
-      "version": "0.6.20",
-      "source": "./plugins/claude/cdx-code",
-      "description": "Real-time codebase architecture analysis and visualization for ContextDX Portal. Analyzes codebases across multiple languages, detects tech stacks, identifies component relationships, and syncs to ContextDX for collaborative architecture boards. Supports server-defined insight analysis skills.",
+      "name": "prov-code",
+      "displayName": "Prov Code",
+      "version": "0.7.1",
+      "source": "./plugins/code/claude/prov-code",
+      "description": "Real-time codebase architecture analysis and visualization for ProvenMap Portal. Analyzes codebases across multiple languages, detects tech stacks, identifies component relationships, and syncs to ProvenMap for collaborative architecture boards. Supports server-defined insight analysis skills.",
       "author": {
-        "name": "ContextDx",
-        "email": "contact@contextdx.com"
+        "name": "ProvenMap",
+        "email": "contact@provenmap.com"
       },
-      "repository": "https://github.com/contextdx/cdx-claude",
-      "homepage": "https://contextdx.com",
+      "repository": "https://github.com/provenmap/prov-claude",
+      "homepage": "https://provenmap.com",
       "license": "BUSL-1.1",
       "keywords": [
         "architecture",
         "analysis",
         "c4-diagram",
-        "contextdx",
+        "provenmap",
         "visualization",
         "multi-language"
       ],
@@ -40,23 +40,23 @@
       ]
     },
     {
-      "name": "cdx-work",
-      "displayName": "Cdx Work",
-      "version": "0.6.20",
-      "source": "./plugins/claude/cdx-work",
-      "description": "Knowledge and document architecture analysis for ContextDX Portal. Analyzes a document/knowledge set — specs, RFCs, policies, design docs, wikis — into a graph of concepts, documents, decisions, and their relationships, and syncs to ContextDX for collaborative knowledge boards. Tuned for Claude Cowork. Supports server-defined insight analysis skills.",
+      "name": "prov-work",
+      "displayName": "Prov Work",
+      "version": "0.7.1",
+      "source": "./plugins/code/claude/prov-work",
+      "description": "Knowledge and document architecture analysis for ProvenMap Portal. Analyzes a document/knowledge set — specs, RFCs, policies, design docs, wikis — into a graph of concepts, documents, decisions, and their relationships, and syncs to ProvenMap for collaborative knowledge boards. Tuned for knowledge-work surfaces — Claude Cowork and Codex for Work. Supports server-defined insight analysis skills.",
       "author": {
-        "name": "ContextDx",
-        "email": "contact@contextdx.com"
+        "name": "ProvenMap",
+        "email": "contact@provenmap.com"
       },
-      "repository": "https://github.com/contextdx/cdx-claude",
-      "homepage": "https://contextdx.com",
+      "repository": "https://github.com/provenmap/prov-claude",
+      "homepage": "https://provenmap.com",
       "license": "BUSL-1.1",
       "keywords": [
         "knowledge",
         "documentation",
         "concept-map",
-        "contextdx",
+        "provenmap",
         "visualization",
         "knowledge-work"
       ],
@@ -66,7 +66,38 @@
         "documents",
         "visualization",
         "portal",
-        "cowork"
+        "knowledge-work"
+      ]
+    },
+    {
+      "name": "prov-architect",
+      "displayName": "Prov Architect",
+      "version": "0.7.1",
+      "source": "./plugins/architect/claude/prov-architect",
+      "description": "Architect workbench for ProvenMap boards — explore the board graph, review insights, and author intents and specs from Claude Cowork, Claude Code, or Codex. Connects to the ProvenMap MCP server; all writes land as drafts for in-platform review.",
+      "author": {
+        "name": "ProvenMap",
+        "email": "contact@provenmap.com"
+      },
+      "repository": "https://github.com/provenmap/prov-claude",
+      "homepage": "https://provenmap.com",
+      "license": "BUSL-1.1",
+      "keywords": [
+        "architecture",
+        "boards",
+        "intents",
+        "specs",
+        "insights",
+        "provenmap",
+        "mcp"
+      ],
+      "category": "architecture",
+      "tags": [
+        "architecture",
+        "architect",
+        "boards",
+        "portal",
+        "mcp"
       ]
     }
   ]
