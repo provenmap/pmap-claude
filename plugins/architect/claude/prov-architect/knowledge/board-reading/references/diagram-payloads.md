@@ -1,6 +1,6 @@
 # Diagram write payloads
 
-<!-- Source: prov-platform services/prompts/base/diagram-tool-contract.ts — keep in
+<!-- Source: platform services/prompts/base/diagram-tool-contract.ts — keep in
      lockstep with it; the wording there is the single copy every platform mode injects. -->
 
 When creating or updating nodes, structure the call EXACTLY as:

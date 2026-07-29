@@ -16,7 +16,7 @@ Currently installed: ${o}
 
 If it's installed under a different name/marketplace, update it directly with that host's plugin manager. Otherwise install it first: \`/plugin install ${t}@<marketplace>\`.`)}return i}function f(e,t){return{success:!0,status:"manual",display:`**${t} has no marketplace or update command** \u2014 there's nothing to run automatically.
 
-Rebuild the plugin from source (\`yarn build\` in prov-plugins) or pull the latest release, then re-copy it over the local install:
+Rebuild the plugin from source (\`yarn build\` in plugins) or pull the latest release, then re-copy it over the local install:
 
 \`\`\`bash
 cp -r ${e} ~/.cursor/plugins/local/${e}

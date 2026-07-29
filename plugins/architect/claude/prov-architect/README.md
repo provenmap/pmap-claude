@@ -34,11 +34,18 @@ The plugin talks to the ProvenMap **MCP server** with a workspace-scoped bearer 
 
 | Command | What it does |
 |---|---|
-| `/prov-architect:board [slug]` | Orient on a board, then work it — questions, analysis, governed edits |
-| `/prov-architect:hub` | Workspace dashboard: board tree, intent counts, latest insights, binding health |
+| `/prov-architect:start [ask]` | **Start here** — reads your real state and names the next step; routes any open-ended ask |
+| `/prov-architect:setup-workspace` | Bootstrap an empty workspace: estate interview → landscape → app boards → binding handoff |
+| `/prov-architect:new-app <idea>` | Plan a new system on the landscape: grill, place, sketch the target, draft the founding spec |
+| `/prov-architect:author-spec [slug]` | Guided spec authoring: context pull, the grill, a well-grounded draft spec |
+| `/prov-architect:adopt-adr` | Adopt a decision: per-app specs + compliance review + remediation intents |
+| `/prov-architect:intents` | Turn anything into governed, well-anchored work; manage the queue |
+| `/prov-architect:specs` | Read specs and live delivery coverage; promote approved requirements |
+| `/prov-architect:ask-board <question>` | Ask the architecture a question — slug-grounded answer or highlighted subgraph |
+| `/prov-architect:assess` | Structured review: frame, sweep, defend findings, record the run |
 | `/prov-architect:insights` | Review insight runs; promote reviewed findings into draft intents |
-| `/prov-architect:intents` | List, author, and manage intents (drafts for in-platform review) |
-| `/prov-architect:specs` | Draft specs (from conversation or documents); promote approved requirements |
+| `/prov-architect:board [slug]` | Work a board conversationally — portfolio view on the landscape, canvas elsewhere |
+| `/prov-architect:hub` | The command center, attention-first: what needs you, then the portfolio |
 | `/prov-architect:login` `:configure` `:status` `:logout` | Connection lifecycle (MCP token) |
 | `/prov-architect:help` `:update` | Command reference · plugin update |
 

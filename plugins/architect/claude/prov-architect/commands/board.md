@@ -2,7 +2,7 @@
 category: explore
 description: "Explore · Orient on a ProvenMap board and work it — explore, analyze, and make governed edits"
 argument-hint: "[board-slug]"
-allowed-tools: AskUserQuestion, mcp__plugin_prov-architect_provenmap__*
+allowed-tools: AskUserQuestion, Bash(node:*), mcp__plugin_prov-architect_provenmap__*
 ---
 
 Open an architect working session on a board: orient on its structure, then follow the
@@ -19,17 +19,32 @@ architect's lead — questions, analysis, and governed board edits. Methodology 
   top-level boards (slug + name; offer drilling into layers). A board-restricted token sees only
   its subtree — scope to what the tree returns.
 
-### Step 2 — orient
+### Step 2 — classify, then orient
 
-Follow the board-reading orientation sequence (`get_workboard_details`, `get_hub_status`,
-`list_intents`, `list_insights`). Summarize slug-first: purpose, domains/containers, layers,
-work in flight. Then invite direction — the session is conversational from here.
+Classify the board per the architect-core taxonomy (board-reading has the method), and orient
+accordingly:
+
+- **Empty root** → don't orient on nothing; offer `/setup-workspace`.
+- **Root / landscape** → orient as a **portfolio** (apps + health + cross-app edges), not a
+  canvas walk; landscape edits follow the **landscape-modeling** skill (app archetypes for
+  bindable slots, the app-nesting rule).
+- **Plain layer** → orient normally, and note that facet work (specs/intents) routes up to the
+  owning app board.
+- **App board** → the full board-reading orientation sequence (`get_workboard_details`,
+  `get_hub_status`, `list_intents`, `list_insights`).
+
+Summarize slug-first: purpose, domains/containers, layers, work in flight. Then invite
+direction — the session is conversational from here.
 
 ### Step 3 — work
 
 Answer, analyze, and edit per the board-reading skill. After any write, narrate the governance
 state from the result message: **"staged as intent `<slug>` — delete it to revert"**. Use a
-write session for multi-step edits.
+write session for multi-step edits (recorded in the session ledger — architect-core). For
+"drill this container into its own board": `create_board {ownerNodeSlug, newBoardSlug, name,
+ownerBoardSlug: <this board>}` — the container becomes the drill-down; on a governed board the
+creation stages for review. Say plainly that a layer under an app board stays a plain layer
+permanently (app-nesting rule) — never pitch it as a future app slot.
 
 ## Failure branches
 

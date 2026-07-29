@@ -1,11 +1,11 @@
 ---
 name: intents-authoring
-description: How to author, anchor, and manage ProvenMap intents — the reviewable work items that connect architecture decisions to delivery. Use when creating intents, managing the intent queue (transition, assign, delete), or turning findings and board changes into work. Key capabilities: the intent lifecycle, DRAFT-only stance, anchoring discipline, structured directives, staleness and verification semantics.
+description: How to author, anchor, and manage ProvenMap intents — the reviewable work items that connect architecture decisions to delivery. Use when creating intents, managing the intent queue (transition, assign, delete), or turning specs, findings, and board changes into work. Key capabilities: the intent lifecycle, DRAFT-only stance, the impact→attach→describe authoring loop, anchor recording with the platform's verbs, single-board rule and session-linked federation, collision checks, structured directives, staleness and verification semantics.
 ---
 
 # Intents Authoring
 
-<!-- Distilled from prov-platform services/prompts/base/facet-prompt-fragments.ts
+<!-- Distilled from platform services/prompts/base/facet-prompt-fragments.ts
      (buildIntentsFragment) — the platform vocabulary below is carried verbatim
      where quoted — plus the create_intent input contract
      (workboard-intents/nodes/intent-tool.types.ts). -->
@@ -41,6 +41,7 @@ implemented | rejected | resolved_other`
 | `list_intents` | summaries; `scope: 'tree'` spans layer boards |
 | `get_intent` | full detail: directive, anchors + notes, origin, resolution history, staleness |
 | `create_intent` | author a draft |
+| `update_intent` | revise a draft/needs_clarification intent — fields + context anchors (changed anchors preserved) |
 | `transition_intent` | lifecycle moves (draft→open locks for developer pulls; →rejected reverts staged changes) |
 | `assign_intent` | assign to users; empty list clears; assigning an open intent moves it to assigned |
 | `promote_insight_findings` | reviewed findings/suggestions → one draft intent each (see insights-review) |
@@ -68,6 +69,48 @@ intents never change interpretation.
   state.
 - For a graph-shaped change, prefer making the actual board edit (diagram write tools — it
   stages its own intent with the concrete diff) over describing the change in prose.
+
+## The authoring loop — impact → attach → describe
+
+Attaching elements and describing *why each is attached* is the platform's most important
+authoring feature — do it natively, never as an afterthought. The loop (route first per
+architect-core's taxonomy — intents are legal only on code-bound boards):
+
+1. **Seed.** The elements named by the architect, a spec's requirements, or a staged board
+   edit.
+2. **Sweep candidates** — facts from reads, ranking from judgment: spine radius
+   (`get_edges` with `nodeSlugs` on the seeds; one more hop only for hubs; classify
+   inbound/outbound); aspect fan-out (`get_node_aspects` on seeds + implicated neighbours —
+   the pages, endpoints, tables, channels, authz entries the change actually touches);
+   affected child layers (`layerBoardSlug` ⇒ layer anchors); the serving spec (context
+   anchor). **Candidates on other boards become separate per-board intents** — group by home
+   board; an intent is single-board (cross-board anchors are inert).
+3. **Collision check.** `list_intents` on each target board — existing open intents sharing
+   anchor slugs are flagged (conflicting intents are withheld from developer pulls); the
+   architect decides merge / supersede / proceed.
+4. **Propose.** Ranked table per board (≤15 rows, "+N more"): slug, type (+aspectKind),
+   one-line *why affected*. AskUserQuestion multiSelect — the architect prunes and adds.
+5. **Describe — the recording session, spoken.** Per attached anchor, ask the platform's own
+   question with the platform's verbs (*change / add / fix / remove / investigate*) and compose
+   the note exactly as the web Intent Editor does — `"Change: collect the new consent field
+   before submit"`. Templates and composition rules:
+   [references/anchor-recording.md](references/anchor-recording.md). Batch a few per round;
+   skipping is fine (the anchor attaches noteless).
+6. **Land.** Assemble the directive per the structured rules below, grouped by verb the way
+   the editor's `composeDirective` does. Pre-flight with
+   `node ${CLAUDE_PLUGIN_ROOT}/scripts/prov-architect.js --validate intent --file <payload.json>`.
+   Multi-board ⇒ one write session across the `create_intent` calls (record it in the session
+   ledger) so discard undoes the set; narrate each staged draft + the session linkage.
+
+**Enrichment and revision — `update_intent`.** An already-minted `draft` or
+`needs_clarification` intent is revised in place: name, directive, description, priority,
+effort, and its **context anchors** (replace-all — capture-owned `changed` anchors and the
+staged board diff are preserved; withdrawing staging stays an explicit act via `delete_intent`
+or transition→rejected). Null/omitted fields stay unchanged; origin is immutable; changing
+anchors re-baselines the intent and clears staleness. **The bounced-intent loop is now real:**
+`needs_clarification` → read the developer's question (`get_intent`), revise via
+`update_intent`, then re-open with `transition_intent`. Locked (open/assigned/in_progress/
+terminal) intents refuse edits — relay that.
 
 ## Concrete board changes vs directive intents
 

@@ -1,26 +1,34 @@
 ---
 category: explore
-description: "Explore · Workspace dashboard — board tree, intent counts, latest insights, binding health"
-allowed-tools: mcp__plugin_prov-architect_provenmap__*
+description: "Explore · The command center, attention-first — what needs the architect, then the portfolio"
+allowed-tools: Bash(node:*), mcp__plugin_prov-architect_provenmap__*
 ---
 
-The architect's command centre: one rollup of everything in flight across the workspace (or the
-token's board subtree).
+The morning sweep: lead with **what needs the architect**, ranked, before any inventory. Load
+**architect-core** (taxonomy, batch state reads) and the **intents-authoring** skill's
+staleness/verification semantics.
 
 ## Workflow
 
-1. `get_board_tree` — the board hierarchy in reach.
-2. `get_hub_status` with `scope: 'tree'` on the root board — intent counts, latest insight run,
-   binding health, aggregated over the subtree.
-3. Render one dashboard (you format — keep it stable):
-   - **Boards** — table: slug, name, depth/drill path.
-   - **Intents** — counts by state; flag `needs_clarification` and `stale` explicitly (they need
-     the architect — see the intents-authoring skill).
-   - **Insights** — latest run summary; note if findings await review.
-   - **Bindings** — health per the status payload; a broken binding means the board no longer
-     tracks its source.
-4. Close with the next actions ranked (e.g. "2 intents need clarification → `/intents`", "new
-   findings → `/insights`", "orient on a board → `/board <slug>`"). Every line names a command.
+1. **Attention queue** — run and print the `display` **verbatim** (it includes the "since your
+   last visit" delta and the ranked queue):
+
+   ```bash
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/prov-architect.js --attention
+   ```
+
+   Then add judgment on top: for `implemented` claims worth checking now, sample `get_intent`
+   for `verifiedAt` (say when you sampled); connect queue items to what you know from the
+   session.
+2. **Then the portfolio** — `--classify-tree` (cached ~1h); print its table verbatim. It
+   already carries class, binding flavor, and the "+N not classified" cap line.
+3. **Close with next actions ranked** — every line names a command.
+
+Script not configured (exit 1, no grant) → fall back to the direct reads: `get_hub_status
+(scope: 'tree')` + `list_intents(scope: 'tree')` at root, render the same queue shape.
+
+Empty root state → skip the dashboard, offer `/setup-workspace` (the workspace is waiting for
+its estate).
 
 ## Failure branches
 

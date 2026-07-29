@@ -11,12 +11,13 @@
     "./commands/login.md",
     "./commands/logout.md",
     "./commands/skills.md",
+    "./commands/start.md",
     "./commands/status.md",
     "./commands/sync.md",
     "./commands/update.md"
   ],
   "displayName": "Prov Work",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Knowledge and document architecture analysis for ProvenMap Portal. Analyzes a document/knowledge set — specs, RFCs, policies, design docs, wikis — into a graph of concepts, documents, decisions, and their relationships, and syncs to ProvenMap for collaborative knowledge boards. Tuned for knowledge-work surfaces — Claude Cowork and Codex for Work. Supports server-defined insight analysis skills.",
   "author": {
     "name": "ProvenMap",

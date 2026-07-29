@@ -1,6 +1,6 @@
 # Analysis patterns & assessment criteria
 
-<!-- Source: prov-platform services/prompts/modes/standard/hydrated-board.prompt.ts
+<!-- Source: platform services/prompts/modes/standard/hydrated-board.prompt.ts
      (<operation_analysis> + <architectural_assessment_criteria>). -->
 
 ## Analysis types

@@ -2,7 +2,7 @@
 category: author
 description: "Author · WRITE-CAPABLE: List, draft, and promote board specs — the requirement layer upstream of intents"
 argument-hint: "[board-slug] [spec-slug]"
-allowed-tools: AskUserQuestion, mcp__plugin_prov-architect_provenmap__*
+allowed-tools: AskUserQuestion, Bash(node:*), mcp__plugin_prov-architect_provenmap__*
 ---
 
 Work the specs of a board: read specs and their live delivery coverage, draft new ones (from the
@@ -18,10 +18,10 @@ skill; load it (and **architect-core**) first.
    - **Read** → `get_spec`; present narrative, requirements with acceptance criteria, and the
      live delivery coverage per requirement (unpromoted / in_delivery / delivered / attention)
      with linked intents. Answer "is it done?" from coverage, never from the spec text.
-   - **Draft** → source material: the conversation, a bound document (`get_source_content`,
-     pass its id as `draftedFromSourceId`), or a file the architect shared in-session (read it
-     directly). Extract discrete testable requirements per the skill, then `create_spec` —
-     staged as a **draft**; a human approves in the platform.
+   - **Draft** → run the full authoring interview (specs-authoring, "The authoring
+     interview" — the same workflow `/author-spec` enters): route per the taxonomy, surround
+     pull, grill to the done-bar, then `create_spec` — staged as a **draft**; a human approves
+     in the platform. For anything beyond a trivial capture, `/author-spec` is the front door.
    - **Promote** → only an APPROVED spec can be promoted. Group requirement slugs so each group
      is one coherent change (each group becomes ONE intent), confirm the grouping with the user
      (AskUserQuestion — this is a genuine decision point), then `promote_spec_requirements`.
@@ -34,4 +34,5 @@ skill; load it (and **architect-core**) first.
 - 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
 - Promote refused (spec not approved) → say the spec must be approved in the platform first;
   point at `get_spec`'s status.
+- Board not code-bound → the binding-gate narration (specs-authoring) — never a raw 400.
 - Write tools absent → read-only token: continue with reads, note authoring needs `read_write`.

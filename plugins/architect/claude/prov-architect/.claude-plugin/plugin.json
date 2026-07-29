@@ -1,6 +1,10 @@
 {
   "name": "prov-architect",
   "commands": [
+    "./commands/adopt-adr.md",
+    "./commands/ask-board.md",
+    "./commands/assess.md",
+    "./commands/author-spec.md",
     "./commands/board.md",
     "./commands/configure.md",
     "./commands/help.md",
@@ -9,12 +13,15 @@
     "./commands/intents.md",
     "./commands/login.md",
     "./commands/logout.md",
+    "./commands/new-app.md",
+    "./commands/setup-workspace.md",
     "./commands/specs.md",
+    "./commands/start.md",
     "./commands/status.md",
     "./commands/update.md"
   ],
   "displayName": "Prov Architect",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Architect workbench for ProvenMap boards — explore the board graph, review insights, and author intents and specs from Claude Cowork, Claude Code, or Codex. Connects to the ProvenMap MCP server; all writes land as drafts for in-platform review.",
   "author": {
     "name": "ProvenMap",

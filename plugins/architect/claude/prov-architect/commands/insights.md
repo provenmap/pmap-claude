@@ -22,7 +22,9 @@ review workflow and promotion semantics live in the **insights-review** skill; l
    work), then `promote_insight_findings` with the reviewed ids — one **draft** intent each.
    Report minted intents by slug → `/intents` to open/assign them.
 5. **Record (optional)** — if the session produced a real analysis of its own, offer
-   `create_insight` to store it as a draft run per the skill.
+   `create_insight` to store it as a draft run per the skill. For a *structured* review from
+   scratch (org template or ad-hoc dimension, findings defended before recording), `/assess`
+   is the front door — same skill, full arc.
 
 ## Failure branches
 
