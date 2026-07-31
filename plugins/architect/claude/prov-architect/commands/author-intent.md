@@ -6,8 +6,9 @@ allowed-tools: AskUserQuestion, Bash(node:*), mcp__plugin_prov-architect_provenm
 ---
 
 Capture what the org wants as an intent — from prose, a file shared in this session, or a bound
-document. An intent IS the spec: the why, the elements it touches, and the end state each must
-reach, kept live against the model instead of frozen at hand-off. The whole interview arc
+document. An intent IS the spec: the why (its `narrative`), the elements it touches, and the end
+state each must reach, kept live against the model instead of frozen at hand-off. A bound document
+stays where it lives; the intent points back at it. The whole interview arc
 (routing, surround pull, the grill, done-bar, binding-gate narration) lives in
 **intents-authoring** — load it plus **architect-core**. This command is the long-form entry to
 that workflow; `/intents` is the queue view.
@@ -26,8 +27,10 @@ that workflow; `/intents` is the queue view.
    survives context loss.
 4. **Land** — `--validate intent` on the payload, then `create_intent`. The intent is born a
    **draft** — a human locks it open for developer pulls — and the write joins the working copy.
-   When a bound document was the material, cite it in the description so the why keeps its
-   provenance.
+   Carry the interview's reasoning into the `narrative` — the problem, the goal, what is out of
+   scope — when there is reasoning worth keeping, and omit it when there isn't (intents-authoring
+   "When to write a narrative"). When a **bound** document was the material, pass its slug as
+   `draftedFromSourceSlug` (from `list_source_bindings`) rather than citing it in prose.
 5. **Close + hand off** — the closing move (architect-core): `preview_write_session_commit` →
    present the plan → title/summary (AskUserQuestion) → `commit_write_session`. Every stop names
    the next command (`/intents` to release it, `/hub` for the queue).

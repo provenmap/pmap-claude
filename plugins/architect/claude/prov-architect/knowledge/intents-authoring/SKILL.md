@@ -19,10 +19,23 @@ document nobody re-reads while the code moves on.
 
 Two halves, both required for it to be worth reading in six months:
 
-- **The why** — the `description` (what problem, what context, what is out of scope) and the
-  per-anchor notes. This is what a reviewer needs when they ask "can we defend this decision?"
+- **The why** — the `narrative` (the problem, the goal, what is explicitly out of scope; markdown,
+  up to 8000 chars), backed by the per-anchor notes. This is what a reviewer needs when they ask
+  "can we defend this decision?" It is **optional** — see the judgement call below.
 - **The what** — the `directive`, naming each element by slug with the end state it must reach.
   This is what a developer implements and what a later push is checked against.
+
+**Three prose fields, three readers — do not collapse them.** `description` (≤500) is the one-line
+subtitle the queue shows; `narrative` (≤8000) is the durable why; `directive` (≤4000) is the
+instruction. Putting the rationale in the directive buries the instruction and blows its cap;
+putting it in the description truncates it.
+
+**When to write a narrative.** Write one when the material carries reasoning that would otherwise
+be lost: a PRD or RFC's problem statement, a rejected alternative, an explicit out-of-scope
+boundary, a constraint that explains an odd-looking choice. Do NOT manufacture one — an intent
+whose why is genuinely "the finding says so, and the finding is linked" should omit the field
+rather than restate its own directive in longer words. Padding it is worse than leaving it empty:
+it trains the architect to skip the section on every future intent.
 
 ## Lifecycle
 
@@ -48,7 +61,7 @@ implemented | rejected | resolved_other`
 |---|---|
 | `list_intents` | summaries; `scope: 'tree'` spans layer boards |
 | `get_intent` | full detail: directive, anchors + notes, origin, resolution history, staleness |
-| `create_intent` | author a draft |
+| `create_intent` | author a draft (incl. the `narrative` and, for a bound document, `draftedFromSourceSlug`) |
 | `update_intent` | revise a draft/needs_clarification intent — fields + context anchors (changed anchors preserved) |
 | `transition_intent` | lifecycle moves (draft→open locks for developer pulls; →rejected reverts staged changes) |
 | `assign_intent` | assign to users; empty list clears; assigning an open intent moves it to assigned |
@@ -60,7 +73,17 @@ Address intents by slug (`list_intents` → `get_intent`).
 ## Authoring a good intent
 
 `create_intent` takes `{ workBoardSlug, name, directive (10–4000 chars), description?,
-anchors[]{elementType, aspectKind?, slug, note?}, priority?, effort? }`.
+narrative?, draftedFromSourceSlug?, anchors[]{elementType, aspectKind?, slug, note?}, priority?,
+effort? }`.
+
+**Provenance — `draftedFromSourceSlug`.** When the material was a **bound document** (a PRD, an
+RFC, an ADR), pass the catalog source's slug. The intent then carries a *Drafted from* line
+pointing at that document, so the org's version and the board's version are visibly the same
+thing. Get slugs from `list_source_bindings` (the `sourceSlug` column). An unknown slug is
+**rejected** — the create fails rather than silently dropping the link, so read the bindings
+first rather than guessing a slug from the document's title. Omit it entirely when the material
+came from the conversation, a pasted file, or the architect's own description: this records where
+a draft *came from*, not what it is about.
 
 **Anchors.** Anchor a new intent to what it is about: board elements (node/edge), an aspect row
 (a table, an endpoint — pass `aspectKind`), or a child layer board. Add a note per anchor saying
@@ -114,8 +137,8 @@ architect-core's taxonomy — intents are legal only on code-bound boards):
    each created draft by slug.
 
 **Enrichment and revision — `update_intent`.** An already-minted `draft` or
-`needs_clarification` intent is revised in place: name, directive, description, priority,
-effort, and its **context anchors** (replace-all — capture-owned `changed` anchors and the
+`needs_clarification` intent is revised in place: name, directive, description, narrative,
+priority, effort, and its **context anchors** (replace-all — capture-owned `changed` anchors and the
 staged board diff are preserved; withdrawing staging stays an explicit act via `delete_intent`
 or transition→rejected). Null/omitted fields stay unchanged; origin is immutable; changing
 anchors re-baselines the intent and clears staleness. **The bounced-intent loop is now real:**

@@ -6,6 +6,21 @@ by what the material *lacks* — never run the whole bank as a form. Use AskUser
 closed choices; free text for open ones. Stop at the done-bar (a why worth reading later + a
 directive naming its elements by slug + a note per anchor, no unresolved conflicts).
 
+## Why & boundaries
+
+- What problem is this solving — what goes wrong today if nobody does it?
+- What is explicitly **out of scope**? (The single highest-value question in this bank: name the
+  adjacent thing someone would otherwise "helpfully" also change.)
+- Was another approach considered and rejected? Why?
+- Is there a constraint that makes an odd-looking choice the right one — a deadline, a contract,
+  a migration in flight?
+
+These answers compose the `narrative`, not the directive. Ask them when the material arrived
+*thin on reasoning* — a one-line ask, a ticket title, a verbal "we should probably…". Skip the
+dimension entirely when the reasoning is already on the record (a linked finding, a PRD passed as
+`draftedFromSourceSlug`, an architect who just explained it at length) — re-asking reads as a form,
+and a narrative that restates the directive in longer words is worse than no narrative at all.
+
 ## Actors & triggers
 
 - Who initiates this — which user types or systems? (Ground in `actor` nodes if the landscape
