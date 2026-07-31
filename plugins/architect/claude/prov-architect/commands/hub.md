@@ -19,7 +19,8 @@ staleness/verification semantics.
 
    Then add judgment on top: for `implemented` claims worth checking now, sample `get_intent`
    for `verifiedAt` (say when you sampled); connect queue items to what you know from the
-   session.
+   session. The report's "Waiting for first push" boards (also `governing · never pushed` in
+   the classify table) are board-init territory — the bootstrap offer is already in the line.
 2. **Then the portfolio** — `--classify-tree` (cached ~1h); print its table verbatim. It
    already carries class, binding flavor, and the "+N not classified" cap line.
 3. **Close with next actions ranked** — every line names a command.
@@ -28,7 +29,7 @@ Script not configured (exit 1, no grant) → fall back to the direct reads: `get
 (scope: 'tree')` + `list_intents(scope: 'tree')` at root, render the same queue shape.
 
 Empty root state → skip the dashboard, offer `/setup-workspace` (the workspace is waiting for
-its estate).
+its estate: map what exists, or found something new).
 
 ## Failure branches
 

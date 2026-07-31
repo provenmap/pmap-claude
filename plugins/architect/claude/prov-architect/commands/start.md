@@ -22,13 +22,19 @@ Deterministic state first, judgment second:
    architect-core taxonomy.
 3. **Render the answer, ranked, every line naming its command:**
    - Connection broken → the canonical error line and stop (`/login` / `/configure`).
-   - **Empty root ⇒ lead with `/setup-workspace`** — the workspace is waiting for its estate.
+   - **Empty root ⇒ lead with `/setup-workspace`** — the workspace is waiting for its estate:
+     map what exists, or found something new (the command forks at the top of its interview).
    - Unfinished work next: an open working copy from the status report ("you have N
      uncommitted changes across M boards — inspect on a board, then commit or discard;
      the session includes any web-app edits"), and each draft in flight ("resume the
      `payments` intent draft? → `/author-intent payments`").
    - The attention headline from hub status (bounced intents, stale intents, findings awaiting
      review → `/hub` for the full queue).
+   - Init states by name, straight from the script output: a `governing · never pushed` board
+     in the classify table (the attention report lists them as "Waiting for first push") →
+     "`payments-app` is empty — bootstrap it? → `/board payments-app`"; a **Strategic
+     landscape only** headline → "graduate the first real system → `/new-app <name>`".
+     (Empty plain layers have no batch signal — `/board` detects them on open.)
    - Otherwise the natural entries: `/board` (orient), `/ask-board` (ask), `/hub` (what needs
      me).
 

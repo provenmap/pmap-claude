@@ -68,6 +68,8 @@ first:
 | Class | How recognized | What's legal here |
 |---|---|---|
 | **Empty root** (fresh workspace) | root with 0 nodes/edges, ≤1 top-level board, no bindings anywhere | `/setup-workspace` territory — diagram writes only; **no intents anywhere yet** |
+| **Empty app board** (pre-first-push) | 0 nodes/edges, below root, binding present (or app-archetype owner node) | board bootstrap (board-init): diagram writes, `author_pages`, reference docs, intents once authorable |
+| **Empty plain layer** | 0 nodes/edges, `isChildLayer`, no binding | lightweight bootstrap (board-init): canvas sketch only; facet work routes UP |
 | **Root / landscape** (L0) | slug `root`, tree seed | read, rollup, diagram writes; **no intents** unless bound |
 | **App board** (L1) | has a code-plugin binding (governing ⇒ governed writes; reference ⇒ ungoverned but authorable) | everything: spine, aspects, intents, insights |
 | **Plain layer** (L2/L3) | `isChildLayer`, no binding | canvas detail only — facet work **routes UP** to the owning app board; say so |
@@ -89,7 +91,8 @@ standalone entry to the same workflow:
 
 | Signal in the ask | Workflow (skill to load) |
 |---|---|
-| Bootstrap/draw the org's estate; empty workspace | `/setup-workspace` (landscape-modeling) |
+| Bootstrap/draw the org's estate; empty workspace; "founding/starting a new product line" | `/setup-workspace` (landscape-modeling — map or found mode) |
+| "Shape/prepare/initialize this empty board", pages-first design of an intended app | `/board` on that board (board-init) |
 | A new system/app/service on an existing landscape | `/new-app` (landscape-modeling) |
 | Requirements, a PRD/RFC/doc in hand, "what we want" | `/author-intent` (intents-authoring) |
 | A decision, ADR, policy, standard to adopt | `/adopt-adr` (adr-adoption) |

@@ -8,7 +8,8 @@ allowed-tools: AskUserQuestion, Bash(node:*), mcp__plugin_prov-architect_provenm
 Open an architect working session on a board: orient on its structure, then follow the
 architect's lead — questions, analysis, and governed board edits. Methodology lives in the
 **board-reading** skill (orientation, navigation, analysis, the diagram tool contract) and
-**architect-core** (scope, passive review, formatting) — load both.
+**architect-core** (scope, passive review, formatting) — load both. When classification meets
+an empty board below root, load **board-init** and run its bootstrap inline.
 
 ## Workflow
 
@@ -25,6 +26,11 @@ Classify the board per the architect-core taxonomy (board-reading has the method
 accordingly:
 
 - **Empty root** → don't orient on nothing; offer `/setup-workspace`.
+- **Empty app board** (0 nodes/edges, below root, with a code-plugin binding — or unbound with
+  an app-archetype owner node) → don't orient on nothing; offer the **board bootstrap**
+  (load **board-init** and run it inline).
+- **Empty plain layer** (0 nodes/edges, `isChildLayer`, no app-ness) → offer the lightweight
+  board-init variant: sketch the sub-structure, or route up to the owning app board.
 - **Root / landscape** → orient as a **portfolio** (apps + health + cross-app edges), not a
   canvas walk; landscape edits follow the **landscape-modeling** skill (app archetypes for
   bindable slots, the app-nesting rule).

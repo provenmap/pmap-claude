@@ -1,6 +1,6 @@
 ---
 name: landscape-modeling
-description: How to model an org's digital estate on the ProvenMap root landscape — the inception doctrine, archetype selection, and the binding handoff. Use when bootstrapping an empty workspace (/setup-workspace), placing a new system (/new-app), or editing the root landscape in a /board session. Key capabilities: the modelling doctrine (model what exists, one node per system), app archetypes as the bindability lever, domain-group containers, the L0 granularity budget, the binding-handoff checklist, skill-profiles-start-empty truth.
+description: How to model an org's digital estate on the ProvenMap root landscape — the inception doctrine, archetype selection, and the binding handoff. Use when bootstrapping an empty workspace (/setup-workspace), placing a new system (/new-app), or editing the root landscape in a /board session. Key capabilities: the modelling doctrine (model what exists, one node per system), app archetypes as the bindability lever, domain-group containers, the L0 granularity budget, the binding-handoff checklist, skill-profiles-start-empty truth. Covers both map mode (model what exists) and found mode (founding landscape for a new product line — strategic-only, graduation path).
 ---
 
 # Landscape Modeling
@@ -113,3 +113,24 @@ supply the truth. `/new-app` is different: the system is being *planned*, there 
 and the architect's target sketch is the point. Drawing the L1 skeleton there is deliberate —
 narrate the reconciliation truth: when the repo binds and pushes, analysis reconciles against
 the sketch, and intents appear where reality disagrees.
+
+## Deliberate divergence: the founding landscape (found mode)
+
+`/setup-workspace` runs in one of two modes, forked at the top of the interview:
+
+- **Map mode** (default): the estate exists. Every inception rule above applies unchanged —
+  model what EXISTS, never invent a system.
+- **Found mode**: a product line being conceived from scratch. Nothing exists yet, so "model
+  what exists" would model nothing. The divergence: a **founding landscape** models what
+  SHOULD exist — the intended systems as root nodes with **system archetypes** (never app
+  archetypes), real zones as containers, **no app boards, no bindings**. The rule becomes:
+  **never invent beyond what the architect has decided** — grill, don't fabricate; every node
+  traces to an interview answer.
+
+Narrate the truth every time: *"this is target state — systems graduate as they become real."*
+
+**Graduation path** (the standing next step of every founding scaffold): when a system becomes
+real → `/new-app`-style pass on its node — fix the archetype to an **app archetype** (that's
+the bindability lever above) → `create_board` → `convert_node_to_app {nodeSlug, branch}` →
+L1 sketch + founding intent. Mixed estates work naturally: the fork is per-answer, not
+exclusive — a real system named during a found-mode interview is drawn as in map mode.
