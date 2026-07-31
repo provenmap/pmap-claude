@@ -58,8 +58,9 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/prov-architect.js --validate diagram --file <
 
 Confirmation posture (the platform's own): present the plan as a table (system, archetype,
 container, repo?), get **one** conversational go-ahead, then proceed through the batch without
-re-asking per call. Wrap the whole scaffold in one write session (recorded in the session
-ledger) so walking away mid-setup discards cleanly.
+re-asking per call. The whole scaffold gathers in the working copy, so walking away mid-setup
+is recoverable — but discard reverts the WHOLE session (app-made changes included): confirm
+with the named boards + counts first (architect-core).
 
 ## App boards and the nesting rule
 
@@ -87,7 +88,7 @@ code-plugin source, binds it GOVERNING on the branch. Rules:
   connects the repository with the code plugin (`/login` + `/configure` against the layer
   board) and makes the first push.
 - Advisory documents attach with `bind_reference_source {workBoardSlug, title, type, url|content}`
-  — a reference binding, exempt from the nesting rule, and enough to author specs/intents.
+  — a reference binding, exempt from the nesting rule, and enough to author intents.
 
 ## The handoff checklist
 

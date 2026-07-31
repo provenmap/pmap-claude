@@ -1,11 +1,12 @@
 ---
 category: connect
-description: "Connect · Check the ProvenMap MCP connection: endpoint, token, live probe, scope"
+description: "Connect · Check the ProvenMap MCP connection: endpoint, token, live probe, scope, and your working copy"
 allowed-tools: Bash(node:*)
 ---
 
 Report whether this session can reach the ProvenMap MCP server: endpoint, token presence
-(masked), a live `tools/list` probe, and the token's scope.
+(masked), a live `tools/list` probe, the token's scope — and the working copy (uncommitted
+changes, live from the server; shared with the web app).
 
 ## Workflow
 

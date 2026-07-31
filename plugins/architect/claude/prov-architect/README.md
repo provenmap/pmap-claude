@@ -1,8 +1,9 @@
 # Prov Architect
 
 Architect workbench for ProvenMap boards, running in Claude Code. Explore the board graph,
-review insights, and author intents and specs — with the platform keeping governance: **every
-write lands as a draft** (a revertible intent) reviewed in ProvenMap, never as direct truth.
+review insights, and author intents — living specs — with the platform keeping governance: **writes
+gather in your working copy**, and committing mints a reviewable plan (one intent per governed
+app) in ProvenMap — never direct truth.
 
 Where the ProvenMap code plugins serve developers (analyze a codebase or document set → push
 boards → implement intents), this plugin serves **architects**: the people reasoning over boards,
@@ -36,11 +37,10 @@ The plugin talks to the ProvenMap **MCP server** with a workspace-scoped bearer 
 |---|---|
 | `/prov-architect:start [ask]` | **Start here** — reads your real state and names the next step; routes any open-ended ask |
 | `/prov-architect:setup-workspace` | Bootstrap an empty workspace: estate interview → landscape → app boards → binding handoff |
-| `/prov-architect:new-app <idea>` | Plan a new system on the landscape: grill, place, sketch the target, draft the founding spec |
-| `/prov-architect:author-spec [slug]` | Guided spec authoring: context pull, the grill, a well-grounded draft spec |
-| `/prov-architect:adopt-adr` | Adopt a decision: per-app specs + compliance review + remediation intents |
+| `/prov-architect:new-app <idea>` | Plan a new system on the landscape: grill, place, sketch the target, draft the founding intent |
+| `/prov-architect:author-intent [slug]` | Guided intent authoring: context pull, the grill, a well-grounded draft intent |
+| `/prov-architect:adopt-adr` | Adopt a decision: durable record + compliance review + per-app remediation intents |
 | `/prov-architect:intents` | Turn anything into governed, well-anchored work; manage the queue |
-| `/prov-architect:specs` | Read specs and live delivery coverage; promote approved requirements |
 | `/prov-architect:ask-board <question>` | Ask the architecture a question — slug-grounded answer or highlighted subgraph |
 | `/prov-architect:assess` | Structured review: frame, sweep, defend findings, record the run |
 | `/prov-architect:insights` | Review insight runs; promote reviewed findings into draft intents |
@@ -51,13 +51,16 @@ The plugin talks to the ProvenMap **MCP server** with a workspace-scoped bearer 
 
 ## How governance works
 
-Reads are unrestricted within the token's workspace (and board restriction, if set). Writes are
-scoped by the token and **staged**: a change to a governed board mints a reviewable intent —
-delete the intent to revert the change. Rejecting an intent reverts what it staged. Architects
-propose; the platform review decides.
+Reads are unrestricted within the token's workspace (and board restriction, if set). The token
+acts as **you**: writes join your one workspace working copy — the same session the ProvenMap
+web app shows — where they stay undoable until you decide. **Committing** the working copy
+mints a reviewable plan: one `board_diff` intent per governed app, named by your commit
+message; **discarding** reverts everything since the last decision. Rejecting a minted intent
+reverts what it staged. Architects propose; the platform review decides.
 
 ## Working with documents
 
 Drop a PRD, RFC, or design doc into the session and ask for it to become board work: the plugin
-reads it directly, drafts specs/intents anchored to the right board elements, and everything
-still lands as drafts for review. Documents bound to a board are also readable server-side.
+reads it directly, drafts intents anchored to the right board elements, and everything
+still gathers in your working copy for a reviewed commit. Documents bound to a board are also
+readable server-side.

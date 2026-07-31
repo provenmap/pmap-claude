@@ -18,10 +18,11 @@ plus **architect-core**.
 3. **Escalate to a drawn answer when the answer IS a subgraph** (board-reading's heuristic:
    traces, cross-app flows, >~5 elements + relationships). Offer once per session
    (AskUserQuestion), remember the preference. On yes: `create_context_board` → draw the
-   answer-subgraph in one write session (record it in the ledger) → hand back the board slug
-   + a prose précis. At the end of the session, offer `delete_context_board` for boards this
-   conversation minted. Tool absent (older server) → `create_insight` with `scope.elements`;
-   never fake a board.
+   answer-subgraph → hand back the board slug + a prose précis. At the end of the session,
+   clean up with `delete_context_board` for boards this conversation minted — **never**
+   `discard_write_session` (that reverts the architect's whole working copy, not just the
+   canvas). Tool absent (older server) → `create_insight` with `scope.elements`; never fake a
+   board.
 4. **Substantial analysis** → offer to record it (`create_insight`) so it isn't lost; name
    `/assess` for a structured review.
 

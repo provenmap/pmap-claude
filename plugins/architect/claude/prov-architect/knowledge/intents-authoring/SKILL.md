@@ -1,6 +1,6 @@
 ---
 name: intents-authoring
-description: How to author, anchor, and manage ProvenMap intents — the reviewable work items that connect architecture decisions to delivery. Use when creating intents, managing the intent queue (transition, assign, delete), or turning specs, findings, and board changes into work. Key capabilities: the intent lifecycle, DRAFT-only stance, the impact→attach→describe authoring loop, anchor recording with the platform's verbs, single-board rule and session-linked federation, collision checks, structured directives, staleness and verification semantics.
+description: How to author, anchor, and manage ProvenMap intents — the living specs that connect architecture decisions to delivery. Use when creating intents, authoring requirements against a board, managing the intent queue (transition, assign, delete), or turning findings and board changes into work. Key capabilities: the intent lifecycle, DRAFT-only stance, the impact→attach→describe authoring loop, the authoring interview, anchor recording with the platform's verbs, single-board rule and session-linked federation, collision checks, structured directives, staleness and verification semantics.
 ---
 
 # Intents Authoring
@@ -12,9 +12,17 @@ description: How to author, anchor, and manage ProvenMap intents — the reviewa
 
 ## What an intent is
 
-Intents are proposed work items anchored to what they concern; **only code changes make them
-true**. A spec is what the org WANTS; intents are how it gets delivered; code is what makes it
-true.
+An intent is a **living spec**: what the org wants and why, anchored to the elements it
+concerns, and **only code changes make it true**. There is no separate spec entity upstream of
+it — the intent carries the demand AND the delivery record, so the why never freezes in a
+document nobody re-reads while the code moves on.
+
+Two halves, both required for it to be worth reading in six months:
+
+- **The why** — the `description` (what problem, what context, what is out of scope) and the
+  per-anchor notes. This is what a reviewer needs when they ask "can we defend this decision?"
+- **The what** — the `directive`, naming each element by slug with the end state it must reach.
+  This is what a developer implements and what a later push is checked against.
 
 ## Lifecycle
 
@@ -24,8 +32,8 @@ implemented | rejected | resolved_other`
 - `needs_clarification` is a detour, not an end: a developer bounces an intent back when code
   reality no longer matches it. The architect revises and re-opens it (`needs_clarification →
   open`) or rejects it.
-- **You author DRAFTS only** — a human locks a draft open. Every write stages and lands for
-  review (passive review); narrate the staged intent, never pre-confirm.
+- **You author DRAFTS only** — a human locks a draft open. Every write joins the working copy
+  and awaits review (passive review); narrate the created draft by slug, never pre-confirm.
 - `stale` means the code facts under an intent's anchors drifted since it was written — it needs
   the architect's re-review, so say so rather than treating it as current.
 - `implemented` is the developer's CLAIM; `verifiedAt` is the server's PROOF that a later push
@@ -55,11 +63,9 @@ Address intents by slug (`list_intents` → `get_intent`).
 anchors[]{elementType, aspectKind?, slug, note?}, priority?, effort? }`.
 
 **Anchors.** Anchor a new intent to what it is about: board elements (node/edge), an aspect row
-(a table, an endpoint — pass `aspectKind`), a child layer board, or the spec it serves. Add a
-note per anchor saying why it is there; **the implementer reads it**. Anchors you author carry
-the `context` role ('changed' anchors come only from captures that physically edited elements).
-An intent may CITE a spec as context; it may never change one — a spec is interpretation, and
-intents never change interpretation.
+(a table, an endpoint — pass `aspectKind`), or a child layer board. Add a note per anchor saying
+why it is there; **the implementer reads it**. Anchors you author carry the `context` role
+('changed' anchors come only from captures that physically edited elements).
 
 **Structured directives.** Write the directive so a concrete diff could be derived from it:
 
@@ -67,8 +73,9 @@ intents never change interpretation.
 - One change per intent — split unrelated changes.
 - State the operation explicitly: **add / modify / remove**, with the target and the desired end
   state.
-- For a graph-shaped change, prefer making the actual board edit (diagram write tools — it
-  stages its own intent with the concrete diff) over describing the change in prose.
+- For a graph-shaped change, prefer making the actual board edit (diagram write tools — the
+  concrete diff mints its own `board_diff` intent when the session commits) over describing
+  the change in prose.
 
 ## The authoring loop — impact → attach → describe
 
@@ -76,15 +83,15 @@ Attaching elements and describing *why each is attached* is the platform's most 
 authoring feature — do it natively, never as an afterthought. The loop (route first per
 architect-core's taxonomy — intents are legal only on code-bound boards):
 
-1. **Seed.** The elements named by the architect, a spec's requirements, or a staged board
-   edit.
+1. **Seed.** The elements named by the architect, the material they brought (prose, a shared
+   file, a bound document), or a board edit sitting in the working copy.
 2. **Sweep candidates** — facts from reads, ranking from judgment: spine radius
    (`get_edges` with `nodeSlugs` on the seeds; one more hop only for hubs; classify
    inbound/outbound); aspect fan-out (`get_node_aspects` on seeds + implicated neighbours —
    the pages, endpoints, tables, channels, authz entries the change actually touches);
-   affected child layers (`layerBoardSlug` ⇒ layer anchors); the serving spec (context
-   anchor). **Candidates on other boards become separate per-board intents** — group by home
-   board; an intent is single-board (cross-board anchors are inert).
+   affected child layers (`layerBoardSlug` ⇒ layer anchors). **Candidates on other boards
+   become separate per-board intents** — group by home board; an intent is single-board
+   (cross-board anchors are inert).
 3. **Collision check.** `list_intents` on each target board — existing open intents sharing
    anchor slugs are flagged (conflicting intents are withheld from developer pulls); the
    architect decides merge / supersede / proceed.
@@ -96,11 +103,15 @@ architect-core's taxonomy — intents are legal only on code-bound boards):
    before submit"`. Templates and composition rules:
    [references/anchor-recording.md](references/anchor-recording.md). Batch a few per round;
    skipping is fine (the anchor attaches noteless).
-6. **Land.** Assemble the directive per the structured rules below, grouped by verb the way
+6. **Grill the gaps.** When the material is thin — no why, no done-bar, no named elements —
+   run a round or two from [references/authoring-interview.md](references/authoring-interview.md):
+   2–4 questions chosen by what the material *lacks*, never the whole bank as a form. This is
+   what `/author-intent` runs long-form.
+7. **Land.** Assemble the directive per the structured rules below, grouped by verb the way
    the editor's `composeDirective` does. Pre-flight with
    `node ${CLAUDE_PLUGIN_ROOT}/scripts/prov-architect.js --validate intent --file <payload.json>`.
-   Multi-board ⇒ one write session across the `create_intent` calls (record it in the session
-   ledger) so discard undoes the set; narrate each staged draft + the session linkage.
+   Multi-board ⇒ the `create_intent` calls share the one working copy automatically; report
+   each created draft by slug.
 
 **Enrichment and revision — `update_intent`.** An already-minted `draft` or
 `needs_clarification` intent is revised in place: name, directive, description, priority,

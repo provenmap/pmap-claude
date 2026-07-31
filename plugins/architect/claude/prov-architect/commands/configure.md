@@ -20,7 +20,7 @@ hosts we can't script, and when you lack the admin permission the `/login` appro
 ### Step 1 — mint a token
 
 In the ProvenMap platform (as a workspace member): **Settings → MCP access tokens → mint**.
-Choose the workspace, scope (`read` or `read_write` — authoring intents/specs needs
+Choose the workspace, scope (`read` or `read_write` — authoring intents needs
 `read_write`), and an optional board-subtree restriction. The raw token is shown **exactly
 once** at mint.
 
@@ -51,5 +51,8 @@ token is wrong/revoked: back to Step 1. Unreachable → check `PROV_MCP_URL` and
 
 - Rotating or revoking: revoke in the same settings screen; mint a fresh token; update the env
   var. `/logout` covers removal.
-- The token is the whole identity (workspace + scope + restriction) — switching workspaces means
-  minting a different token, not changing any config file.
+- The token carries the whole authorization (workspace + scope + restriction) — switching
+  workspaces means minting a different token, not changing any config file.
+- **The token acts as its minting user**: writes made here join that person's one workspace
+  working copy — the same session the web app shows — so commit/discard from either surface
+  decides both. Mint your own token; a shared token would merge working copies.

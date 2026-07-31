@@ -18,7 +18,7 @@ Insight runs are stored analyses with **findings** (element-anchored observation
 (turn reviewed items into draft intents)`
 
 Cite finding **names** when discussing them; promotion mints one **draft** intent per reviewed
-item (passive review — narrate what was staged).
+item (passive review — narrate the minted drafts by slug).
 
 Heavy insight *generation* (scheduled analyses, deep research) runs in-platform. What you can do
 here is **review** stored runs, **promote** what deserves delivery, and **record** your own

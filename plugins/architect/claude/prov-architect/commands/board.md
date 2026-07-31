@@ -28,7 +28,7 @@ accordingly:
 - **Root / landscape** → orient as a **portfolio** (apps + health + cross-app edges), not a
   canvas walk; landscape edits follow the **landscape-modeling** skill (app archetypes for
   bindable slots, the app-nesting rule).
-- **Plain layer** → orient normally, and note that facet work (specs/intents) routes up to the
+- **Plain layer** → orient normally, and note that facet work (intents) routes up to the
   owning app board.
 - **App board** → the full board-reading orientation sequence (`get_workboard_details`,
   `get_hub_status`, `list_intents`, `list_insights`).
@@ -38,13 +38,21 @@ direction — the session is conversational from here.
 
 ### Step 3 — work
 
-Answer, analyze, and edit per the board-reading skill. After any write, narrate the governance
-state from the result message: **"staged as intent `<slug>` — delete it to revert"**. Use a
-write session for multi-step edits (recorded in the session ledger — architect-core). For
+Answer, analyze, and edit per the board-reading skill. Writes join the architect's working copy
+automatically — after a write batch, narrate the journal: **"Saved to your working copy — N
+uncommitted changes across M boards"** (nothing is staged and no intent exists yet). For
 "drill this container into its own board": `create_board {ownerNodeSlug, newBoardSlug, name,
-ownerBoardSlug: <this board>}` — the container becomes the drill-down; on a governed board the
-creation stages for review. Say plainly that a layer under an app board stays a plain layer
-permanently (app-nesting rule) — never pitch it as a future app slot.
+ownerBoardSlug: <this board>}` — the container becomes the drill-down, journaled like any other
+diagram write. Say plainly that a layer under an app board stays a plain layer permanently
+(app-nesting rule) — never pitch it as a future app slot.
+
+**Closing move (any session that wrote):** `preview_write_session_commit` → present the plan
+(per-root `+add ~modify −remove`, conflicts, what commits plain; the session may include the
+architect's own web-app changes — say so) → ask for title/summary (AskUserQuestion) →
+`commit_write_session` → narrate the minted intents by slug, offer `publish: true`. Or, if the
+architect wants to abandon the batch: confirm the named boards + counts from
+`get_write_session`, then `discard_write_session` — it reverts the WHOLE working copy, app-made
+changes included; render `{reverted, conflicted, skipped}` honestly.
 
 ## Failure branches
 

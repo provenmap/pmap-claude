@@ -27,12 +27,12 @@ Ask the platform's own deterministic question for each attached element:
 | `layer` | What in the `<label>` layer? |
 | `node` | What should happen to `<label>`? |
 | `edge` | What about the `<label>` connection? |
-| `spec` | How does `<label>` relate to this work? |
 | `aspect` | What should change in `<label>`? |
 
-(Anchors you author are always role `context` — `changed` anchors come only from captures that
-physically edited elements. The "why did you change" question applies when you just staged a
-board edit and are annotating its capture.)
+(Anchors you author are always role `context` — `changed` anchors come only from the **commit
+classifier**, which derives them from the session's net diff when the working copy commits.
+Element notes for changed anchors are therefore authored at commit time; over MCP the commit
+`summary` carries the per-element "why" in prose — `elementNotes` is HTTP/app-dialog-only.)
 
 ## Note composition (composeAnchorNote)
 
@@ -64,5 +64,5 @@ name 100, description 500, directive 4000.
 In the platform editor, a `remove`-verbed anchor becomes a machine-checkable REMOVE claim (a
 later code push *proves* the element went away). Over MCP you cannot mint that claim on a
 directive intent — for a pure removal, prefer making the actual board edit (`delete_nodes` /
-`delete_edges` stages a `board_diff` intent with the concrete, provable diff) over describing
-the removal in prose.
+`delete_edges`; committing the session mints a `board_diff` intent with the concrete, provable
+diff) over describing the removal in prose.

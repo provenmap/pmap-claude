@@ -1,6 +1,6 @@
 ---
 name: board-reading
-description: How to orient on and evolve a ProvenMap board over MCP — read the layered graph, analyze it, and make governed diagram edits. Use when exploring a board, answering architecture questions, assessing quality, or adding/updating/removing nodes and edges. Key capabilities: orientation sequence, board-class detection (landscape/app/layer), question-scoped reading and the answer-mode heuristic, cross-board navigation (layers), analysis types and assessment criteria, the diagram tool contract (slugs are the wiring), staged-edit narration.
+description: How to orient on and evolve a ProvenMap board over MCP — read the layered graph, analyze it, and make governed diagram edits. Use when exploring a board, answering architecture questions, assessing quality, or adding/updating/removing nodes and edges. Key capabilities: orientation sequence, board-class detection (landscape/app/layer), question-scoped reading and the answer-mode heuristic, cross-board navigation (layers), analysis types and assessment criteria, the diagram tool contract (slugs are the wiring), working-copy narration.
 ---
 
 # Board Reading & Editing
@@ -31,7 +31,7 @@ Before authoring anything, determine the board's class from three facts:
 1. **Tree position** — `get_board_tree('root')`: is this the root, a node's layer board, or
    absent from the tree (standalone)?
 2. **Bindings** — `list_source_bindings(workBoardSlug)`: a code-plugin binding (governing or
-   reference) makes the board an **app board** — the only class where specs/intents are legal.
+   reference) makes the board an **app board** — the only class where intents are legal.
 3. **Layer flag** — `isChildLayer` on the board details: true + no binding = **plain layer**;
    facet work routes up to the nearest bound ancestor.
 
@@ -52,10 +52,11 @@ IS a subgraph — dependency/impact traces, cross-app flows, "show me how X reac
 where prose would enumerate more than ~5 elements plus their relationships. The drawn form:
 `create_context_board {name, question}` mints an ephemeral standalone `contextmap` (outside
 the tree — clean by construction); draw the answer-subgraph on it with the normal diagram
-tools in one write session (ungoverned ⇒ direct, discard-safe), hand back its slug + a prose
-précis, and offer `delete_context_board` when the conversation is done. When the tool is
-absent (older server), fall back to `create_insight` with `scope.elements` — highlights on
-the existing canvas; never fake a board.
+tools (ungoverned — nothing is staged), hand back its slug + a prose précis, and clean up with
+`delete_context_board` when the conversation is done — never `discard_write_session`, which
+would revert the architect's whole working copy. When the tool is absent (older server), fall
+back to `create_insight` with `scope.elements` — highlights on the existing canvas; never fake
+a board.
 
 ## Layered boards & cross-board navigation
 
@@ -89,9 +90,11 @@ and response templates.
 ## Editing the diagram — the tool contract
 
 Diagram writes (`create_nodes`, `update_nodes`, `delete_nodes`, `create_edges`, `update_edges`,
-`delete_edges`, `apply_diagram_info`, `apply_semantic_styles`) are exposed and governed: on a
-governed board the change is **staged and mints a reviewable intent** — narrate
-"staged as intent `<slug>` — delete it to revert" from the result message.
+`delete_edges`, `apply_diagram_info`, `apply_semantic_styles`) are exposed and journaled: every
+write joins the architect's working copy, and **nothing is staged until the session commits**
+(on a governed board, commit mints one reviewable `board_diff` intent per governed root).
+Narrate the journal after a batch: "Saved to your working copy — N uncommitted changes across
+M boards."
 
 The critical rules (verbatim from the platform contract):
 
@@ -118,6 +121,6 @@ Full payload shapes: [references/diagram-payloads.md](references/diagram-payload
   reparent via `parentNodeSlug`; report side effects.
 - **Deletion:** deleting a node removes its connected edges automatically; children are NOT
   deleted — they become standalone. State the cascade before deleting when it is significant;
-  on a governed board the removal is staged for review, not applied.
-- **Batch edits:** use a write session (see architect-core) so the whole change can be
-  discarded as one unit.
+  on a governed board the removal becomes a staged mark only when the session commits.
+- **Batch edits:** all writes share the one working copy automatically; close with the
+  preview → commit move (architect-core) — or discard, which reverts the whole session.

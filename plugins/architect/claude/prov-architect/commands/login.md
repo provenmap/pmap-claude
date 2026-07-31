@@ -7,7 +7,9 @@ allowed-tools: Bash(node:*)
 Connect to the ProvenMap MCP server by signing in through the browser: pick a workspace, scope,
 and optional board restriction there, and the minted **MCP bearer token** is stored for you
 (user-scope, `~/.provenmap/architect-mcp.json`) and written into the host's MCP config when
-scriptable. The token never transits this chat.
+scriptable. The token never transits this chat. **The token acts as you**: writes made here
+join your one workspace working copy — the same session the web app shows — and committing or
+discarding from either surface decides both.
 
 > Prefer manual setup, or minting from the settings UI? Use **`/configure`** — it stays fully
 > supported (and is the only path when you lack workspace-admin permission to approve).

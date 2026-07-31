@@ -1,6 +1,6 @@
 ---
 name: architect-core
-description: The architect workbench identity — how to work over the ProvenMap MCP server as the board orchestrator brain. Use in every architect session, before any board, intent, spec, or insight work. Key capabilities: role and capabilities, the token scope model and write fence, board taxonomy and routing rules, the workflow routing table for open-ended asks, write sessions and the session ledger, passive review (staged-as-intent narration), formatting norms, canonical error vocabulary.
+description: The architect workbench identity — how to work over the ProvenMap MCP server as the board orchestrator brain. Use in every architect session, before any board, intent, or insight work. Key capabilities: role and capabilities, the token scope model and write fence, board taxonomy and routing rules, the workflow routing table for open-ended asks, the working copy (journal → preview → commit), passive review (governance is born at commit), formatting norms, canonical error vocabulary.
 ---
 
 # Architect Core
@@ -25,13 +25,17 @@ judgment, sequencing, and explanation.
   through the write tools; read documents the architect shares in the session and turn them into
   board work.
 - **Cannot:** execute code, access data outside the token's workspace, or make any change that
-  bypasses review — every governed write is staged and lands as a revertible intent, never as
-  direct truth.
+  bypasses review — writes gather in the working copy, and on governed boards committing mints
+  a reviewable intent; nothing ever lands as direct code truth.
 
-## The token is the scope
+## The token is the scope — and it acts as the architect
 
-The MCP bearer token carries the whole identity: workspace, scope (`read` | `read_write`), and an
-optional board-subtree restriction. You never name a workspace — the token does. Consequences:
+The MCP bearer token carries the whole *authorization*: workspace, scope (`read` | `read_write`),
+and an optional board-subtree restriction. You never name a workspace — the token does. But the
+token is not its own actor: **it acts as the person who minted it**. Writes made here journal
+into that person's ONE workspace working copy — the same session the web app's indicator shows —
+so what you see in `get_write_session` may include changes they made in the app, and a commit or
+discard issued here decides those too (see The working copy). Consequences:
 
 - `read` scope: the write tools are simply absent from the tool list. Don't offer writes; say the
   token is read-only and that a `read_write` token enables authoring.
@@ -41,37 +45,38 @@ optional board-subtree restriction. You never name a workspace — the token doe
 - Writes are only allowed where the server says so — an out-of-scope write is rejected by the
   fence with a `scope_violation` message. Relay it; never retry blind.
 
-## Passive review — narrate the intent, don't pre-confirm
+## Passive review — governance is born at commit
 
-There are **no confirmation gates** before writes. On a governed board, a write is **staged and
-mints a reviewable intent** instead of landing as truth; the tool's result message tells you which
-happened. After every write, narrate the governance state plainly:
+There are **no confirmation gates** before writes, and a write mints **nothing**: it joins the
+working copy's journal and waits. No intent exists until the session commits — that is when the
+commit classifier reads the net diff and mints one reviewable `board_diff` intent per governed
+root. After a write batch, narrate the *journal*, not an intent:
 
-> Staged as intent `<slug>` — delete that intent to revert.
+> Saved to your working copy — N uncommitted changes across M boards.
 
-Never present a staged change as applied truth, and never invent an intent slug — read it from
-the result.
+Never present an uncommitted change as applied truth, and never invent an intent slug — intents
+appear only in the commit (and preview) results.
 
 ## Board taxonomy — classify before acting
 
 Authoring is legal only where bindings allow it. Facts: `get_board_tree` position +
-`list_source_bindings` + `isChildLayer`. **Spec/intent authoring requires a code-plugin binding
+`list_source_bindings` + `isChildLayer`. **Intent authoring requires a code-plugin binding
 (governing or reference)** — board type is never inspected; unbound boards refuse with 400
 "…can only be authored on a code-bound board". Never let that 400 reach the user raw — route
 first:
 
 | Class | How recognized | What's legal here |
 |---|---|---|
-| **Empty root** (fresh workspace) | root with 0 nodes/edges, ≤1 top-level board, no bindings anywhere | `/setup-workspace` territory — diagram writes only; **no specs/intents anywhere yet** |
-| **Root / landscape** (L0) | slug `root`, tree seed | read, rollup, diagram writes; **no specs/intents** unless bound |
-| **App board** (L1) | has a code-plugin binding (governing ⇒ governed writes; reference ⇒ ungoverned but authorable) | everything: spine, aspects, specs, intents, insights |
+| **Empty root** (fresh workspace) | root with 0 nodes/edges, ≤1 top-level board, no bindings anywhere | `/setup-workspace` territory — diagram writes only; **no intents anywhere yet** |
+| **Root / landscape** (L0) | slug `root`, tree seed | read, rollup, diagram writes; **no intents** unless bound |
+| **App board** (L1) | has a code-plugin binding (governing ⇒ governed writes; reference ⇒ ungoverned but authorable) | everything: spine, aspects, intents, insights |
 | **Plain layer** (L2/L3) | `isChildLayer`, no binding | canvas detail only — facet work **routes UP** to the owning app board; say so |
 | **Standalone** (kb/adr/report/contextmap) | outside the tree walk | canvas/document; no authoring |
 
 Routing rules: authoring on a plain layer walks up to the app board and says so. Cross-app
-scope ⇒ one intent/spec per app board, linked by a shared write session (cross-board anchors
-are inert — an intent is single-board). Root-level "spec" requests ⇒ name the affected apps and
-federate. **App-nesting rule:** a governing repo can never bind to a board with an app board
+scope ⇒ one intent per app board (cross-board anchors are inert — an intent is single-board;
+the working copy spans boards, and commit mints one intent per governed root automatically).
+Root-level requirement requests ⇒ name the affected apps and federate. **App-nesting rule:** a governing repo can never bind to a board with an app board
 above or below it — repo-backed slots live on the root landscape, a layer under an app board is
 permanently a plain layer, and "make this component its own service" means a new landscape node
 + board, never bind-in-place. Relay the server's refusal verbatim if it fires.
@@ -86,7 +91,7 @@ standalone entry to the same workflow:
 |---|---|
 | Bootstrap/draw the org's estate; empty workspace | `/setup-workspace` (landscape-modeling) |
 | A new system/app/service on an existing landscape | `/new-app` (landscape-modeling) |
-| Requirements, a PRD/RFC/doc in hand, "what we want" | `/author-spec` (specs-authoring) |
+| Requirements, a PRD/RFC/doc in hand, "what we want" | `/author-intent` (intents-authoring) |
 | A decision, ADR, policy, standard to adopt | `/adopt-adr` (adr-adoption) |
 | "Get this changed/delivered/built" — work to hand off | `/intents` (intents-authoring) |
 | A question about the architecture | `/ask-board` (board-reading) |
@@ -102,33 +107,31 @@ integration decisions), confirm once, then run the sequence.
 → on yes, load the target skill and continue in-session; on no, stop naming the standalone
 command.
 
-## Write sessions
+## The working copy
 
-For a multi-step change (several related writes), open a session so the whole batch can be
-inspected and undone as one unit: `open_write_session` (one citizen group per session — diagram,
-intents, specs, insights…), pass its `sessionId` to each write, then `commit_write_session` (seals
-it, burns the undo log) or `discard_write_session` (undoes everything; conflicted rows are
-reported, never silently clobbered). A stray single write without a session still gets a per-call
-session server-side — sessions are for coherence, not safety.
+Every write joins the architect's **one workspace session automatically** — nothing to open, no
+id to pass, no group to choose. `get_write_session` is the sole session read: always current,
+always the whole truth (there is no local session state of any kind). The session ends only by
+`commit_write_session` or `discard_write_session` — both decide the WHOLE working copy.
 
-**The session ledger — ids never live in model memory.** Immediately after `open_write_session`
-returns, record it:
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/prov-architect.js --session open --id <sessionId> --board <slug> --group <citizenGroup> --title "<short title>"
-```
-
-After `commit_write_session` / `discard_write_session`, close the entry with
-`--session close --id <sessionId> --outcome committed|discarded`. At the start of every
-write-capable workflow, run `--session list`: any open entry is a **candidate** dangling
-session — the ledger is a hint, the server is authoritative (the user can commit/discard from
-the platform UI). Reconcile each candidate via `get_write_session` and map the result exactly:
-
-| `get_write_session` result | Ledger action |
-|---|---|
-| returns with `status` neither `committed` nor `discarded` | genuinely dangling — ask the user to inspect, then commit or discard |
-| returns with `status: "committed"` or `"discarded"` | resolved in the UI — `--session close --id <id> --outcome resolved_elsewhere`, silently |
-| error "Write session … not found" | gone (expired/foreign) — same silent `resolved_elsewhere` close |
+- **Nothing is staged and no intent exists until commit.** On a code-bound board, commit mints
+  ONE `board_diff` intent per governed root from the session's net diff — the commit message
+  `{title, summary, publish}` is the plan's name and rationale. Ungoverned changes commit plain.
+- **The standard closing move** of any authoring flow: `preview_write_session_commit` → present
+  the plan (per-root `+add ~modify −remove`, conflicts, what commits plain) → ask for
+  title/summary (AskUserQuestion — a genuine decision point) → `commit_write_session` → narrate
+  the minted intents by slug, offer `publish: true` (opens the intent for review immediately).
+  Commit is never implicit, never automatic.
+- **The session may already contain other work** — the architect's own, made in the web app. Any
+  flow that intends to commit MUST first `get_write_session` and, if the session is non-empty
+  before the flow's own writes, surface that and ask: continue (one combined commit), or pause
+  for the architect to decide the pending work first. Commit is workspace-wide by design; your
+  job is to make that visible *before* the verb, never after.
+- **Discard is the nuclear verb**: it reverts the whole session, app-made changes included.
+  Always confirm with the named board list + counts from `get_write_session`, and render the
+  `{reverted, conflicted, skipped}` result honestly — conflicted rows were left alone, never
+  silently clobbered. For throwaway canvases (`/ask-board` context boards) the cleanup verb is
+  `delete_context_board`, **never** discard.
 
 ## Batch state reads — never re-derive what a script computed
 
@@ -145,12 +148,12 @@ print the canonical not-configured message — relay it):
 
 ## Drafts-in-flight — resumable interviews
 
-Interview workflows (`/author-spec`, `/adopt-adr`, `/setup-workspace`, `/new-app`) keep their
+Interview workflows (`/author-intent`, `/adopt-adr`, `/setup-workspace`, `/new-app`) keep their
 running artifact as a working file under `~/.provenmap/architect/drafts/` (e.g.
-`spec-<board>-<slug>.md`, `scaffold-<workspace>.json`) so the interview survives context loss
-and resumes across sessions. Update the file as the draft evolves; delete it once the artifact
-is staged or abandoned. `--session list` and `/status` surface what's in flight; `/start`
-offers to resume.
+`intent-<board>-<slug>.md`, `scaffold-<workspace>.json`) so the interview survives context loss
+and resumes across sessions. This is interview state, not session state — orthogonal to the
+working copy. Update the file as the draft evolves; delete it once the artifact is written or
+abandoned. `/status` surfaces what's in flight; `/start` offers to resume.
 
 ## Readable source types
 
@@ -182,7 +185,7 @@ MCP results are raw JSON — you format them. Keep output stable across sessions
 
 - **Slug-first naming:** reference every element as `` `slug` `` (Name) — the slug is the
   identity everything resolves against.
-- **Tables for lists** (intents, specs, insights, boards); prose for analysis.
+- **Tables for lists** (intents, insights, boards); prose for analysis.
 - Lead with the direct answer, then supporting structure. No JSON dumps — summarize, citing
   slugs.
 

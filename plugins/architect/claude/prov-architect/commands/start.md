@@ -13,10 +13,9 @@ and the workflow routing table live there.
 
 Deterministic state first, judgment second:
 
-1. **Local state** —
-   `node ${CLAUDE_PLUGIN_ROOT}/scripts/prov-architect.js --status` (connection) and
-   `node ${CLAUDE_PLUGIN_ROOT}/scripts/prov-architect.js --session list` (dangling-session
-   candidates + drafts in flight).
+1. **Connection + working state** —
+   `node ${CLAUDE_PLUGIN_ROOT}/scripts/prov-architect.js --status` (connection, the working copy —
+   live from `get_write_session`, the only session truth — and drafts in flight).
 2. **Workspace shape** (only if connected) — `--classify-tree` (cached ~1h) +
    `--attention` (architect-core, batch state reads). If the scripts lack the grant, fall
    back to `get_board_tree('root')` + `get_hub_status(scope: 'tree')` and classify per the
@@ -24,10 +23,10 @@ Deterministic state first, judgment second:
 3. **Render the answer, ranked, every line naming its command:**
    - Connection broken → the canonical error line and stop (`/login` / `/configure`).
    - **Empty root ⇒ lead with `/setup-workspace`** — the workspace is waiting for its estate.
-   - Unfinished work next: each draft in flight ("resume the `payments` spec draft? →
-     `/author-spec payments`"), each dangling session candidate (reconcile via
-     `get_write_session` first — see architect-core; only sessions the *server* still holds
-     open get "inspect, then commit or discard").
+   - Unfinished work next: an open working copy from the status report ("you have N
+     uncommitted changes across M boards — inspect on a board, then commit or discard;
+     the session includes any web-app edits"), and each draft in flight ("resume the
+     `payments` intent draft? → `/author-intent payments`").
    - The attention headline from hub status (bounced intents, stale intents, findings awaiting
      review → `/hub` for the full queue).
    - Otherwise the natural entries: `/board` (orient), `/ask-board` (ask), `/hub` (what needs
@@ -37,7 +36,7 @@ Deterministic state first, judgment second:
 
 Classify against architect-core's **workflow routing table**:
 
-- **High confidence** → state the reading in one line ("that's a spec-authoring job") and run
+- **High confidence** → state the reading in one line ("that's an intent-authoring job") and run
   the workflow inline: load its skill and continue — the named command remains the standalone
   entry.
 - **Ambiguous** → AskUserQuestion with the top 2–3 candidate workflows, one line each.
