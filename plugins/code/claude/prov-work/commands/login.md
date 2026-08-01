@@ -1,7 +1,7 @@
 ---
 category: connect
 description: "Connect · Sign in to ProvenMap in the browser and pick a board (no copy-paste)"
-argument-hint: "[switch]"
+argument-hint: "[switch] [server-url]"
 allowed-tools: Bash
 ---
 
@@ -19,6 +19,13 @@ can also switch boards; `/logout` disconnects this project.
 > fully supported and takes `bindingToken`/`apiSecret` directly.
 
 ## Login Workflow
+
+**Arguments:** `switch` triggers the rebind flow (below). A URL argument
+(starts with `http://` or `https://`, e.g. `/login https://provenmap.internal/api`)
+targets a self-hosted or non-production server: append `--base-url <url>` to
+every `prov-login.js` call in this workflow. A successful login writes that URL
+into `.provenmap/config.json`, so it only needs passing once — later commands
+and re-logins stay on that server. The two arguments combine (`/login switch <url>`).
 
 The script's JSON output always includes a `display` field of ready-made
 markdown. **Print `display` verbatim in your reply — never reformat, summarise, or rebuild it; the Bash output panel is collapsed for the user.**
@@ -85,11 +92,11 @@ Print the JSON `display` field verbatim. Then, by `status`:
 - **Account state:** if your account isn't onboarded, is blocked, or its
   subscription has lapsed, the browser will show the onboarding / access page and
   you won't be able to bind a board — resolve that first, then re-run `/login`.
-- **Local testing / self-hosted:** point the CLI at another API with
-  `PROV_BASE_URL` (or `--base-url`), e.g. `http://localhost:8081/api` — see
-  the repo's local-testing guide. A successful login pins that URL into
-  `.provenmap/config.json`, so later commands stay on the same server without
-  env vars.
+- **Local testing / self-hosted:** pass the server as the command's argument —
+  `/login http://localhost:8081/api` — no environment variable needed, and it
+  works in every host. `PROV_BASE_URL` and a hand-set `baseUrl` in
+  `.provenmap/config.json` remain supported. A successful login pins the URL
+  into `.provenmap/config.json`, so later commands stay on the same server.
 
 ## After connecting — state the next step
 

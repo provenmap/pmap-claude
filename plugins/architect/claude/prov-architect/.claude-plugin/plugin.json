@@ -20,7 +20,7 @@
     "./commands/update.md"
   ],
   "displayName": "Prov Architect",
-  "version": "0.7.7",
+  "version": "0.7.9",
   "description": "Architect workbench for ProvenMap boards — explore the board graph, review insights, and author intents from Claude Cowork, Claude Code, or Codex. Connects to the ProvenMap MCP server; writes gather in your working copy, and committing mints a reviewable plan (one intent per governed app).",
   "author": {
     "name": "ProvenMap",
