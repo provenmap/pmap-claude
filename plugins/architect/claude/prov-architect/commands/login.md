@@ -17,12 +17,14 @@ discarding from either surface decides both.
 
 ## Login Workflow
 
-**Argument:** a URL (starts with `http://` or `https://`, e.g.
-`/login https://provenmap.internal/api`) points the device flow at a
-self-hosted or non-production server: append `--base-url <url>` to the
-`--login-start` call in Step 1 (Step 2's poll resumes against the same server
-automatically). On success the grant records the server, so later re-logins
-return there without the argument.
+**Arguments — `$ARGUMENTS`:** when `$ARGUMENTS` starts with `http://` or
+`https://` it is the API base URL of the ProvenMap server to sign in against —
+any deployment (e.g. `/login https://<your-server>/api`); the compiled-in
+default is production. Append `--base-url $ARGUMENTS` to the `--login-start`
+call in Step 1 — Step 2's poll resumes against the same server automatically.
+The CLI **stores** that server immediately, so every later `/login`, `/status`,
+and retry targets it with no argument and no environment variable. Empty
+`$ARGUMENTS` = use the stored server, else production.
 
 The script's JSON output always includes a `display` field of ready-made markdown. **Print
 `display` verbatim in your reply — never reformat, summarise, or rebuild it; the Bash output
@@ -41,6 +43,7 @@ Print the output verbatim. If it reports **Connected**, stop — the user is alr
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/prov-architect.js --login-start --host claude
+# add --base-url $ARGUMENTS when $ARGUMENTS is an http(s) URL
 ```
 
 Print the JSON `display` field verbatim, then wait for the user to finish in the browser before
@@ -67,8 +70,8 @@ Print the JSON `display` field verbatim. Then, by `status`:
 
 - **Approval needs workspace admin** (access-manage) — the same gate as minting a token in the
   settings UI. Without it, an admin mints the token there and the user wires it via `/configure`.
-- **Local testing / self-hosted:** pass the server as the command's argument —
-  `/login https://provenmap.internal/api` (or `http://localhost:8081/api`) — no
-  environment variable needed, and it works in every host. `PROV_BASE_URL` remains
+- **Non-default server (self-hosted, on-prem, staging):** pass the server as
+  the command's argument — `/login https://<your-server>/api` — no environment
+  variable needed, and it works in every host. `PROV_BASE_URL` remains
   supported as an environment-level override. The stored endpoint and later
   re-logins then follow the approving server automatically.

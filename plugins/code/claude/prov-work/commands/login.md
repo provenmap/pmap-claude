@@ -20,12 +20,15 @@ can also switch boards; `/logout` disconnects this project.
 
 ## Login Workflow
 
-**Arguments:** `switch` triggers the rebind flow (below). A URL argument
-(starts with `http://` or `https://`, e.g. `/login https://provenmap.internal/api`)
-targets a self-hosted or non-production server: append `--base-url <url>` to
-every `prov-login.js` call in this workflow. A successful login writes that URL
-into `.provenmap/config.json`, so it only needs passing once — later commands
-and re-logins stay on that server. The two arguments combine (`/login switch <url>`).
+**Arguments — `$ARGUMENTS`:** may contain `switch` (triggers the rebind flow
+below), an `http://` / `https://` URL, or both in either order.
+
+A URL is the API base of the ProvenMap server to sign in against — any
+deployment (e.g. `/login https://<your-server>/api`); the compiled-in default
+is production. Append `--base-url <that url>` to **every** `prov-login.js`
+call in this workflow. A successful login writes it into
+`.provenmap/config.json`, so it is passed once — later commands and re-logins
+stay on that server with no argument and no environment variable.
 
 The script's JSON output always includes a `display` field of ready-made
 markdown. **Print `display` verbatim in your reply — never reformat, summarise, or rebuild it; the Bash output panel is collapsed for the user.**
@@ -39,6 +42,7 @@ Otherwise run:
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/prov-login.js --check
+# add --base-url <url> when $ARGUMENTS contains an http(s) URL
 ```
 
 Branch on `status`:
@@ -58,6 +62,7 @@ that same board; `--rebind` (the `switch` path) unlocks the full picker:
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/prov-login.js --start          # add --rebind only for /login switch
+# add --base-url <url> when $ARGUMENTS contains an http(s) URL
 ```
 
 Print the JSON `display` field verbatim, then wait for the user to finish in
@@ -92,11 +97,12 @@ Print the JSON `display` field verbatim. Then, by `status`:
 - **Account state:** if your account isn't onboarded, is blocked, or its
   subscription has lapsed, the browser will show the onboarding / access page and
   you won't be able to bind a board — resolve that first, then re-run `/login`.
-- **Local testing / self-hosted:** pass the server as the command's argument —
-  `/login http://localhost:8081/api` — no environment variable needed, and it
-  works in every host. `PROV_BASE_URL` and a hand-set `baseUrl` in
-  `.provenmap/config.json` remain supported. A successful login pins the URL
-  into `.provenmap/config.json`, so later commands stay on the same server.
+- **Non-default server (self-hosted, on-prem, staging):** pass the server as
+  the command's argument — `/login https://<your-server>/api` — no environment
+  variable needed, and it works in every host. `PROV_BASE_URL` and a hand-set
+  `baseUrl` in `.provenmap/config.json` remain supported. A successful login
+  pins the URL into `.provenmap/config.json`, so later commands stay on the
+  same server.
 
 ## After connecting — state the next step
 
