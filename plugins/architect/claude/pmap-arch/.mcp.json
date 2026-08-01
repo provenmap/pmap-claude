@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "provenmap": {
+      "type": "http",
+      "url": "${PMAP_MCP_URL:-https://platform.provenmap.com/api/mcp}",
+      "headers": {
+        "Authorization": "Bearer ${PMAP_MCP_TOKEN}"
+      }
+    }
+  }
+}

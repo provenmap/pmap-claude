@@ -1,0 +1,41 @@
+{
+  "name": "pmap-code",
+  "commands": [
+    "./commands/adopt.md",
+    "./commands/analyze-archetypes.md",
+    "./commands/analyze.md",
+    "./commands/build.md",
+    "./commands/configure.md",
+    "./commands/demo-insights.md",
+    "./commands/help.md",
+    "./commands/insights.md",
+    "./commands/inspect.md",
+    "./commands/intents.md",
+    "./commands/login.md",
+    "./commands/logout.md",
+    "./commands/monitor.md",
+    "./commands/skills.md",
+    "./commands/start.md",
+    "./commands/status.md",
+    "./commands/sync.md",
+    "./commands/update.md"
+  ],
+  "displayName": "ProvenMap Code",
+  "version": "0.7.11",
+  "description": "Real-time codebase architecture analysis and visualization for ProvenMap Portal. Analyzes codebases across multiple languages, detects tech stacks, identifies component relationships, and syncs to ProvenMap for collaborative architecture boards. Supports server-defined insight analysis skills.",
+  "author": {
+    "name": "ProvenMap",
+    "email": "contact@provenmap.com"
+  },
+  "repository": "https://github.com/provenmap/pmap-claude",
+  "homepage": "https://provenmap.com",
+  "license": "BUSL-1.1",
+  "keywords": [
+    "architecture",
+    "analysis",
+    "c4-diagram",
+    "provenmap",
+    "visualization",
+    "multi-language"
+  ]
+}

@@ -7,20 +7,20 @@
   },
   "metadata": {
     "description": "ProvenMap plugins for codebase and knowledge architecture analysis, visualization, and sync to ProvenMap Portal.",
-    "version": "0.7.10"
+    "version": "0.7.11"
   },
   "plugins": [
     {
-      "name": "prov-code",
-      "displayName": "Prov Code",
-      "version": "0.7.10",
-      "source": "./plugins/code/claude/prov-code",
+      "name": "pmap-code",
+      "displayName": "ProvenMap Code",
+      "version": "0.7.11",
+      "source": "./plugins/code/claude/pmap-code",
       "description": "Real-time codebase architecture analysis and visualization for ProvenMap Portal. Analyzes codebases across multiple languages, detects tech stacks, identifies component relationships, and syncs to ProvenMap for collaborative architecture boards. Supports server-defined insight analysis skills.",
       "author": {
         "name": "ProvenMap",
         "email": "contact@provenmap.com"
       },
-      "repository": "https://github.com/provenmap/prov-claude",
+      "repository": "https://github.com/provenmap/pmap-claude",
       "homepage": "https://provenmap.com",
       "license": "BUSL-1.1",
       "keywords": [
@@ -40,16 +40,16 @@
       ]
     },
     {
-      "name": "prov-work",
-      "displayName": "Prov Work",
-      "version": "0.7.10",
-      "source": "./plugins/code/claude/prov-work",
+      "name": "pmap-work",
+      "displayName": "ProvenMap Work",
+      "version": "0.7.11",
+      "source": "./plugins/code/claude/pmap-work",
       "description": "Knowledge and document architecture analysis for ProvenMap Portal. Analyzes a document/knowledge set — specs, RFCs, policies, design docs, wikis — into a graph of concepts, documents, decisions, and their relationships, and syncs to ProvenMap for collaborative knowledge boards. Tuned for knowledge-work surfaces — Claude Cowork and Codex for Work. Supports server-defined insight analysis skills.",
       "author": {
         "name": "ProvenMap",
         "email": "contact@provenmap.com"
       },
-      "repository": "https://github.com/provenmap/prov-claude",
+      "repository": "https://github.com/provenmap/pmap-claude",
       "homepage": "https://provenmap.com",
       "license": "BUSL-1.1",
       "keywords": [
@@ -70,16 +70,16 @@
       ]
     },
     {
-      "name": "prov-architect",
-      "displayName": "Prov Architect",
-      "version": "0.7.10",
-      "source": "./plugins/architect/claude/prov-architect",
+      "name": "pmap-arch",
+      "displayName": "ProvenMap Architect",
+      "version": "0.7.11",
+      "source": "./plugins/architect/claude/pmap-arch",
       "description": "Architect workbench for ProvenMap boards — explore the board graph, review insights, and author intents from Claude Cowork, Claude Code, or Codex. Connects to the ProvenMap MCP server; writes gather in your working copy, and committing mints a reviewable plan (one intent per governed app).",
       "author": {
         "name": "ProvenMap",
         "email": "contact@provenmap.com"
       },
-      "repository": "https://github.com/provenmap/prov-claude",
+      "repository": "https://github.com/provenmap/pmap-claude",
       "homepage": "https://provenmap.com",
       "license": "BUSL-1.1",
       "keywords": [
