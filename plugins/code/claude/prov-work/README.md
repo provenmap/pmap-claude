@@ -47,7 +47,7 @@ Two ways to connect this document set to a board — both write the same `.prove
 
 Run `/configure` to validate the config, test the connection, and add `.provenmap/` to your `.gitignore`. Credentials live only in this file — never logged, and sent only to `platform.provenmap.com`.
 
-> **Testing against a non-production server:** set `PROV_BASE_URL` (or pass `--base-url` to the CLI scripts) to point every command — including `/login`'s device handshake — at a staging or local API. The browser login and app URLs then follow from that server's configuration, so nothing is pinned to production. `baseUrl` in `.provenmap/config.json` overrides it per repo.
+> **Testing against a non-production server:** set `PROV_BASE_URL` (or pass `--base-url` to the CLI scripts) to point every command — including `/login`'s device handshake — at a staging or local API. The browser login and app URLs then follow from that server's configuration, so nothing is pinned to production. A successful `/login` writes the URL it ran against into `.provenmap/config.json`, so the repo stays on that server without the env var; when both are set, `PROV_BASE_URL` wins.
 
 ## Supported document formats
 

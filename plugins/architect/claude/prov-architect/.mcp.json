@@ -2,7 +2,7 @@
   "mcpServers": {
     "provenmap": {
       "type": "http",
-      "url": "https://platform.provenmap.com/api/mcp",
+      "url": "${PROV_MCP_URL:-https://platform.provenmap.com/api/mcp}",
       "headers": {
         "Authorization": "Bearer ${PROV_MCP_TOKEN}"
       }

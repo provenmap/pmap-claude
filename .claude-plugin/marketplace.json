@@ -7,13 +7,13 @@
   },
   "metadata": {
     "description": "ProvenMap plugins for codebase and knowledge architecture analysis, visualization, and sync to ProvenMap Portal.",
-    "version": "0.7.6"
+    "version": "0.7.7"
   },
   "plugins": [
     {
       "name": "prov-code",
       "displayName": "Prov Code",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "source": "./plugins/code/claude/prov-code",
       "description": "Real-time codebase architecture analysis and visualization for ProvenMap Portal. Analyzes codebases across multiple languages, detects tech stacks, identifies component relationships, and syncs to ProvenMap for collaborative architecture boards. Supports server-defined insight analysis skills.",
       "author": {
@@ -42,7 +42,7 @@
     {
       "name": "prov-work",
       "displayName": "Prov Work",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "source": "./plugins/code/claude/prov-work",
       "description": "Knowledge and document architecture analysis for ProvenMap Portal. Analyzes a document/knowledge set — specs, RFCs, policies, design docs, wikis — into a graph of concepts, documents, decisions, and their relationships, and syncs to ProvenMap for collaborative knowledge boards. Tuned for knowledge-work surfaces — Claude Cowork and Codex for Work. Supports server-defined insight analysis skills.",
       "author": {
@@ -72,7 +72,7 @@
     {
       "name": "prov-architect",
       "displayName": "Prov Architect",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "source": "./plugins/architect/claude/prov-architect",
       "description": "Architect workbench for ProvenMap boards — explore the board graph, review insights, and author intents from Claude Cowork, Claude Code, or Codex. Connects to the ProvenMap MCP server; writes gather in your working copy, and committing mints a reviewable plan (one intent per governed app).",
       "author": {
