@@ -1,6 +1,6 @@
 ---
 category: connect
-description: "Connect · Disconnect from ProvenMap — remove the stored architect token from this machine"
+description: "Account · Disconnect from ProvenMap — remove the stored architect token from this machine"
 allowed-tools: Bash(node:*)
 ---
 

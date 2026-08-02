@@ -70,7 +70,7 @@ else
     # Check boards directory and manifest
     if [ -f "$MANIFEST_FILE" ]; then
         board_count=$(jq -r '.boards | length // 0' "$MANIFEST_FILE" 2>/dev/null || echo "0")
-        output="$output $board_count board(s) analyzed."
+        output="$output $board_count board(s) tracked locally."
     else
         output="$output No analysis found. Run /analyze to scan your codebase."
     fi

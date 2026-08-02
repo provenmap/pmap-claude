@@ -2,7 +2,7 @@
 
 The `pmap-code` plugin — codebase architecture analysis for [ProvenMap Portal](https://provenmap.com). Discovers your project's components, classifies them against your org's archetype catalogue, maps relationships, and syncs the result as a layered architecture board you can review and share.
 
-ProvenMap Code runs in **Claude Code**. Its sibling, **ProvenMap Work** (`pmap-work`), does the same for a document set → a knowledge board. Both emit the same node/edge wire model and sync through the same engine.
+ProvenMap Code runs in **Claude Code**. Its sibling, **ProvenMap Connect** (`pmap-connect`), binds a document/knowledge repo to an architect-authored board instead of producing one.
 
 ## Install
 

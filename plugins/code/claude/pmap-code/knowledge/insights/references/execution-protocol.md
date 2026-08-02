@@ -374,7 +374,7 @@ Note:
 Write to a temp file, then:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight <path> --board-slug <primaryBoardSlug> --push
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight <path> --board-slug <primaryBoardSlug> --push --host claude --domain code
 ```
 
 The CLI runs three validation gates before writing/pushing:

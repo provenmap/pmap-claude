@@ -1,6 +1,6 @@
 ---
 category: connect
-description: "Connect · List all pmap-arch commands with descriptions and the plugin version"
+description: "Account · List all pmap-arch commands with descriptions and the plugin version"
 allowed-tools: Bash(node:*)
 ---
 

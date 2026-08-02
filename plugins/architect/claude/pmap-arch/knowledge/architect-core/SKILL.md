@@ -100,6 +100,7 @@ standalone entry to the same workflow:
 | A question about the architecture | `/ask-board` (board-reading) |
 | "How healthy is X", "review/audit this" | `/assess` (insights-review) |
 | "What needs me", morning sweep | `/hub` |
+| Recurring document/component shapes the catalogue can't name; "we keep proposing the same missing type" | `/archetypes` (catalogue gap round) |
 
 High confidence → state the reading in one line and run the workflow inline. Ambiguous →
 AskUserQuestion with the top 2–3 candidates, one line each. Compound asks → propose the

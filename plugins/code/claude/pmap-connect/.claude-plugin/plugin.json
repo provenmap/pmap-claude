@@ -1,0 +1,34 @@
+{
+  "name": "pmap-connect",
+  "commands": [
+    "./commands/configure.md",
+    "./commands/demo-insights.md",
+    "./commands/help.md",
+    "./commands/insights.md",
+    "./commands/intents.md",
+    "./commands/login.md",
+    "./commands/logout.md",
+    "./commands/skills.md",
+    "./commands/start.md",
+    "./commands/status.md",
+    "./commands/sync.md",
+    "./commands/update.md"
+  ],
+  "displayName": "ProvenMap Connect",
+  "version": "0.8.0",
+  "description": "Grounding connector for ProvenMap. Binds a document/knowledge repo to architect-authored boards: maintains node↔document evidence links, reports drift when documents change underneath the board, runs server-defined insight analysis, and implements architect-authored intents by editing the documents. Produces no boards — the architect authors them.",
+  "author": {
+    "name": "ProvenMap",
+    "email": "contact@provenmap.com"
+  },
+  "repository": "https://github.com/provenmap/pmap-claude",
+  "homepage": "https://provenmap.com",
+  "license": "BUSL-1.1",
+  "keywords": [
+    "knowledge",
+    "documentation",
+    "grounding",
+    "evidence",
+    "provenmap"
+  ]
+}

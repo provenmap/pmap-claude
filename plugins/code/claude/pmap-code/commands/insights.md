@@ -14,7 +14,7 @@ Run server-defined insight analysis skills against your architecture board. The 
 Before doing anything else, validate that configuration and board data exist. Read the boardSlug from `.provenmap/config.json` (`boardSlug` field) — this is the **primary board** but insights can target any layer board. Also read `.provenmap/boards/manifest.json` (if it exists) to discover available layer boards for cross-board analysis. Then run:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --list-insight-skills --board-slug <boardSlug> --kind code
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --list-insight-skills --board-slug <boardSlug> --kind code --domain code
 ```
 
 Check the exit code and JSON output:
@@ -95,7 +95,7 @@ For `--all`, fetch each skill's full data one at a time before executing it.
 Run the prepass once to get a precomputed **context pack** — the resolved board universe, per-board context variables, and a flattened element/edge index with **pre-assigned scope keys and board aliases**. Consuming it means you do **not** read every board JSON by hand or mint scope keys/aliases yourself, which is the main source of scope-validation failures on push.
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --build-context --board-slug <boardSlug> --out .provenmap/insights/<boardSlug>.context.json --summary
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --build-context --board-slug <boardSlug> --out .provenmap/insights/<boardSlug>.context.json --summary --domain code
 ```
 
 - The summary prints to stdout; read the **full pack** from `.provenmap/insights/<boardSlug>.context.json`. This canonical path is where `--save-insight` looks for the oracle when it runs the quality gates (Step 2.11). If you switch the primary board later, rebuild the pack for that board too.
@@ -177,7 +177,7 @@ For each skill, follow the execution protocol in `references/execution-protocol.
    ```
 11. **Write to temp file** and save/push. **First ensure the pack exists for `{{primaryBoardSlug}}`** — if you switched the primary board away from the one you built the pack for in Step 1.6, rebuild it now (`--build-context --board-slug <primaryBoardSlug> --out .provenmap/insights/<primaryBoardSlug>.context.json`). Then save with `--require-pack` so a missing pack fails loudly instead of silently skipping the pack gates:
    ```bash
-   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight /tmp/insight-<slug>.json --board-slug <primaryBoardSlug> --require-pack --push
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight /tmp/insight-<slug>.json --board-slug <primaryBoardSlug> --require-pack --push --host claude --domain code
    ```
    The CLI gates the payload through (a) Zod structural validation, (b) `validateScopeReferences` (every ElementKey/BoardAlias/findingRef resolves; unique ids; no self-reference; no consecutive-duplicate path steps; finite measurements; recommendation/context mutual exclusion), and (c) `validateInsightContent` against the context pack (every cited element/board exists in the pack; path steps are edge-grounded). Two channels:
    - **`validationErrors[]` + exit 3 (blocking)** — fix the listed fields and retry. The errors are exact (JSON path + value + fix); for a "did you mean" hint, copy the suggested pack row verbatim.
@@ -207,5 +207,5 @@ After all skills complete, display a summary table:
 
 Used whenever ProvenMap is not configured or the credentials were rejected (`errorType: "auth_invalid"`). Ask with **AskUserQuestion** — "Connect to ProvenMap now?" (**Connect now** / **Not now**):
 
-- **Connect now** → run the browser login here, printing each JSON `display` verbatim **in your reply** (the Bash output panel is collapsed for the user): `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --analyze-cmd analyze` (generous Bash timeout, e.g. 250s). On `status: "complete"`, resume this command from the step that failed; anything else — stop, the display explains.
+- **Connect now** → run the browser login here, printing each JSON `display` verbatim **in your reply** (the Bash output panel is collapsed for the user): `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain code` (generous Bash timeout, e.g. 250s). On `status: "complete"`, resume this command from the step that failed; anything else — stop, the display explains.
 - **Not now** → stop with the canonical message: "ProvenMap not configured — run `/login` (browser) or `/configure` (manual) first" (or, when credentials were rejected: "Your ProvenMap credentials were rejected — run `/login` to reconnect").

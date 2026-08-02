@@ -12,7 +12,7 @@ step. Deterministic state first, judgment second — the script owns the reading
 1. **Run the router** (offline; never calls the API, never prints credentials):
 
    ```bash
-   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --next --analyze-cmd analyze
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --next --domain code
    ```
 
 2. **Print its output verbatim** — do not reformat, reorder, or summarise it, and never rebuild

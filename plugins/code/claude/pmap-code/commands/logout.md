@@ -1,6 +1,6 @@
 ---
 category: connect
-description: "Connect · Disconnect this project from ProvenMap (clears local credentials)"
+description: "Account · Disconnect this project from ProvenMap (clears local credentials)"
 argument-hint: "[--purge]"
 allowed-tools: Bash
 ---

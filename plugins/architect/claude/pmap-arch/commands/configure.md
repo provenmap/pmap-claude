@@ -1,6 +1,6 @@
 ---
 category: connect
-description: "Connect · Manual MCP token setup — mint a token in ProvenMap and wire it into this host"
+description: "Account · Manual MCP token setup — mint a token in ProvenMap and wire it into this host"
 allowed-tools: Bash(node:*), AskUserQuestion
 ---
 

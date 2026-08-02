@@ -36,7 +36,7 @@ Deterministic state first, judgment second:
      landscape only** headline → "graduate the first real system → `/new-app <name>`".
      (Empty plain layers have no batch signal — `/board` detects them on open.)
    - Otherwise the natural entries: `/board` (orient), `/ask-board` (ask), `/hub` (what needs
-     me).
+     me), `/archetypes` (catalogue gap round, if material is in hand).
 
 ## With free text — route the ask
 

@@ -18,7 +18,7 @@ Read the methodology in [knowledge/demonstrative-insights/SKILL.md](../knowledge
 Read `boardSlug` from `.provenmap/config.json` and `.provenmap/boards/manifest.json` (if present) to discover layer boards. Then list the server-defined skills:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --list-insight-skills --board-slug <boardSlug>
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --list-insight-skills --board-slug <boardSlug> --domain code
 ```
 
 Handle the result exactly as `/insights` does:
@@ -54,7 +54,7 @@ Note each skill's `resultsMode` (`append` vs `replace`) and tell the user — it
 Run the prepass in **demo mode** (bounded universe — the target board plus its direct children, no siblings):
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --build-context --board-slug <board> --demo --out .provenmap/insights/<board>.context.json --summary
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --build-context --board-slug <board> --demo --out .provenmap/insights/<board>.context.json --summary --domain code
 ```
 
 Read the full pack from `.provenmap/insights/<board>.context.json` (the canonical path `--save-insight --demo` reads for its quality gates). It gives you, without any manual indexing:
@@ -85,7 +85,7 @@ For each chosen skill, build a single push payload following the recipe in `refe
 Write each payload to a temp file and push:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight /tmp/demo-insight-<slug>.json --board-slug <board> --demo --require-pack --push
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight /tmp/demo-insight-<slug>.json --board-slug <board> --demo --require-pack --push --host claude --domain code
 ```
 
 Pass **`--demo`** so the demo quality gates apply: every payload must have ≥1 path with ≥3 connected nodes, and every same-board path step pair must be **edge-grounded** against the pack (these are HARD for demo — `validationErrors[]` + exit 3). Also runs Zod + `validateScopeReferences` (ElementKey/BoardAlias/findingRef resolve; unique ids; no consecutive-duplicate steps; `recommendation`/`context` mutually exclusive) and the pack gates (cited elements exist in the pack). On **exit 3**, read `validationErrors[]`, fix the payload, rewrite the temp file, and retry. `warnings[]` (exit 0) are non-blocking — review once, don't loop.
@@ -111,5 +111,5 @@ Same as `/insights`: no board data → `/analyze`; a skill with no instructions 
 
 Used whenever ProvenMap is not configured or the credentials were rejected (`errorType: "auth_invalid"`). Ask with **AskUserQuestion** — "Connect to ProvenMap now?" (**Connect now** / **Not now**):
 
-- **Connect now** → run the browser login here, printing each JSON `display` verbatim **in your reply** (the Bash output panel is collapsed for the user): `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --analyze-cmd analyze` (generous Bash timeout, e.g. 250s). On `status: "complete"`, resume this command from the step that failed; anything else — stop, the display explains.
+- **Connect now** → run the browser login here, printing each JSON `display` verbatim **in your reply** (the Bash output panel is collapsed for the user): `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain code` (generous Bash timeout, e.g. 250s). On `status: "complete"`, resume this command from the step that failed; anything else — stop, the display explains.
 - **Not now** → stop with the canonical message: "ProvenMap not configured — run `/login` (browser) or `/configure` (manual) first" (or, when credentials were rejected: "Your ProvenMap credentials were rejected — run `/login` to reconnect").

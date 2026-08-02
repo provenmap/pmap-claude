@@ -2,6 +2,7 @@
   "name": "pmap-arch",
   "commands": [
     "./commands/adopt-adr.md",
+    "./commands/archetypes.md",
     "./commands/ask-board.md",
     "./commands/assess.md",
     "./commands/author-intent.md",
@@ -20,7 +21,7 @@
     "./commands/update.md"
   ],
   "displayName": "ProvenMap Architect",
-  "version": "0.7.11",
+  "version": "0.8.0",
   "description": "Architect workbench for ProvenMap boards — explore the board graph, review insights, and author intents from Claude Cowork, Claude Code, or Codex. Connects to the ProvenMap MCP server; writes gather in your working copy, and committing mints a reviewable plan (one intent per governed app).",
   "author": {
     "name": "ProvenMap",

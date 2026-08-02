@@ -1,6 +1,6 @@
 ---
 category: connect
-description: "Connect · Sign in to ProvenMap in the browser and pick a board (no copy-paste)"
+description: "Account · Sign in to ProvenMap in the browser and pick a board (no copy-paste)"
 argument-hint: "[switch] [server-url]"
 allowed-tools: Bash
 ---
@@ -76,7 +76,7 @@ Run the poll phase. It blocks until the user finishes in the browser (allow it
 to run for a few minutes — give the Bash call a generous timeout, e.g. 250s):
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --analyze-cmd analyze
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain code
 ```
 
 Print the JSON `display` field verbatim. Then, by `status`:
@@ -109,7 +109,7 @@ Print the JSON `display` field verbatim. Then, by `status`:
 Once login completes (`status: "complete"`), run the offline status report and relay **only its `Lifecycle:` line** so the user knows the single next command (e.g. `/analyze-archetypes` for an existing codebase, or `/build` for an empty repo with compiled skills):
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --analyze-cmd analyze
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --domain code
 ```
 
 Do not print the whole report here — one line, one next step.

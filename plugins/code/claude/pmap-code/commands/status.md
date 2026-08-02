@@ -1,6 +1,6 @@
 ---
 category: connect
-description: "Connect · Show ProvenMap sync status and analysis summary"
+description: "Account · Show ProvenMap sync status and analysis summary"
 allowed-tools: Bash(node:*)
 ---
 
@@ -14,7 +14,7 @@ it and pass its output through.
 1. Run the status script:
 
    ```bash
-   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --analyze-cmd analyze
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --domain code
    ```
 
 2. Reproduce the script's stdout **verbatim in your reply** — write it out in

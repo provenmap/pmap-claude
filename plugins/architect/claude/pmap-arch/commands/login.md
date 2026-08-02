@@ -1,6 +1,6 @@
 ---
 category: connect
-description: "Connect · Sign in to ProvenMap in the browser and mint an architect MCP token (no copy-paste)"
+description: "Account · Sign in to ProvenMap in the browser and mint an architect MCP token (no copy-paste)"
 argument-hint: "[server-url]"
 allowed-tools: Bash(node:*)
 ---

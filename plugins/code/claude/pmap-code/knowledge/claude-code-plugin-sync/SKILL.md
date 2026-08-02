@@ -35,6 +35,8 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-sync.js [options]
 | `--force-push` | - | Push all elements regardless of diff |
 | `--store-file <name>` | `.provenmap/boards/stores/<board-slug>.store.json` | Store file name |
 | `--cache-file <name>` | `.provenmap/boards/archetypes-cache.json` | Archetype cache file name |
+| `--host <h>` | - | Plugin host (claude\|codex\|cursor) stamped on the push identity |
+| `--domain <d>` | - | Plugin domain (code\|connect) stamped on the push identity |
 
 **Output:** JSON to stdout with fields: `success`, `nodeCount`, `edgeCount`, `pushResult`, `diff`, `timing`
 
@@ -72,6 +74,8 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-boards.js [options]
 |---|---|---|
 | `--config <path>` | `.provenmap/config.json` | Config file path |
 | `--ensure-boards <path>` | - | Manifest path — create missing child boards |
+| `--host <h>` | - | Plugin host (claude\|codex\|cursor) stamped on the push identity |
+| `--domain <d>` | - | Plugin domain (code\|connect) stamped on the push identity |
 
 **Mode 1 — Fetch boards** (no `--ensure-boards`):
 Calls `GET /code-plugin/boards` and outputs the full board list as JSON with `boards`, `rootBoard`, `childBoards`, and `boardCount`.

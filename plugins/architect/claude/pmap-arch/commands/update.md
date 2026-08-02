@@ -1,6 +1,6 @@
 ---
 category: connect
-description: "Connect · Update this plugin to the latest published version"
+description: "Account · Update this plugin to the latest published version"
 allowed-tools: Bash(node:*)
 ---
 

@@ -65,7 +65,7 @@ Before claiming, check the chosen intent's summary fields:
 Browser selections are already claimed under the user's signed-in identity — skip this step. For the terminal path: `implemented` resolutions are only accepted for claimed intents, so claim before touching any file. Use the developer's name — ask the user, or default to `git config user.name`:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --claim <intentId> --by "<name>"
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --claim <intentId> --by "<name>" --host claude --domain code
 ```
 
 Print `display` verbatim, then branch on `claim.reason`:
@@ -87,7 +87,7 @@ Print `display` verbatim — it carries the description (the why), directive, pr
 - If the display lists **Linked inspections**, read each linked `manifest.json` and the selection screenshots it references — locally captured visual context (what the user pointed at in the running app) that carries into the gap review and implementation.
 - For `board_diff` payloads, the JSON `intent.payload.suggestions[]` rows are the machine-readable spec (add/remove/modify nodes, edges, or aspects to make true in the codebase); a suggestion's `rationale` may end with "— Architect: …", a per-change note that is part of the spec.
 - **Aspect anchors** (`elementType: "aspect"`, e.g. a database table or an API endpoint) resolve to no local files yet — the anchor `slug` IS the aspect's identity (a table name or `METHOD /path`), so locate it in the codebase by that identity. A `remove` aspect suggestion means deleting that table/endpoint; the architect's board shows it as staged until your push confirms it.
-- Unresolved anchors (`resolved: false`) → locate the code by the element's slug/name; if there's no local board data at all, suggest running `/analyze` first.
+- Unresolved anchors (`resolved: false`) → locate the codebase by the element's slug/name; if there's no local board data at all, suggest running `/analyze` first.
 
 ### Step 4.5: Gap review (mandatory before any edit)
 
@@ -98,7 +98,7 @@ Print `display` verbatim — it carries the description (the why), directive, pr
   - **Send back to architect** (recommended) — the gaps are the architect's to resolve. Draft a one-line reason + expected→found bullets (≤1800 chars) per the skill, show it to the user for approval, then bounce it back:
 
     ```bash
-    node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --clarify <intentId> --note "<approved gap summary>" --by "<name>"
+    node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --clarify <intentId> --note "<approved gap summary>" --by "<name>" --host claude --domain code
     ```
 
     Print `display` verbatim. On success the intent leaves your queue (local copy dropped); tell the user to re-run `/intents` later once the architect has revised and re-opened it. **Stop here** — do not implement.
@@ -141,7 +141,7 @@ Show the user the diff summary and verify results, and ask whether to record the
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --resolve <intentId> --kind implemented \
   --note "<one-line summary of what was changed>" \
-  --commit-sha <sha> --pr-url <url> --by "<name>" --analyze-cmd analyze
+  --commit-sha <sha> --pr-url <url> --by "<name>" --host claude --domain code
 ```
 
 (`--commit-sha` / `--pr-url` are optional — omit them if there's no commit yet.)
@@ -158,14 +158,14 @@ If the user declines the intent, or it's inapplicable:
 
   ```bash
   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --resolve <intentId> --kind rejected \
-    --note "<why — the architect reads this>" --by "<name>"
+    --note "<why — the architect reads this>" --by "<name>" --host claude --domain code
   ```
 
 - **Resolved other** (moot: already implemented, superseded, fixed elsewhere):
 
   ```bash
   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --resolve <intentId> --kind resolved_other \
-    --note "<what actually resolved it>" --by "<name>"
+    --note "<what actually resolved it>" --by "<name>" --host claude --domain code
   ```
 
 A `--note` is effectively required for both — it's the only feedback the architect gets. Ask the user for the reason if it isn't clear from the conversation. Print `display` verbatim.
@@ -190,5 +190,5 @@ A `--note` is effectively required for both — it's the only feedback the archi
 
 Used whenever ProvenMap is not configured or the credentials were rejected (`errorType: "auth_invalid"`). Ask with **AskUserQuestion** — "Connect to ProvenMap now?" (**Connect now** / **Not now**):
 
-- **Connect now** → run the browser login here, printing each JSON `display` verbatim **in your reply** (the Bash output panel is collapsed for the user): `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --analyze-cmd analyze` (generous Bash timeout, e.g. 250s). On `status: "complete"`, resume this command from the step that failed; anything else — stop, the display explains.
+- **Connect now** → run the browser login here, printing each JSON `display` verbatim **in your reply** (the Bash output panel is collapsed for the user): `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain code` (generous Bash timeout, e.g. 250s). On `status: "complete"`, resume this command from the step that failed; anything else — stop, the display explains.
 - **Not now** → stop with the canonical message: "ProvenMap not configured — run `/login` (browser) or `/configure` (manual) first" (or, when credentials were rejected: "Your ProvenMap credentials were rejected — run `/login` to reconnect").

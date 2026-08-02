@@ -1,6 +1,6 @@
 ---
 category: connect
-description: "Connect · Check the ProvenMap MCP connection: endpoint, token, live probe, scope, and your working copy"
+description: "Account · Check the ProvenMap MCP connection: endpoint, token, live probe, scope, and your working copy"
 allowed-tools: Bash(node:*)
 ---
 
