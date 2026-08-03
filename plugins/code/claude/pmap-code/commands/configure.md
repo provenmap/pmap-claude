@@ -62,18 +62,19 @@ Read `.provenmap/config.json` and inspect it:
 
 ### Step 3: Ask the user to fill in credentials (in the file, not the chat)
 
+Precondition: a ProvenMap source must already be created and bound to a workboard (do
+this in the ProvenMap UI first if it isn't yet). Once bound, get the values from
+ProvenMap: open the board's hub → the binding's row → **Copy credentials**. The secret
+is shown **once** — at binding creation or after "Regenerate secret & copy"
+(regenerating disconnects any other binding on the same source until it re-copies). The
+dialog's `.provenmap/config.json` snippet matches the fields below exactly.
+
 Tell the user to open `.provenmap/config.json` in their editor and fill in:
 
 - `bindingToken` — base64url-encoded `orgId:bindingId`
 - `apiSecret` — format `ck_cp_live_` followed by an alphanumeric string
 - `branch` — must match the branch configured on the workboard binding (default `main`)
 - Optional: `baseUrl`, `excludePaths`, `includeTests`, `includeSourceReferences` (defaults to `true`; set `false` to omit file-path source references from synced nodes/edges) — the skeleton already has working defaults
-
-How to obtain the credentials:
-
-1. Go to the ProvenMap UI → ProvenMap dashboard
-2. Create/bind a ProvenMap source to a workboard
-3. Copy `bindingToken` and `apiSecret` into `.provenmap/config.json` and **save the file**
 
 Then use **AskUserQuestion** to confirm completion — for example:
 

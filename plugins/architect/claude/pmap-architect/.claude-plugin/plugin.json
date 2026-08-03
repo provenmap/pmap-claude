@@ -1,0 +1,41 @@
+{
+  "name": "pmap-architect",
+  "commands": [
+    "./commands/adopt-adr.md",
+    "./commands/archetypes.md",
+    "./commands/ask-board.md",
+    "./commands/assess.md",
+    "./commands/author-intent.md",
+    "./commands/board.md",
+    "./commands/configure.md",
+    "./commands/help.md",
+    "./commands/hub.md",
+    "./commands/insights.md",
+    "./commands/intents.md",
+    "./commands/login.md",
+    "./commands/logout.md",
+    "./commands/new-app.md",
+    "./commands/setup-workspace.md",
+    "./commands/start.md",
+    "./commands/status.md",
+    "./commands/update.md"
+  ],
+  "displayName": "ProvenMap Architect",
+  "version": "0.9.0",
+  "description": "Architect workbench for ProvenMap boards — explore the board graph, review insights, and author intents from Claude Cowork, Claude Code, or Codex. Connects to the ProvenMap MCP server; writes gather in your working copy, and committing mints a reviewable plan (one intent per governed app).",
+  "author": {
+    "name": "ProvenMap",
+    "email": "contact@provenmap.com"
+  },
+  "repository": "https://github.com/provenmap/pmap-claude",
+  "homepage": "https://provenmap.com",
+  "license": "BUSL-1.1",
+  "keywords": [
+    "architecture",
+    "boards",
+    "intents",
+    "insights",
+    "provenmap",
+    "mcp"
+  ]
+}
