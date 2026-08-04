@@ -57,6 +57,28 @@ before capturing. Only the **propose** step (step 5) talks to the server.
    - **Attach to the intent I'm working on** — when the session is evidence for an already
      claimed intent.
    - **Keep locally** — stop after the readout; name `/intents` as the next command.
+
+Capture (steps 1-4) is local and deliberately works without credentials; the gate below applies only from here, where this command first talks to the server.
+
+### Step 4.5: Preflight — binding, branch, local state
+
+This command touches board state, so it runs behind the preflight gate. The gate is **enforced by a
+script, not by prose** — run it and react to its exit code; never decide on your own that the
+project is fine.
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js
+```
+
+Print the JSON's `display` field **verbatim** — do not reformat, reorder, or summarise it.
+
+| exit | meaning | action |
+| ---- | ------- | ------ |
+| 0 | Proceed | Continue to the next step. If `repairs.boardsRecovered` is non-empty, local state was just restored from the server — say so once (the `display` already carries the sentence) and continue. |
+| 1 | Not connected, or credentials rejected | Make the **connect-now offer**: AskUserQuestion "Connect to ProvenMap now?" → **Connect now** runs `pmap-login.js --start` then `--poll` inline (print each `display` verbatim) and resumes this command on `status: "complete"`; **Not now** stops with the `error` sentence verbatim. |
+| 2 | Binding could not be verified | Print `error` verbatim and stop. Name `/status` for the full local picture. |
+| 11 | Branch mismatch | Print `display` verbatim, then ask via AskUserQuestion. Header: `Branch`. Question: `"This project is bound to a different branch. How do you want to proceed?"` Options: **Re-bind to this branch (`/login`)** — run the `/login` workflow inline, then re-run this step; **Stop — I'll switch branches myself** — stop, having already printed the `git switch` line. Never run `git switch` yourself: the working tree may be dirty. |
+
 5. **Execute the decision:**
    - **Propose:** draft the payload per the ui-inspection skill (name = the ask in imperative
      form; directive references component identity + evidence; anchors from correlated

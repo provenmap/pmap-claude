@@ -83,6 +83,25 @@ In `--all` mode the per-board review prompts above govern the middle of the run 
 
 ## Analysis Workflow
 
+### Step -2: Preflight — binding, branch, local state
+
+This command touches board state, so it runs behind the preflight gate. The gate is **enforced by a
+script, not by prose** — run it and react to its exit code; never decide on your own that the
+project is fine.
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js
+```
+
+Print the JSON's `display` field **verbatim** — do not reformat, reorder, or summarise it.
+
+| exit | meaning | action |
+| ---- | ------- | ------ |
+| 0 | Proceed | Continue to the next step. If `repairs.boardsRecovered` is non-empty, local state was just restored from the server — say so once (the `display` already carries the sentence) and continue. |
+| 1 | Not connected, or credentials rejected | Make the **connect-now offer**: AskUserQuestion "Connect to ProvenMap now?" → **Connect now** runs `pmap-login.js --start` then `--poll` inline (print each `display` verbatim) and resumes this command on `status: "complete"`; **Not now** stops with the `error` sentence verbatim. |
+| 2 | Binding could not be verified | Print `error` verbatim and stop. Name `/status` for the full local picture. |
+| 11 | Branch mismatch | Print `display` verbatim, then ask via AskUserQuestion. Header: `Branch`. Question: `"This project is bound to a different branch. How do you want to proceed?"` Options: **Re-bind to this branch (`/login`)** — run the `/login` workflow inline, then re-run this step; **Stop — I'll switch branches myself** — stop, having already printed the `git switch` line. Never run `git switch` yourself: the working tree may be dirty. |
+
 ### Step -1: Archetype precondition check
 
 `/analyze` operates as Phase 2 of the two-phase workflow. Phase 1 (`/analyze-archetypes`) settles the archetype catalogue first so every node gets a fit archetype rather than a misfit. The precondition is **enforced by a script, not by prose** — you must run it and react to its exit code; do not decide on your own whether Phase 1 has been satisfied.
@@ -99,13 +118,12 @@ In `--all` mode the per-board review prompts above govern the middle of the run 
    | ----------------- | ---- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
    | `ok`              | 0    | false          | Proceed silently to Step 0.                                                                                                                                  |
    | `pending`         | 0    | false          | Print the `reason` from the JSON as a warning, then proceed.                                                                                                 |
-   | `no_config`       | 0    | false          | ProvenMap not configured — precondition is moot. Proceed.                                                                                             |
    | `missing`         | 10   | true           | Lock file does not exist. Prompt the user (see step 3).                                                                                                      |
    | `stale_commit`    | 10   | true           | Codebase has moved since the last archetype scan. Prompt (see step 3).                                                                                       |
    | `stale_catalogue` | 10   | true           | Server catalogue has changed since the last scan. Prompt (see step 3).                                                                                       |
    | `skipped`         | 10   | true           | Last run was skipped — **skip is one-shot, this re-prompts on every `/analyze`**. Prompt (see step 3).                                                       |
 
-   On exit code `1` (config error — including a **branch mismatch**, where the current git branch differs from the binding's pinned branch) or `2` (API error): print the script's `error` field verbatim and stop — do not silently fall back. The user can fix config, switch branches, or re-run when the API recovers.
+   On exit code `1` (not connected — `status: not_connected`) or `2` (API error): print the script's `error` field verbatim and stop. Step -2 has already offered to connect, so a `1` here means the user declined or the credentials are still rejected.
 
 3. When `requiresPrompt` is true, ask via AskUserQuestion. Header: `Archetype check`. Question: include the script's `reason` verbatim, then `"How do you want to proceed?"`. Provide exactly these two options:
 

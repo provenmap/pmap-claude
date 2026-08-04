@@ -27,7 +27,7 @@ write_skeleton() {
   "bindingToken": "",
   "apiSecret": "",
   "baseUrl": "https://platform.provenmap.com/api",
-  "branch": "main",
+  "branch": "",
   "boardSlug": "",
   "excludePaths": ["node_modules", "dist", ".git", "coverage"],
   "includeTests": false
@@ -73,6 +73,9 @@ else
         output="$output $board_count board(s) tracked locally."
     else
         output="$output Board not mirrored yet. Run /sync to pull the authored board and ground it in this repo's documents."
+    fi
+    if [ ! -d "$BOARDS_DIR" ]; then
+        output="$output Local board state is missing — the next ProvenMap command will restore it from the server."
     fi
 fi
 

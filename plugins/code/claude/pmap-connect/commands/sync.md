@@ -9,6 +9,25 @@ Ground the architect-authored board in this repo's documents: mirror the board a
 
 ## Workflow
 
+### Step 0: Preflight — binding, branch, local state
+
+This command touches board state, so it runs behind the preflight gate. The gate is **enforced by a
+script, not by prose** — run it and react to its exit code; never decide on your own that the
+project is fine.
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js
+```
+
+Print the JSON's `display` field **verbatim** — do not reformat, reorder, or summarise it.
+
+| exit | meaning | action |
+| ---- | ------- | ------ |
+| 0 | Proceed | Continue to the next step. If `repairs.boardsRecovered` is non-empty, local state was just restored from the server — say so once (the `display` already carries the sentence) and continue. |
+| 1 | Not connected, or credentials rejected | Make the **connect-now offer**: AskUserQuestion "Connect to ProvenMap now?" → **Connect now** runs `pmap-login.js --start` then `--poll` inline (print each `display` verbatim) and resumes this command on `status: "complete"`; **Not now** stops with the `error` sentence verbatim. |
+| 2 | Binding could not be verified | Print `error` verbatim and stop. Name `/status` for the full local picture. |
+| 11 | Branch mismatch | Print `display` verbatim, then ask via AskUserQuestion. Header: `Branch`. Question: `"This project is bound to a different branch. How do you want to proceed?"` Options: **Re-bind to this branch (`/login`)** — run the `/login` workflow inline, then re-run this step; **Stop — I'll switch branches myself** — stop, having already printed the `git switch` line. Never run `git switch` yourself: the working tree may be dirty. |
+
 ### Step 1 — Pull & inventory
 
 Pass `--board-slug <slug>` when `$ARGUMENTS` is `--board <slug>`; otherwise omit it and the CLI uses the configured `boardSlug`.
@@ -20,7 +39,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-sync.js --pull --host claude --domain co
 - **Exit 0** — the board is mirrored to `.provenmap/boards/<boardSlug>.json` (manifest updated) and the document corpus inventoried. Tell the user briefly what happened (e.g. "Mirrored 42 nodes / 61 edges from the board; inventoried 128 documents (1 skipped)."), then continue to Step 2 using the JSON's `evidence` (`linkCount`, `drifted[]`, `missing[]`, `unlinkedNodes[]`) and `context` (`nodes[]`, `files[]`, `links[]`, `capped`) fields. If `context.capped` is `true`, `context.files` only lists the first 500 of `corpus.files` — the count still reflects the true total.
 - **Exit 1** — read the `error` field to tell which:
   - Not configured → make the **connect-now offer** (see Error Handling).
-  - Anything else (branch mismatch, missing board slug) → relay the `error` field verbatim and stop; it names its own fix (switch branch / re-bind via `/configure`, or pass `--board <slug>` / set `boardSlug` in config).
+  - Anything else (branch mismatch, missing board slug) → relay the `error` field verbatim and stop; it names its own fix (switch branch / re-bind via `/login`, or pass `--board <slug>` / set `boardSlug` in config).
 - **Exit 4** — failed to fetch the board. `errorType: "auth_invalid"` → make the **connect-now offer**; otherwise relay the `error` field, stop, and name `/sync` as the retry.
 
 ### Step 2 — Propose evidence links (judgment)

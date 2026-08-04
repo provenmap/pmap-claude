@@ -158,8 +158,8 @@ Result: Configuration saved, connection verified, ready for `/sync`
 **Solution:** Re-run `/configure` with fresh credentials from the ProvenMap UI
 
 ### Error: 400 Branch mismatch
-**Cause:** The `branch` in config doesn't match the workboard binding
-**Solution:** Update `branch` in `.provenmap/config.json` to match the binding
+**Cause:** The binding pins one git branch and you are on another — the server rejects pushes from any other branch
+**Solution:** `git switch <pinned-branch>` to work on the branch this board maps, or `/login` to re-bind this project to a binding pinned to the branch you're on
 
 ### Error: 422 Invalid data format
 **Cause:** Nodes or edges have invalid structure (missing slug, bad archetypeName)
