@@ -22,10 +22,13 @@ that workflow; `/intents` is the queue view.
    walk up and say so; root/no board → `/new-app` inline or a per-app split; multi-app material
    → propose the split first. Never let `create_intent` hit an unbound board.
 3. **Run the authoring interview** — intents-authoring "The authoring loop": surround pull →
-   one-screen context brief, candidate sweep, collision check, then the grill to the done-bar
-   (`references/authoring-interview.md`). The draft is kept in the drafts file so the interview
-   survives context loss.
-4. **Land** — `--validate intent` on the payload, then `create_intent`. The intent is born a
+   one-screen context brief, solution shaping when the approach is unsettled, the holistic
+   sweep, the materialization gates (duplicate · already-implemented · sequencing), then the
+   grill to the done-bar (`references/authoring-interview.md`). The draft is kept in the
+   drafts file so the interview survives context loss.
+4. **Land** — the pre-land self-review, then the read-back gate (the assembled intent rendered
+   once — Land as draft / Revise), then `--validate intent` on the payload and `create_intent`.
+   The intent is born a
    **draft** — a human locks it open for developer pulls — and the write joins the working copy.
    Carry the interview's reasoning into the `narrative` — the problem, the goal, what is out of
    scope — when there is reasoning worth keeping, and omit it when there isn't (intents-authoring

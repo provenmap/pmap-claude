@@ -24,14 +24,16 @@ loop from the **intents-authoring** skill; load it (and **architect-core**) firs
    - **Read** → `get_intent`; directive, anchors (with notes), origin, resolution history.
      `implemented` without `verifiedAt` is a claim, not proof — say so.
    - **Author, handed over** (arriving from `/author-intent`, `/adopt-adr`, or `/insights`):
-     the drafts already exist — enrich each via the describe loop and apply with
-     `update_intent` (anchors + notes land on the real intent), then release with
-     `transition_intent`.
+     the drafts already exist — enrich each via the describe loop (shaping is skipped: the
+     finding or decision already prescribed the approach), run the materialization gates and
+     the pre-land self-review + read-back gate, then apply with `update_intent` (anchors +
+     notes land on the real intent) and release with `transition_intent`.
    - **Author, free-form** ("here's what I want done"): classify per board-reading —
      *diagram-shaped* → make the board edit (it joins the working copy; committing later mints
      the `board_diff` intent), then optional context anchors via the loop; *code-shaped* →
-     directive intent through the full loop (sweep → collision check → propose → describe →
-     land, `--validate intent` before `create_intent`); *both* → edit first, then the directive
+     directive intent through the full loop (shape when unsettled → holistic sweep →
+     materialization gates → propose → describe → grill → self-review → read-back → land,
+     `--validate intent` before `create_intent`); *both* → edit first, then the directive
      intent citing the edited elements.
    - **Queue management** → `transition_intent` (draft→open locks it for developer pulls;
      →rejected reverts staged changes — state that consequence), `assign_intent` (empty list
