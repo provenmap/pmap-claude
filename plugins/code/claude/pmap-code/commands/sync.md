@@ -125,6 +125,22 @@ Parse the JSON output:
 
 If any boards failed to create, warn the user. Boards that failed will likely cause 404 errors during sync — skip them and report at the end.
 
+### Step 3.8: Integrity gate — validate every target board before the first push
+
+Run the tree-wide integrity check so a board tree pushes wholly or not at all:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --validate            # syncing all boards
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --validate <slug>     # syncing one board
+```
+
+- **Exit 0** → proceed to Step 4.
+- **Exit 3** → print the returned `display` verbatim — do not reformat, reorder, or
+  summarise — then **STOP. Push nothing.** Tell the user which board(s) failed and that
+  the fix is to re-run `/analyze` on that board (or hand-fix
+  `.provenmap/boards/<slug>.json`) and run `/sync` again. Never push the passing subset —
+  a partially updated tree is harder to reason about than a rejected one.
+
 ### Step 4: Sync Each Board via CLI
 
 For each board to sync, run the ProvenMap sync CLI with the board's analysis file and board slug:
@@ -148,6 +164,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-sync.js \
 - `--smart-sync`: Enable diff-based sync (pulls server state, computes diff, pushes only changes)
 - `--force-pull`: Force refresh of server elements before computing diff
 - `--force-push`: Push all elements regardless of diff results
+- `--no-verify`: Skip the post-push server read-back verification — **discouraged**, only for exceptional cases
 - `--host claude --domain code`: Plugin identity stamped on the push (hub display data)
 
 ### Step 5: Parse CLI Output
@@ -157,10 +174,12 @@ The CLI outputs one JSON object to stdout. Branch on `success`:
 - **`success: true`** — summarise from `pushResult` (`nodesCreated`/`nodesUpdated`/`edgesCreated`/`edgesUpdated`, plus any `pushResult.errors[]`) and, in smart-sync mode, the `diff` counts (`newNodes`/`changedNodes`/`unchangedNodes`, same for edges).
 - **`success: false`** — report the `error` field. If `errorType` is `auth_invalid`, the credentials were rejected (revoked binding or rotated secret) — make the **connect-now offer** (see Error Handling) rather than reporting a generic API error.
 
-Two honesty fields may appear on success — **always surface them** when present:
+Four honesty fields may appear on success — **always surface them** when present:
 
-- `conflicts` (`{nodes: [...], edges: [...]}`): both the local analysis and the server changed these elements since the last sync (an architect or another source edited them). They were **not pushed**. List the slugs and tell the user: review on the board, then re-run with `--force-push` to overwrite the server's version.
-- `deletedOnServer` (`{nodes: [...], edges: [...]}`): these were deleted on the server since the last sync and were **not recreated**. List the slugs; re-running with `--force-push` recreates them if the deletion was unintended.
+- `conflicts` (`{nodes: [...], edges: [...]}`): both the local analysis and the server changed these elements since the last sync (an architect or another source edited them). They were **not pushed**. List the slugs and tell the user: review on the board, then re-run with `--force-push` to overwrite the server's version. In replace mode the meaning inverts: these elements WERE pushed and the server's version was overwritten — say so instead.
+- `deletedOnServer` (`{nodes: [...], edges: [...]}`): these were deleted on the server since the last sync and were **not recreated**. List the slugs; re-running with `--force-push` recreates them if the deletion was unintended. In replace mode these WERE recreated — say so instead.
+- `verify`: the post-push server read-back (§ push honesty). `verify.ok === false` means the server board does not match what was pushed — report each `missingNodes` / `missingEdges` entry and every `gateErrors` line verbatim. If `verify.reverted` is present, say: **"Post-push verification failed — the local store has been reset for the missing elements; re-run `/sync` to re-push them. If the drift persists, re-run `/analyze` on this board (`--force-push` remains the blunt fallback)."** If `verify.reverted` is absent (nothing was missing — gate errors only — or no store recorded the push), say: **"Post-push verification failed — re-run `/sync` with `--force-push` (a plain re-run will falsely report success); if the drift persists, re-run `/analyze` on this board."** `verify: {skipped: true}` (from `--no-verify`) and `verify: {unavailable: true}` (read-back failed) must each be reported in one line — never silently. For `{unavailable: true}`, add: the push itself landed — re-run `/sync` with `--force-push` when the server is reachable to verify it.
+- `replaceFullPayload`: replace mode transmitted the full inventory (`nodes`/`edges` counts); mention it in one line so a full-board transmission is never surprising.
 
 ### Step 6: Report Results
 
@@ -168,6 +187,8 @@ For each synced board, report:
 - Board slug and layer
 - Nodes: X created, Y updated
 - Edges: X created, Y updated
+- Deleted (replace reconciliation): X nodes, Y edges — only when `pushResult.nodesDeleted`
+  or `pushResult.edgesDeleted` is present and non-zero; a deletion must never go unmentioned
 - Any errors from the `pushResult.errors` array
 - **View link**: if `boardUrls[<board-slug>]` (from Step 3.5) is a non-null URL, print it as a clickable link, e.g. `🔗 View board: <url>`. If it's `null` or absent, skip the link silently (don't surface an error — the server may be older or the link not yet resolvable).
 

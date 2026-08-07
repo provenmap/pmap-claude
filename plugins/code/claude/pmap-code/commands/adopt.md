@@ -1,7 +1,7 @@
 ---
 category: map
 description: "Map · Extract and adopt a code aspect (database schema, API surface, frontend pages, event catalog, or authz registry) onto the bound board"
-argument-hint: "[--aspect <kind> | --db | --api] [--mode replace|merge] [--dry-run]"
+argument-hint: "[--aspect <kind> | --db | --api] [--mode replace|merge] [--dry-run] [--no-verify]"
 allowed-tools: Read, Glob, Grep, Write, Bash(node:*, git:*), AskUserQuestion
 ---
 
@@ -64,7 +64,7 @@ Read `.provenmap/boards/<board-slug>.json` and keep its node `slug`s handy — e
    ```
    node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-adopt.js --aspect <kind> --payload <payload-file> --mode <mode>
    ```
-   Add `--dry-run` to validate the payload and cross-check its slugs against the synced spine **without pushing** — useful to sanity-check `unknownSlugs` before adopting for real.
+   Add `--dry-run` to validate the payload and cross-check its slugs against the synced spine **without pushing** — useful to sanity-check `unknownSlugs` before adopting for real. Add `--no-verify` to skip the post-ingest server read-back verification (see the Report section below).
 
 `--mode` defaults to `replace` (a full snapshot: rows whose slug left the payload are diff-deleted, but **your manual edits and human annotations survive** — the server never touches manual rows or human-owned columns). Use `--mode merge` to add without pruning.
 
@@ -77,5 +77,15 @@ Read `.provenmap/boards/<board-slug>.json` and keep its node `slug`s handy — e
 - **`unlinked`** — rows whose owning slug matched no node. **`unresolvedRefs`** — references whose `nodeSlug` matched no node.
 
 If `unlinked` or `unresolvedRefs` is non-zero, tell the user which slugs were unknown (the CLI reports `unknownSlugs`) and that re-running `/analyze` + `/sync` to add those nodes will **auto-resolve** them on the next push (the server's re-resolution pass) — nothing was dropped, they are just waiting for their node.
+
+- `verify`: the post-ingest server read-back. `verify.ok === false` (exit 3) means
+  the server's aspect snapshot does not match what was pushed — report
+  `familyMissing` / `snapshotMismatch` / each `missingKeys` entry /
+  `countMismatch` verbatim, then say: "Post-ingest verification failed — re-run
+  `/adopt` for this aspect; if the drift persists, ask your admin to check the
+  server's aspect ingest." `verify: {skipped: true}` (from `--no-verify`) and
+  `verify: {unavailable: true}` must each be reported in one line — never
+  silently. When `unavailable` carries `notAvailable: true`, the server predates
+  aspect pull — the ingest itself landed; no action needed.
 
 State is written to `.provenmap/aspects/<board-slug>.<aspect>.json` so `/status` can show the last adopt and its resolution counts.

@@ -276,8 +276,8 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --scope-path <parent-node-pat
 
 - Treat `nodes[]` as the ground-truth file inventory — do NOT re-glob or re-apply exclusion rules (already applied).
 - Treat `edges[]` as the authoritative `imports` edges for JS/TS — do NOT re-parse JS/TS imports by hand. For **non-JS/TS** files, detect imports yourself in Step 6.
-- The skeleton is **file-granular**. At **L2/L3** its nodes map ~1:1 to board nodes. At **L0/L1**, **aggregate** files into coarse domain/component nodes and **roll up** each file→file `imports` edge onto the coarse nodes (map each `tempId` to the slug of the node you fold it into; drop self-loops).
-- **Persist the mapping — coverage provenance.** The tempId→node-slug rollup you just made IS the coverage relation; record it on every node as `coveredFiles` (repo-relative paths, or directory globs like `src/billing/**` when a node owns a whole subtree — prefer globs for large subtrees). Every skeleton file must end up in exactly one node's `coveredFiles`, OR in the board metadata's `waivedFiles` (files you judge non-architectural — never silently drop them), OR deliberately unclaimed (it will surface as *pending* in coverage reports). **Hard rules the coverage dashboard enforces/surfaces:** never claim the same file from two nodes (double claims are flagged as defects); a node claiming **≥30 files** must either set `layerBoardSlug` (drill-down candidate — its files count as *mapped, not analysed* until the child board analyses them) or be split into finer nodes (else it's flagged as a broad claim); waive **exact paths only, never globs** — waiving shrinks the denominator and the dashboard lists what was waived.
+- The skeleton is **file-granular**. At **L2/L3** its nodes map ~1:1 to board nodes. At **L0/L1**, **aggregate** files into coarse domain/component nodes (each node's `coveredFiles` claims its files); edge rollup is Step 6's script (`--rollup`) — do not map `imports` edges by hand.
+- **Persist the mapping — coverage provenance.** The tempId→node-slug file aggregation you just made IS the coverage relation; record it on every node as `coveredFiles` (repo-relative paths, or directory globs like `src/billing/**` when a node owns a whole subtree — prefer globs for large subtrees). Every skeleton file must end up in exactly one node's `coveredFiles`, OR in the board metadata's `waivedFiles` (files you judge non-architectural — never silently drop them), OR deliberately unclaimed (it will surface as *pending* in coverage reports). **Hard rules the coverage dashboard enforces/surfaces:** never claim the same file from two nodes (double claims are flagged as defects); a node claiming **≥30 files** must either set `layerBoardSlug` (drill-down candidate — its files count as *mapped, not analysed* until the child board analyses them) or be split into finer nodes (else it's flagged as a broad claim); waive **exact paths only, never globs** — waiving shrinks the denominator and the dashboard lists what was waived.
 - The prepass does NOT classify archetypes, group the database layer, write descriptions, or detect non-import edges — those remain your job in Steps 5–6.
 
 Run this on every analysis (full and incremental); it is deterministic and fast, and always reflects current HEAD.
@@ -287,6 +287,15 @@ Run this on every analysis (full and incremental); it is deterministic and fast,
 **CRITICAL — No root wrapper nodes.** The board itself is the implicit root container. Do NOT create a single `domain_group` or wrapper node that contains all other nodes. Top-level nodes (workspaces, services, data stores, external integrations) must have **no `parentSlug`** — they sit directly on the board. Use `metadata.description` for project-level context instead of a wrapper node.
 
 **For L0 (Overview):** Identify high-level domains, services, and major components. Keep to 10-30 nodes. Mark nodes that are good candidates for drill-down by setting `layerBoardSlug` to a proposed slug.
+
+**L0 targets significance, not exhaustiveness.** Coverage is satisfied when every file
+is claimed by *some* node — and a container may claim its whole subtree via
+`coveredFiles` and defer the detail to a child board (`layerBoardSlug`). Do NOT mint an
+L0 node per leftover directory just to claim its files; fold small leftovers into the
+nearest significant container and let the drill-down carry the detail. More L0 nodes
+means more rolled-up L0 edges — breadth here is what creates hairballs.
+
+A container whose child board has taken over ALL of its claims may set `coveredFiles: []` explicitly — never invent a placeholder claim just to satisfy the field.
 
 **For L1+ (Drill-down):** Scope analysis to the files/directories covered by the parent node. Go deeper into that domain's internal components.
 
@@ -303,10 +312,36 @@ Apply these rules (start from the skeleton's `nodes[]` — file discovery and ex
 - **Classify by archetype**: using server archetype names — the skeleton does NOT classify, this is your job
 - **Generate slugs**: use the skeleton's suggested `slug` as a starting point; refine from the primary class/export name
 
+**Finish Step 5 by writing the board JSON now** — `.provenmap/boards/<board-slug>.json`
+with the metadata, the nodes (each with `coveredFiles`), and `"edges": []`. Step 6's
+rollup script reads this file; edges come next.
+
 ### Step 6: Relationship Detection
 
-- **`imports` edges (JS/TS):** take these from the Step 4.5 skeleton's `edges[]` — do NOT re-parse JS/TS imports. Map each edge's `fromTempId`/`toTempId` (file paths) to the slug of the board node that file belongs to, then dedupe and drop self-loops. For non-JS/TS files, parse imports yourself.
-- **`references` edges (artifacts):** map the skeleton's `type: "references"` edges the same way, emitting them as `uses` edges between the resulting board nodes (a command *uses* the script it runs, a skill *uses* the doc it loads). Add further artifact relationships you find by reading bodies (e.g. a command that says "load the X skill" without a path).
+- **Rolled-up edges (script-owned):** run the deterministic rollup — it maps the
+  skeleton's file-level `imports` and `references` edges onto your Step 5 nodes,
+  drops self-loops and containment pairs, dedupes with an import-count weight, and
+  suppresses platform hubs:
+
+  ```bash
+  node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --rollup <board-slug>
+  ```
+
+  For a drill-down (scoped) board, pass `--skeleton .provenmap/skeletons/<board-slug>.json`
+  so the rollup uses the scoped skeleton Step 4.5 wrote for this board, not the
+  repo-wide one; L0 uses the default repo skeleton (no flag needed).
+
+  Print the returned `display` **verbatim — do not reformat, reorder, or summarise.**
+  Merge the emitted `edges[]` from the written
+  `.provenmap/skeletons/<board-slug>.edges.json` into the board's `edges`. For each
+  `report.suppressedHubs` entry, stamp that node with
+  `metadata.hubInDegree = distinctSources` — the fact survives without N identical
+  edges. Do NOT hand-map skeleton edges yourself; the script owns those rules. For
+  non-JS/TS files, parse imports yourself and add the edges by hand.
+- **Reclassify where you know better:** the rollup can only ever say `uses`. Where
+  reading the involved files shows the real relation, change the edge's `type`
+  (`db_read`, `api_call`, `publishes`, …) and **keep its `metadata.weight`** — the
+  rollup output is a starting point, not the final edge set.
 - **Semantic edges (read the relevant files):** the skeleton does not detect these — derive them by reading the files of the nodes involved:
   - `db_read`/`db_write`: Repository/ORM operations
   - `api_call`: HTTP client usage (external or cross-service)
@@ -314,9 +349,17 @@ Apply these rules (start from the skeleton's `nodes[]` — file discovery and ex
   - `publishes`/`subscribes`: Queue/event patterns
   - cross-language calls: API URLs / service names between services
 
+  The rollup only maps literal-path `references` (an artifact naming another
+  skeleton file by path). Add further artifact relationships you find by reading
+  bodies yourself — e.g. a command that says "load the X skill" without a path.
+
 Scope all edges to this board's nodes only.
 
-**Incremental:** Re-detect relationships for changed nodes. Remove edges where source or target node was removed. Keep edges between unchanged nodes as-is.
+**Incremental (edge provenance):** edges carrying `metadata.weight` are
+**rollup-owned** — delete them all and re-run the rollup (it is deterministic and
+cheap); re-apply any reclassified `type`s you noted from the old edge set when
+merging. Edges *without* `metadata.weight` are **model-owned** (semantic) — keep
+them unless an endpoint node was removed.
 
 ### Step 7: Identify Drill-Down Candidates
 
@@ -336,7 +379,7 @@ This tells the user which nodes can be expanded into child boards.
 
 Write analysis results to `.provenmap/boards/<board-slug>.json`.
 
-**Incremental:** Merge new/changed nodes into existing board data. Replace nodes whose `coveredFiles` contain a changed file. Remove nodes whose covered files were all deleted. Remove edges referencing removed nodes.
+**Incremental:** Merge new/changed nodes into existing board data. Replace nodes whose `coveredFiles` contain a changed file. Remove nodes whose covered files were all deleted. Remove edges referencing removed nodes (rollup-owned edges — those with `metadata.weight` — are already regenerated by Step 6's provenance rule).
 
 Always record the current git commit hash via `git rev-parse HEAD` as `analyzedAtCommit`. Every node carries `coveredFiles` and the metadata carries `waivedFiles` (from Step 4.5):
 
@@ -464,7 +507,15 @@ The report is **script-rendered — never hand-assemble counts into prose.** Aft
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --board-report <board-slug>
 ```
 
-Print its `display` **verbatim** (nodes-by-archetype bars, edges by type, per-board file accounting, isolated nodes, drill-down candidates, board file path). Then add ONLY what the script cannot know:
+Print its `display` **verbatim** (nodes-by-archetype bars, edges by type, per-board file accounting, isolated nodes, drill-down candidates, board file path).
+
+**Gate errors block.** If the report's `gate.valid` is `false` (the script exits 3), the
+board JSON failed a hard integrity gate — the `display` names each offending edge or node
+and the fix. Apply the fix to `.provenmap/boards/<board-slug>.json` and re-run the report;
+do **not** continue to Step 8.6 or offer `/sync` until it passes. `gate.warnings` do not
+block — print them and continue.
+
+Then add ONLY what the script cannot know:
 
 - Analysis mode (incremental or full); if incremental, the changed/added/deleted files analysed
 - Judgment calls worth flagging — max 5 bullets (rule deviations, split/merge decisions, why isolated nodes are genuinely isolated vs missed edges)
