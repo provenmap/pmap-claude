@@ -100,30 +100,17 @@ Based on the mode:
 - `--all`: Sync all **in-scope** boards in the manifest (never the foreign ones)
 - Default: If one in-scope board, sync it; if multiple, prompt user
 
-### Step 3.5: Ensure Boards Exist on Server
+### Step 3.5: Fetch Board URLs
 
-Before pushing elements, ensure all target boards exist on the server. Run the boards CLI in ensure mode:
+Fetch the current board list so Step 6 can print each board's view link (child-board creation is
+handled by the server automatically during push — see Step 4 — not here):
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-boards.js \
-  --ensure-boards .provenmap/boards/manifest.json \
-  --host claude --domain code
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-boards.js --host claude --domain code
 ```
 
-This:
-1. Fetches existing boards from the server
-2. Compares against the local manifest
-3. Creates any missing child boards via `POST /code-plugin/boards`
-4. Reports: X created, Y already existed, Z errors
-
 Parse the JSON output:
-- `created`: Board slugs that were newly created on the server
-- `existing`: Board slugs that already existed (no action needed)
-- `errors`: Board slugs that failed to create — warn the user but continue syncing boards that do exist
-- `skippedForeign`: Manifest boards outside this binding's tree, skipped automatically (already handled in Step 2.5 — no action here)
 - `boardUrls`: Map of board slug → clickable "view this board" URL (built by the server). A value may be `null` when the server can't resolve it. **Keep this map** — you'll print these links in Step 6 after each board syncs.
-
-If any boards failed to create, warn the user. Boards that failed will likely cause 404 errors during sync — skip them and report at the end.
 
 ### Step 3.8: Integrity gate — validate every target board before the first push
 
@@ -142,6 +129,10 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --validate <slug>     # synci
   a partially updated tree is harder to reason about than a rejected one.
 
 ### Step 4: Sync Each Board via CLI
+
+When syncing more than one board, iterate **ascending by manifest `layer`** (L0 first) — the push
+endpoint materialises each child board from its parent's `layerBoardSlug` on push, so a parent must
+sync before its children or the child push is rejected.
 
 For each board to sync, run the ProvenMap sync CLI with the board's analysis file and board slug:
 
@@ -173,6 +164,8 @@ The CLI outputs one JSON object to stdout. Branch on `success`:
 
 - **`success: true`** — summarise from `pushResult` (`nodesCreated`/`nodesUpdated`/`edgesCreated`/`edgesUpdated`, plus any `pushResult.errors[]`) and, in smart-sync mode, the `diff` counts (`newNodes`/`changedNodes`/`unchangedNodes`, same for edges).
 - **`success: false`** — report the `error` field. If `errorType` is `auth_invalid`, the credentials were rejected (revoked binding or rotated secret) — make the **connect-now offer** (see Error Handling) rather than reporting a generic API error.
+
+Always report `serverPullStatus` when it is not "fresh" — "cached" is fine to omit; a failed pull aborts with its own error.
 
 Four honesty fields may appear on success — **always surface them** when present:
 
@@ -213,6 +206,24 @@ CLI exit codes:
 - `2`: Analysis file error (missing or invalid JSON, missing boardSlug in metadata) — suggest running `/analyze` first
 - `3`: Validation error (invalid node/edge structure or archetype mismatch) — report the JSON `error` detail
 - `4`: API error — report the JSON `error`; the CLI already retries transient failures and maps HTTP errors to messages, so relay its text rather than re-deriving HTTP semantics
+- `errorType: "forbidden"` — the server refused this operation (commonly: a child board pushed before its parent's nodes exist, or an out-of-scope board). Surface the server's message verbatim; do NOT offer re-login — see *Repairing an inconsistent board tree* below.
+
+### Repairing an inconsistent board tree
+
+`--ensure-boards` is **repair-only** — the push endpoint already materialises each child board from
+its parent on a normal sync (Step 4), and on a cold start it can't help anyway (no parent nodes
+exist yet to attach to). Run it only when a previous partial failure left the server tree
+inconsistent — a child board missing after its parent's elements were already pushed:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-boards.js \
+  --ensure-boards .provenmap/boards/manifest.json \
+  --host claude --domain code
+```
+
+Parse the JSON output — `created`/`existing`: board slugs created or already present; `errors`:
+slugs that failed to create (warn but continue); `skippedForeign`: manifest boards outside this
+binding's tree, already handled by Step 2.5. Then re-run `/sync`.
 
 ### Connect-now offer
 
