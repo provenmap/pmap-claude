@@ -6,7 +6,7 @@ license: MIT
 compatibility: Claude Code plugin. Requires Node.js 18+ for bundled scripts.
 metadata:
   author: ProvenMap
-  version: 0.2.0
+  version: 0.3.0
 ---
 
 # Codebase Analysis for Architecture Visualization
@@ -53,9 +53,12 @@ Each language has specific framework indicators. See `references/language-patter
 
 For projects with multiple languages:
 
-1. Create parent nodes per language/tech stack
-2. Analyze each language section independently
-3. Map cross-language relationships (API calls, shared databases)
+1. Group by **domain across languages** — one "Payments" group holding its Go service and its
+   React app. Language is `metadata.language`, not a containment level: a per-language subtree
+   buries the domain structure and renders every real flow as a wire between two trees.
+2. Analyze each language section independently — the grouping is shared, the parsing is not
+3. Map cross-language relationships (API calls, shared databases) — these are the edges that
+   make a domain group visible as one thing
 
 ## Component Classification
 
@@ -80,17 +83,25 @@ Each language has specific component file patterns and import syntax. See `refer
 
 ### Relationship Detection
 
-Parse imports to identify relationship types:
+Structural `imports` edges are **script-owned**: the prepass skeleton
+(`pmap-prepass.js`) resolves them deterministically and the rollup
+(`--rollup <board-slug>`) maps them onto board nodes — never re-parse what the
+skeleton already resolved. The model owns the **semantic** edge types, derived
+by reading the involved files:
 
-| Relationship | Detection Pattern               |
-| ------------ | ------------------------------- |
-| `imports`    | Direct file/module imports      |
-| `db_read`    | ORM/repository read operations  |
-| `db_write`   | ORM/repository write operations |
-| `api_call`   | HTTP client usage               |
-| `publishes`  | Message queue publish           |
-| `subscribes` | Message queue consume           |
-| `grpc_call`  | gRPC client calls               |
+| Relationship | Detection Pattern               | Owner  |
+| ------------ | ------------------------------- | ------ |
+| `imports`    | Direct file/module imports      | script (skeleton + rollup) |
+| `db_read`    | ORM/repository read operations  | model  |
+| `db_write`   | ORM/repository write operations | model  |
+| `api_call`   | HTTP client usage               | model  |
+| `publishes`  | Message queue publish           | model  |
+| `subscribes` | Message queue consume           | model  |
+| `grpc_call`  | gRPC client calls               | model  |
+
+Edges carrying `metadata.weight` are rollup-owned and regenerated every run;
+edges without it are model-owned and persist. Keep `metadata.weight` when
+reclassifying a rollup edge's `type`.
 
 ## Monorepo Support
 
@@ -108,6 +119,10 @@ Parse imports to identify relationship types:
 
 ## Analysis Workflow
 
+When invoked by `/analyze`, the deterministic prepass has already produced the
+skeleton — the ground-truth file inventory and resolved imports graph. Do not
+re-glob or re-apply exclusion rules; start from the skeleton's `nodes[]`.
+
 ### Step 1: Project Scanning
 
 1. Scan for all manifest files to detect languages
@@ -122,21 +137,41 @@ Parse imports to identify relationship types:
 
 ### Step 3: Component Discovery
 
-1. Glob for source files by language extension
+1. Take the file inventory from the skeleton's `nodes[]` (exclusions already applied); glob only for files outside the skeleton
 2. Apply language-specific archetype rules
 3. Build hierarchical node structure
 
 ### Step 4: Relationship Mapping
 
-1. Parse imports using language-appropriate patterns
-2. Resolve import paths to node slugs
-3. Classify relationship types
+1. Merge the rollup's deterministic `imports` edges (script-owned)
+2. Reclassify edge types where file reads show the real relation
+3. Add semantic edges the rollup cannot see (db/api/queue)
 
 ### Step 5: Cross-Language Relationships
 
 1. Identify shared databases (same connection strings)
 2. Detect API calls between services
 3. Map message queue producers/consumers
+
+## Coverage Provenance
+
+Coverage is the pipeline's honesty mechanism — every emitted node carries it:
+
+- **`coveredFiles`** (per node): the skeleton files the node claims, as
+  repo-relative paths or directory globs (`src/billing/**` for whole subtrees).
+  Every skeleton file belongs in exactly one node's `coveredFiles`, or in the
+  board metadata's **`waivedFiles`** (explicitly judged non-architectural —
+  exact paths, never globs), or is deliberately left unclaimed to surface as
+  *pending* in the coverage dashboard. Never drop a file silently.
+- **Mapped vs analysed**: a node with `layerBoardSlug` (or an oversized claim)
+  counts its files as *mapped, not analysed* until the child board analyses
+  them — the dashboard excludes them from the analysed percentage.
+- The deterministic **coverage ledger** (`pmap-prepass.js --coverage` →
+  `.provenmap/coverage.json`) computes all of this; never hand-compute coverage
+  numbers.
+
+The complete claiming rules live in `/analyze` Step 4.5 — follow them there
+rather than duplicating them here.
 
 ## Output Format
 
@@ -149,6 +184,7 @@ Parse imports to identify relationship types:
   "type": "archetype",
   "description": "Brief one-line description of this component (max 500 chars)",
   "path": "/relative/path",
+  "coveredFiles": ["src/api/**"],
   "parentSlug": "parent-node-slug",
   "detailedDescription": "## ComponentName\n\nBrief summary of what this component does.\n\n### Responsibilities\n- Key responsibility 1\n- Key responsibility 2\n\n### Technology\n- **Framework:** FastAPI\n- **Language:** Python\n- **Path:** `/src/api`",
   "metadata": {
@@ -158,7 +194,7 @@ Parse imports to identify relationship types:
 }
 ```
 
-**Required fields:** `slug`, `name`, `type`, `description`, `detailedDescription`
+**Required fields:** `slug`, `name`, `type`, `description`, `detailedDescription` — plus `coveredFiles` on every non-container node (coverage provenance)
 **Optional fields:** `path`, `parentSlug`, `layerBoardSlug`, `metadata`
 
 ### Edge Format
@@ -218,8 +254,13 @@ User says: "Re-analyze the codebase"
 
 Actions:
 1. Load existing board data and `analyzedAtCommit`
-2. Run git diff to find changed files since last analysis
-3. Re-analyze only changed files, merge into existing board data
+2. Take the worklist from the coverage ledger (`.provenmap/coverage.json`,
+   refreshed at the start of the run): `staleNodes[]` (covered files changed —
+   re-analyze from their `changedFiles`), `pendingFiles[]` (no node claims them
+   yet — new components to place), `orphanedFiles[]` (covered files that no
+   longer exist — remove/shrink their nodes). Git diff is only the
+   ledger-failure fallback and the deletion confirmer
+3. Re-analyze only the worklist files, merge into existing board data
 4. Update `analyzedAtCommit` to current HEAD
 
 Result: Updated analysis with minimal re-processing — only changed nodes updated

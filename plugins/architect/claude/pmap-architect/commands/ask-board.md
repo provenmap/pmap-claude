@@ -18,7 +18,10 @@ plus **architect-core**.
 3. **Escalate to a drawn answer when the answer IS a subgraph** (board-reading's heuristic:
    traces, cross-app flows, >~5 elements + relationships). Offer once per session
    (AskUserQuestion), remember the preference. On yes: `create_context_board` → draw the
-   answer-subgraph → hand back the board slug + a prose précis. At the end of the session,
+   answer-subgraph → hand back the board slug + a prose précis. After drawing, give the context board a fast styling pass (board-styling skill, same write
+   session): emphasis + lg on the node the question was about, subtle on pure context, Flow
+   tokens on the answer's path edges. Skip the pass entirely if the CLI is unavailable — a
+   drawn answer beats a styled timeout. At the end of the session,
    clean up with `delete_context_board` for boards this conversation minted — **never**
    `discard_write_session` (that reverts the architect's whole working copy, not just the
    canvas). Tool absent (older server) → `create_insight` with `scope.elements`; never fake a

@@ -38,6 +38,14 @@ reality disagrees. Then the closing move (architect-core): `preview_write_sessio
 present the plan → title/summary (AskUserQuestion) → `commit_write_session` → narrate the
 minted intents, offer `publish`.
 
+### Step 3.5 — style the sketch (board-styling skill)
+
+Style the L1 board you just sketched before moving on — load **board-styling**, run
+`--style-signals --board <slug>`, plan (fresh board: style everything; an L1 sketch usually
+reads `flow` with the app's core service as the one lg node), `--validate styles`, then the
+`apply_*` calls. Two failed validation rounds → skip, note it, continue; /style-board recovers
+later.
+
 ### Step 4 — close the binding gate, then land the founding intent
 
 Draft the founding intent in-session (full intents-authoring quality, kept in the drafts file),

@@ -192,7 +192,7 @@ When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`re
 When detecting relationships for a specific board (layer), scope your analysis:
 
 - Only create edges between nodes that exist on THIS board
-- If a dependency target is not a node on this board (e.g., it's in a sibling domain or parent layer), skip the edge — cross-board relationships are not supported within a single board
+- If a dependency target is not a node on this board (e.g. it's in a sibling domain or parent layer), **record it, don't drop it**: a board carries edges only between its own nodes, but the relationship is real. Append it to the board metadata's `deferredEdges[]` as `{ sourceSlug, targetHint, type, targetBoardSlug?, description? }` — `targetHint` is the target node slug, file path, or a short description. These stay local (they are never pushed) and the coverage dashboard counts them, so cross-board structure is visible instead of silently lost.
 - For drill-down boards (L1+), the parent node's scope defines which files to analyze for relationships
 - Edge `type` fields must use valid server archetype names
 

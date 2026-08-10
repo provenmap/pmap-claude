@@ -18,10 +18,11 @@
     "./commands/setup-workspace.md",
     "./commands/start.md",
     "./commands/status.md",
+    "./commands/style-board.md",
     "./commands/update.md"
   ],
   "displayName": "ProvenMap Architect",
-  "version": "0.9.4",
+  "version": "0.10.1",
   "description": "Architect workbench for ProvenMap boards — explore the board graph, review insights, and author intents from Claude Cowork, Claude Code, or Codex. Connects to the ProvenMap MCP server; writes gather in your working copy, and committing mints a reviewable plan (one intent per governed app).",
   "author": {
     "name": "ProvenMap",

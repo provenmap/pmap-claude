@@ -74,7 +74,7 @@ Tell the user to open `.provenmap/config.json` in their editor and fill in:
 - `bindingToken` — base64url-encoded `orgId:bindingId`
 - `apiSecret` — format `ck_cp_live_` followed by an alphanumeric string
 - `branch` — must match the branch configured on the workboard binding (default `main`)
-- Optional: `baseUrl`, `excludePaths`, `includeTests`, `includeSourceReferences` (defaults to `true`; set `false` to omit file-path source references from synced nodes/edges) — the skeleton already has working defaults
+- Optional: `baseUrl`, `excludePaths`, `includeTests`, `includeSourceReferences` (defaults to `true`; set `false` to omit file-path source references from synced nodes/edges), `analysis.subagentModel` (pins the model used for every parallel analysis subagent in `/analyze` drill-downs; unset = per-layer defaults) — the skeleton already has working defaults
 
 Then use **AskUserQuestion** to confirm completion — for example:
 

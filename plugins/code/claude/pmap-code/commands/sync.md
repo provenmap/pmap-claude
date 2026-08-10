@@ -134,6 +134,12 @@ When syncing more than one board, iterate **ascending by manifest `layer`** (L0 
 endpoint materialises each child board from its parent's `layerBoardSlug` on push, so a parent must
 sync before its children or the child push is rejected.
 
+Boards **within one layer** have no such ordering constraint and each owns its own store file, so
+run them concurrently: issue up to **3** of the Step 4 commands at once, wait for that layer to
+finish, then move to the next layer. Keep the batch at 3 — this is one server's rate budget, not a
+local limit. If any board in a batch fails with a rate-limit or 5xx error, finish the layer serially
+before continuing.
+
 For each board to sync, run the ProvenMap sync CLI with the board's analysis file and board slug:
 
 ```bash
@@ -164,6 +170,7 @@ The CLI outputs one JSON object to stdout. Branch on `success`:
 
 - **`success: true`** — summarise from `pushResult` (`nodesCreated`/`nodesUpdated`/`edgesCreated`/`edgesUpdated`, plus any `pushResult.errors[]`) and, in smart-sync mode, the `diff` counts (`newNodes`/`changedNodes`/`unchangedNodes`, same for edges).
 - **`success: false`** — report the `error` field. If `errorType` is `auth_invalid`, the credentials were rejected (revoked binding or rotated secret) — make the **connect-now offer** (see Error Handling) rather than reporting a generic API error.
+- The CLI output may carry a `stylingReport` field (absent means the domain has no styling) — hold it for Step 6.
 
 Always report `serverPullStatus` when it is not "fresh" — "cached" is fine to omit; a failed pull aborts with its own error.
 
@@ -192,6 +199,13 @@ For each synced board, report:
 - `reason: "feature_unavailable"` → "This ProvenMap server doesn't expose analysis coverage yet — ask your admin to upgrade"
 - `reason: "branch_mismatch"` → note the snapshot was skipped because the ledger was computed on the wrong branch; `/status` explains the recovery.
 - Any other `reason` → one line: coverage snapshot failed with that reason (the sync itself still succeeded).
+
+**Styling** (from each board's `stylingReport` — absent or `reason: "no_pending_plan"` means nothing pending; skip silently):
+
+- `applied: true` → print `🎨 Styling applied — <nodesStyled> node(s), <edgesStyled> edge(s), <containersComposed> container(s)<, board composition if boardComposition>.` List `skipped[]` entries one line each.
+- `reason: "feature_unavailable"` → "This ProvenMap server doesn't expose board styling yet — ask your admin to upgrade"
+- `reason: "validation_failed"` → note the plan drifted from the board and name `/restyle <board-slug>` as the fix (the sync itself succeeded).
+- `reason: "error"` → one line with `detail`; the plan is kept and retried on the next /sync (the sync itself succeeded).
 
 If syncing multiple boards, show a summary at the end, including each board's view link where available.
 

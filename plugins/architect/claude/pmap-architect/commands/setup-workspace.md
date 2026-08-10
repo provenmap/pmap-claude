@@ -81,6 +81,17 @@ the payload (`--validate diagram`) → containers, then ONE `create_nodes` call,
   table's kind column reads `planned`. Narrate the founding truth: *"this is target state —
   systems graduate as they become real."*
 
+### Step 3.5 — style the landscape (board-styling skill)
+
+The landscape commits styled, not raw. Load **board-styling** and run its pipeline on the board
+you just drew: `--style-signals --board <slug>` → author the plan (this is a fresh board — style
+everything; root landscape doctrine: C4-shaped, externals xs, flow/horizontal unless the signals
+argue otherwise) → `--validate styles` → the three `apply_*` calls. Everything joins the same
+working copy as the nodes and edges — one commit ships structure and styling together.
+
+If validation fails twice, skip styling (say so) and continue to Step 4; the architect can run
+/style-board later.
+
 ### Step 4 — mint app boards (APP BOARDS — map mode only)
 
 `create_board(ownerNodeSlug, newBoardSlug, name)` per `repo`-kind node. Born empty — **never

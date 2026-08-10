@@ -78,8 +78,16 @@ follow-up question for systems the architect didn't classify:
   user types get the actor archetype.
 - **Grouping containers** come from the domain-group family (security zone, data platform,
   external integrations, infrastructure group, messaging group, …) — use them only where
-  the org's zones are real. Containment guidance is advisory; the server enforces only
-  "parent must be a container".
+  the org's zones are real. A zone is real when its members relate to each other more than
+  to the rest of the estate; a box drawn around systems that never touch is a label, and it
+  makes the landscape read as arbitrary. On an existing board, stop guessing and measure:
+  `pmap-architect.js --group-plan --board <slug>` reports each zone's cohesion, the elements
+  that belong at root level (cross-cutting or boundary), zones that have outgrown one board,
+  and the drift from the current containment. A zone you keep for a non-topological reason
+  (vendor cohort, compliance boundary, org chart) is legitimate — start its description with
+  `Grouping rationale:` so the record carries the reason and the gate stands down.
+  The server still enforces only "parent must be a container"; the structural gates
+  (`--validate diagram`) now also refuse an edge between a node and its own container.
 
 ## Drawing the landscape
 

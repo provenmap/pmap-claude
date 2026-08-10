@@ -178,7 +178,8 @@
 
 ### Hierarchy Creation
 
-For monorepos, create a three-level hierarchy:
-1. **Root node**: Repository name
-2. **Workspace nodes**: Each package/app as tech stack parent
-3. **Component nodes**: Files within each workspace
+For monorepos, the board itself is the root — never create a node for the repository.
+A workspace becomes a container only when it is a **deployment boundary** (a package/app that
+ships and runs on its own). Workspaces that are just source organisation are not levels: group
+their components by domain instead, and carry the workspace on each node as `metadata`.
+Which workspaces earn a container is what `pmap-prepass --group-plan` answers.

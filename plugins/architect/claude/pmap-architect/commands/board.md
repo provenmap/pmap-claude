@@ -50,7 +50,29 @@ uncommitted changes across M boards"** (nothing is staged and no intent exists y
 "drill this container into its own board": `create_board {ownerNodeSlug, newBoardSlug, name,
 ownerBoardSlug: <this board>}` — the container becomes the drill-down, journaled like any other
 diagram write. Say plainly that a layer under an app board stays a plain layer permanently
-(app-nesting rule) — never pitch it as a future app slot.
+(app-nesting rule) — never pitch it as a future app slot. For a full visual pass over this
+board, hand off to /style-board — inline styling here covers only elements this session touches
+(board-styling skill).
+
+For "is this board grouped right?", "should X sit inside Y?", or after a batch that added
+several elements, run the grouping review:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --group-plan --board <slug>
+```
+
+Print its `display` **verbatim**. It reads the board's containment against how its elements
+actually relate — seeded from the board's own parent tree, so `drift[]` is what has stopped
+holding, not an unrelated re-partition. Zones with `verdict: "dissolve"` group by label rather
+than by boundary; `verdict: "drill-down"` has outgrown one board (offer `create_board`);
+`parents[]` proposes a zone inside a zone. Every move re-parents a node — walk the drift with
+the architect and apply only what they confirm. A zone that is deliberate but has no edges to
+justify it (a vendor cohort, a compliance boundary) stays: record why by starting its
+description with `Grouping rationale:`, and the gate stops flagging it.
+
+When a write batch added or rewired elements, offer a scoped styling pass over just those
+elements (board-styling skill; the précis `styling` field shows what the rest of the board
+already has — match its conventions, never restyle untouched elements inline).
 
 **Closing move (any session that wrote):** `preview_write_session_commit` → present the plan
 (per-root `+add ~modify −remove`, conflicts, what commits plain; the session may include the

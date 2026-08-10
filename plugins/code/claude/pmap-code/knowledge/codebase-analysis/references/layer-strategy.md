@@ -27,9 +27,27 @@ If you need both grouping AND drill-down for a subsystem, choose drill-down. The
 
 When a domain_group container has visible children AND drills down, the children appear on both the parent board and the child board — duplicating nodes across layers.
 
-### Grouping threshold
+### What decides the grouping
 
-Use `domain_group` containers to organize nodes when the board has **more than ~8 nodes**. This applies to any layer — L0, L1, L2, or L3. Below ~8 nodes, flat layout is acceptable.
+Not node count — **coupling**. `pmap-prepass --group-plan` computes candidate groups from the
+import graph and returns, per group, its `cohesion` (how much of its coupling stays inside),
+`density` (how interconnected its members are), `folderAgreement` (how far it matches a
+directory), and a verdict:
+
+| verdict | meaning |
+| --- | --- |
+| `container` | one `domain_group` holding these members |
+| `drill-down` | too interconnected to read flat — opaque node + `layerBoardSlug` |
+| `dissolve` | members lean outward more than they cohere — place them individually |
+
+`parents[]` proposes **containers inside containers** (sibling groups sharing an ancestor,
+sparse enough between them to stay readable). `roles[]` says which nodes belong at board root
+and why — `cross-cutting` (serves several groups), `boundary` (an adapter facing out of scope),
+or `isolated`/`no-group` (no evidence; your judgment).
+
+A board of 20 uncoupled nodes needs no containers; a board of 6 tightly-coupled ones may need
+two. The plan proposes, you name and may override — record an override the topology cannot
+justify by starting the container's description with `Grouping rationale:`.
 
 ## Layer Definitions
 
@@ -45,7 +63,7 @@ Use `domain_group` containers to organize nodes when the board has **more than ~
 - **Scope**: Single domain, workspace, or major service
 - **Target**: 10-40 nodes per board
 - **Node types**: Services, controllers, modules within the domain
-- **Grouping**: Organize nodes into `domain_group` containers based on natural domain boundaries when the board exceeds ~8 nodes. Same container vs. drill-down rule applies — if an L1 node drills to L2, it must be opaque.
+- **Grouping**: From the grouping plan's clusters, parents and root-level roles (see above). Same container vs. drill-down rule applies — if an L1 node drills to L2, it must be opaque.
 - **When**: User drills into an L0 node
 
 ### L2 — Component Drill-down
@@ -53,7 +71,7 @@ Use `domain_group` containers to organize nodes when the board has **more than ~
 - **Scope**: Single service or module
 - **Target**: 5-20 nodes per board
 - **Node types**: Individual classes, handlers, internal modules
-- **Grouping**: Use domain_group containers if the board exceeds ~8 nodes. For smaller boards, flat layout is fine.
+- **Grouping**: From the grouping plan. A small board with real coupling still earns containers; a large uncoupled one does not.
 - **When**: User drills into an L1 node
 
 ### L3 — Detail (opt-in)

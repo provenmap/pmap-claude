@@ -90,9 +90,11 @@ and response templates.
 ## Editing the diagram — the tool contract
 
 Diagram writes (`create_nodes`, `update_nodes`, `delete_nodes`, `create_edges`, `update_edges`,
-`delete_edges`, `apply_diagram_info`, `apply_semantic_styles`) are exposed and journaled: every
-write joins the architect's working copy, and **nothing is staged until the session commits**
-(on a governed board, commit mints one reviewable `board_diff` intent per governed root).
+`delete_edges`, `apply_diagram_info`, `apply_semantic_styles`, `apply_composition`,
+`apply_icon_shape_styles` — styling methodology: the board-styling skill) are exposed and
+journaled: every write joins the architect's working copy, and **nothing is staged until the
+session commits** (on a governed board, commit mints one reviewable `board_diff` intent per
+governed root).
 Narrate the journal after a batch: "Saved to your working copy — N uncommitted changes across
 M boards."
 

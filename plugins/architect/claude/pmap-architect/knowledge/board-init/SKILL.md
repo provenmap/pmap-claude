@@ -45,7 +45,8 @@ rich-metadata discipline:
 - **Every node gets a description** — what an implementor finds (or creates) there, not a
   restatement of its name.
 - **The board description** states purpose + stack intent (`apply_diagram_info`).
-- Semantic styles where they carry meaning (`apply_semantic_styles`), never as decoration.
+- Style the finished board per the **board-styling** skill (signals → plan → validate → apply)
+  — semantics that carry meaning, never decoration.
 
 Narrate the reconciliation truth: when the repo binds and pushes, analysis reconciles against
 this sketch — expect intents where reality disagrees.

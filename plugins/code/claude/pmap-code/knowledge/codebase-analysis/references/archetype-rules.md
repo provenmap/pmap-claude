@@ -304,7 +304,7 @@ No grouping = hard to read. Real codebases have logical domains — group them.
 { "slug": "email-provider", "parentSlug": "external-integrations", ... },
 { "slug": "billing-provider", "parentSlug": "external-integrations", ... }
 ```
-Multiple domain groups sit directly on the board (no `parentSlug`). Child components nest inside via `parentSlug`. **Any board with more than ~8 nodes** should use domain groups based on natural domain boundaries — this applies to all layers, not just L0.
+Multiple domain groups sit directly on the board (no `parentSlug`). Child components nest inside via `parentSlug`. Which groups exist, and which nodes stay at board root, comes from `pmap-prepass --group-plan` (see `layer-strategy.md` → "What decides the grouping") — coupling, not node count, and not the directory tree.
 
 ### Detecting Domain Boundaries
 
