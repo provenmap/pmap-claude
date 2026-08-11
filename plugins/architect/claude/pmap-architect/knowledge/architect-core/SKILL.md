@@ -25,14 +25,14 @@ judgment, sequencing, and explanation.
   through the write tools; read documents the architect shares in the session and turn them into
   board work.
 - **Cannot:** execute code, access data outside the token's workspace, or make any change that
-  bypasses review — writes gather in the working copy, and on governed boards committing mints
+  bypasses review — writes gather in the working copy, and on governed boards committing generates
   a reviewable intent; nothing ever lands as direct code truth.
 
 ## The token is the scope — and it acts as the architect
 
-The MCP bearer token carries the whole *authorization*: workspace, scope (`read` | `read_write`),
+The MCP bearer token carries the whole _authorization_: workspace, scope (`read` | `read_write`),
 and an optional board-subtree restriction. You never name a workspace — the token does. But the
-token is not its own actor: **it acts as the person who minted it**. Writes made here journal
+token is not its own actor: **it acts as the person who generated it**. Writes made here journal
 into that person's ONE workspace working copy — the same session the web app's indicator shows —
 so what you see in `get_write_session` may include changes they made in the app, and a commit or
 discard issued here decides those too (see The working copy). Consequences:
@@ -47,10 +47,10 @@ discard issued here decides those too (see The working copy). Consequences:
 
 ## Passive review — governance is born at commit
 
-There are **no confirmation gates** before writes, and a write mints **nothing**: it joins the
+There are **no confirmation gates** before writes, and a write generates **nothing**: it joins the
 working copy's journal and waits. No intent exists until the session commits — that is when the
-commit classifier reads the net diff and mints one reviewable `board_diff` intent per governed
-root. After a write batch, narrate the *journal*, not an intent:
+commit classifier reads the net diff and generates one reviewable `board_diff` intent per governed
+root. After a write batch, narrate the _journal_, not an intent:
 
 > Saved to your working copy — N uncommitted changes across M boards.
 
@@ -65,23 +65,24 @@ Authoring is legal only where bindings allow it. Facts: `get_board_tree` positio
 "…can only be authored on a code-bound board". Never let that 400 reach the user raw — route
 first:
 
-| Class | How recognized | What's legal here |
-|---|---|---|
-| **Empty root** (fresh workspace) | root with 0 nodes/edges, ≤1 top-level board, no bindings anywhere | `/setup-workspace` territory — diagram writes only; **no intents anywhere yet** |
-| **Empty app board** (pre-first-push) | 0 nodes/edges, below root, binding present (or app-archetype owner node) | board bootstrap (board-init): diagram writes, `author_pages`, reference docs, intents once authorable |
-| **Empty plain layer** | 0 nodes/edges, `isChildLayer`, no binding | lightweight bootstrap (board-init): canvas sketch only; facet work routes UP |
-| **Root / landscape** (L0) | slug `root`, tree seed | read, rollup, diagram writes; **no intents** unless bound |
-| **App board** (L1) | has a code-plugin binding (governing ⇒ governed writes; reference ⇒ ungoverned but authorable) | everything: spine, aspects, intents, insights |
-| **Plain layer** (L2/L3) | `isChildLayer`, no binding | canvas detail only — facet work **routes UP** to the owning app board; say so |
-| **Standalone** (kb/adr/report/contextmap) | outside the tree walk | canvas/document; no authoring |
+| Class                                     | How recognized                                                                                 | What's legal here                                                                                     |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Empty root** (fresh workspace)          | root with 0 nodes/edges, ≤1 top-level board, no bindings anywhere                              | `/setup-workspace` territory — diagram writes only; **no intents anywhere yet**                       |
+| **Empty app board** (pre-first-push)      | 0 nodes/edges, below root, binding present (or app-archetype owner node)                       | board bootstrap (board-init): diagram writes, `author_pages`, reference docs, intents once authorable |
+| **Empty plain layer**                     | 0 nodes/edges, `isChildLayer`, no binding                                                      | lightweight bootstrap (board-init): canvas sketch only; facet work routes UP                          |
+| **Root / landscape** (L0)                 | slug `root`, tree seed                                                                         | read, rollup, diagram writes; **no intents** unless bound                                             |
+| **App board** (L1)                        | has a code-plugin binding (governing ⇒ governed writes; reference ⇒ ungoverned but authorable) | everything: spine, aspects, intents, insights                                                         |
+| **Plain layer** (L2/L3)                   | `isChildLayer`, no binding                                                                     | canvas detail only — facet work **routes UP** to the owning app board; say so                         |
+| **Standalone** (kb/adr/report/contextmap) | outside the tree walk                                                                          | canvas/document; no authoring                                                                         |
 
 Routing rules: authoring on a plain layer walks up to the app board and says so. Cross-app
 scope ⇒ one intent per app board (cross-board anchors are inert — an intent is single-board;
-the working copy spans boards, and commit mints one intent per governed root automatically).
+the working copy spans boards, and commit generates one intent per governed root automatically).
 Root-level requirement requests ⇒ name the affected apps and federate. **App-nesting rule:** a governing repo can never bind to a board with an app board
 above or below it — repo-backed slots live on the root landscape, a layer under an app board is
 permanently a plain layer, and "make this component its own service" means a new landscape node
-+ board, never bind-in-place. Relay the server's refusal verbatim if it fires.
+
+- board, never bind-in-place. Relay the server's refusal verbatim if it fires.
 
 ## The workflow routing table — open-ended asks
 
@@ -89,18 +90,18 @@ When the ask doesn't name a command (bare conversation or `/start` with free tex
 by intent signal and run the matching workflow's skill inline — the named command is just the
 standalone entry to the same workflow:
 
-| Signal in the ask | Workflow (skill to load) |
-|---|---|
-| Bootstrap/draw the org's estate; empty workspace; "founding/starting a new product line" | `/setup-workspace` (landscape-modeling — map or found mode) |
-| "Shape/prepare/initialize this empty board", pages-first design of an intended app | `/board` on that board (board-init) |
-| A new system/app/service on an existing landscape | `/new-app` (landscape-modeling) |
-| Requirements, a PRD/RFC/doc in hand, "what we want" | `/author-intent` (intents-authoring) |
-| A decision, ADR, policy, standard to adopt | `/adopt-adr` (adr-adoption) |
-| "Get this changed/delivered/built" — work to hand off | `/intents` (intents-authoring) |
-| A question about the architecture | `/ask-board` (board-reading) |
-| "How healthy is X", "review/audit this" | `/assess` (insights-review) |
-| "What needs me", morning sweep | `/hub` |
-| Recurring document/component shapes the catalogue can't name; "we keep proposing the same missing type" | `/archetypes` (catalogue gap round) |
+| Signal in the ask                                                                                       | Workflow (skill to load)                                    |
+| ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Bootstrap/draw the org's estate; empty workspace; "founding/starting a new product line"                | `/setup-workspace` (landscape-modeling — map or found mode) |
+| "Shape/prepare/initialize this empty board", pages-first design of an intended app                      | `/board` on that board (board-init)                         |
+| A new system/app/service on an existing landscape                                                       | `/new-app` (landscape-modeling)                             |
+| Requirements, a PRD/RFC/doc in hand, "what we want"                                                     | `/author-intent` (intents-authoring)                        |
+| A decision, ADR, policy, standard to adopt                                                              | `/adopt-adr` (adr-adoption)                                 |
+| "Get this changed/delivered/built" — work to hand off                                                   | `/intents` (intents-authoring)                              |
+| A question about the architecture                                                                       | `/ask-board` (board-reading)                                |
+| "How healthy is X", "review/audit this"                                                                 | `/assess` (insights-review)                                 |
+| "What needs me", morning sweep                                                                          | `/hub`                                                      |
+| Recurring document/component shapes the catalogue can't name; "we keep proposing the same missing type" | `/archetypes` (catalogue gap round)                         |
 
 High confidence → state the reading in one line and run the workflow inline. Ambiguous →
 AskUserQuestion with the top 2–3 candidates, one line each. Compound asks → propose the
@@ -118,19 +119,19 @@ id to pass, no group to choose. `get_write_session` is the sole session read: al
 always the whole truth (there is no local session state of any kind). The session ends only by
 `commit_write_session` or `discard_write_session` — both decide the WHOLE working copy.
 
-- **Nothing is staged and no intent exists until commit.** On a code-bound board, commit mints
+- **Nothing is staged and no intent exists until commit.** On a code-bound board, commit generates
   ONE `board_diff` intent per governed root from the session's net diff — the commit message
   `{title, summary, publish}` is the plan's name and rationale. Ungoverned changes commit plain.
 - **The standard closing move** of any authoring flow: `preview_write_session_commit` → present
   the plan (per-root `+add ~modify −remove`, conflicts, what commits plain) → ask for
   title/summary (AskUserQuestion — a genuine decision point) → `commit_write_session` → narrate
-  the minted intents by slug, offer `publish: true` (opens the intent for review immediately).
+  the generated intents by slug, offer `publish: true` (opens the intent for review immediately).
   Commit is never implicit, never automatic.
 - **The session may already contain other work** — the architect's own, made in the web app. Any
   flow that intends to commit MUST first `get_write_session` and, if the session is non-empty
   before the flow's own writes, surface that and ask: continue (one combined commit), or pause
   for the architect to decide the pending work first. Commit is workspace-wide by design; your
-  job is to make that visible *before* the verb, never after.
+  job is to make that visible _before_ the verb, never after.
 - **Discard is the nuclear verb**: it reverts the whole session, app-made changes included.
   Always confirm with the named board list + counts from `get_write_session`, and render the
   `{reverted, conflicted, skipped}` result honestly — conflicted rows were left alone, never
@@ -169,8 +170,8 @@ when it does.
 
 ## Product vocabulary
 
-User-facing text uses the product's terms: *system landscape* (the root canvas), *command
-center* (the root board's role), *board tree*, *app board* (never "aggregator" or "app-board").
+User-facing text uses the product's terms: _system landscape_ (the root canvas), _command
+center_ (the root board's role), _board tree_, _app board_ (never "aggregator" or "app-board").
 
 ## Working method
 

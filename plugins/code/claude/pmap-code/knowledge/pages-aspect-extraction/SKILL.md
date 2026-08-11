@@ -16,7 +16,7 @@ Extract the **declared** route tree and shape it into a `UiPagesPayload`:
 
 ## Golden rule — read this first
 
-**A page's `slug` is not a fresh name you invent — it MUST be the slug `/analyze` already assigned that page's node on the synced spine.** Every other aspect (`database.schema`, `api.surface`) mints its own aspect-local slug for each row and links back to the spine through a separate `ownerSlug` field. `ui.pages` has no `ownerSlug` at all: the page's own `slug` **is** the link. Before extracting, read `.provenmap/boards/<board-slug>.json`, find the node the spine already created for each route (its `type` will be a page/route-shaped archetype), and reuse that exact `slug` — never re-slug it, never make one up. A route whose node isn't on the spine yet still adopts fine (it lands unresolved and auto-heals on the next `/analyze` + `/sync`), but don't guess a slug for it either — emit the best-guess kebab-case name only if you can't find a match, and expect it to show as unlinked until the spine catches up.
+**A page's `slug` is not a fresh name you invent — it MUST be the slug `/analyze` already assigned that page's node on the synced spine.** Every other aspect (`database.schema`, `api.surface`) generates its own aspect-local slug for each row and links back to the spine through a separate `ownerSlug` field. `ui.pages` has no `ownerSlug` at all: the page's own `slug` **is** the link. Before extracting, read `.provenmap/boards/<board-slug>.json`, find the node the spine already created for each route (its `type` will be a page/route-shaped archetype), and reuse that exact `slug` — never re-slug it, never make one up. A route whose node isn't on the spine yet still adopts fine (it lands unresolved and auto-heals on the next `/analyze` + `/sync`), but don't guess a slug for it either — emit the best-guess kebab-case name only if you can't find a match, and expect it to show as unlinked until the spine catches up.
 
 ## Other golden rules
 
@@ -25,15 +25,15 @@ Extract the **declared** route tree and shape it into a `UiPagesPayload`:
 
 ## Sources, by framework
 
-| `framework` value | Where routes live |
-| --- | --- |
-| `next-app` | Next.js App Router — `app/**/{page,layout,loading,error,not-found,template,default}.tsx`, route groups `(group)`, parallel `@slot`, intercepting `(.)`/`(..)`/`(...)`, `middleware.ts` |
-| `next-pages` | Next.js Pages Router — `pages/**/*.tsx`, `_app.tsx`/`_document.tsx` as the layout chain, `getServerSideProps`/`getStaticProps` as data dependencies |
-| `remix` | `app/routes/*.tsx` (flat or `.` nested convention), `loader`/`action` exports |
-| `tanstack-router` | File-based `routes/*.tsx` or the generated route tree, `loader` options |
-| `react-router` | `createBrowserRouter`/`<Routes>` element trees, `loader`/`action` route config |
-| `svelte-kit` | `src/routes/**/+page.svelte` + `+layout.svelte` + `+page.server.ts`/`+layout.server.ts` |
-| `nuxt` | `pages/**/*.vue`, `layouts/*.vue`, `middleware/*.ts` |
+| `framework` value | Where routes live                                                                                                                                                                      |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `next-app`        | Next.js App Router — `app/**/{page,layout,loading,error,not-found,template,default}.tsx`, route groups `(group)`, parallel `@slot`, intercepting `(.)`/`(..)`/`(...)`, `middleware.ts` |
+| `next-pages`      | Next.js Pages Router — `pages/**/*.tsx`, `_app.tsx`/`_document.tsx` as the layout chain, `getServerSideProps`/`getStaticProps` as data dependencies                                    |
+| `remix`           | `app/routes/*.tsx` (flat or `.` nested convention), `loader`/`action` exports                                                                                                          |
+| `tanstack-router` | File-based `routes/*.tsx` or the generated route tree, `loader` options                                                                                                                |
+| `react-router`    | `createBrowserRouter`/`<Routes>` element trees, `loader`/`action` route config                                                                                                         |
+| `svelte-kit`      | `src/routes/**/+page.svelte` + `+layout.svelte` + `+page.server.ts`/`+layout.server.ts`                                                                                                |
+| `nuxt`            | `pages/**/*.vue`, `layouts/*.vue`, `middleware/*.ts`                                                                                                                                   |
 
 Use `unknown` only when the repo's routing convention genuinely doesn't map to any of the above — never as a default for "didn't look closely enough."
 

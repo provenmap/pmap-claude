@@ -44,7 +44,7 @@ implemented | rejected | resolved_other`
 
 - `needs_clarification` is a detour, not an end: a developer bounces an intent back when code
   reality no longer matches it. The architect revises and re-opens it (`needs_clarification →
-  open`) or rejects it.
+open`) or rejects it.
 - **You author DRAFTS only** — a human locks a draft open. Every write joins the working copy
   and awaits review (passive review); narrate the created draft by slug, never pre-confirm.
 - `stale` means the code facts under an intent's anchors drifted since it was written — it needs
@@ -57,16 +57,16 @@ implemented | rejected | resolved_other`
 
 ## The tools
 
-| Tool | Use |
-|---|---|
-| `list_intents` | summaries; `scope: 'tree'` spans layer boards |
-| `get_intent` | full detail: directive, anchors + notes, origin, resolution history, staleness |
-| `create_intent` | author a draft (incl. the `narrative` and, for a bound document, `draftedFromSourceSlug`) |
-| `update_intent` | revise a draft/needs_clarification intent — fields + context anchors (changed anchors preserved) |
-| `transition_intent` | lifecycle moves (draft→open locks for developer pulls; →rejected reverts staged changes) |
-| `assign_intent` | assign to users; empty list clears; assigning an open intent moves it to assigned |
-| `promote_insight_findings` | reviewed findings/suggestions → one draft intent each (see insights-review) |
-| `delete_intent` | delete + withdraw everything staged |
+| Tool                       | Use                                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------ |
+| `list_intents`             | summaries; `scope: 'tree'` spans layer boards                                                    |
+| `get_intent`               | full detail: directive, anchors + notes, origin, resolution history, staleness                   |
+| `create_intent`            | author a draft (incl. the `narrative` and, for a bound document, `draftedFromSourceSlug`)        |
+| `update_intent`            | revise a draft/needs_clarification intent — fields + context anchors (changed anchors preserved) |
+| `transition_intent`        | lifecycle moves (draft→open locks for developer pulls; →rejected reverts staged changes)         |
+| `assign_intent`            | assign to users; empty list clears; assigning an open intent moves it to assigned                |
+| `promote_insight_findings` | reviewed findings/suggestions → one draft intent each (see insights-review)                      |
+| `delete_intent`            | delete + withdraw everything staged                                                              |
 
 Address intents by slug (`list_intents` → `get_intent`).
 
@@ -83,13 +83,13 @@ re-sequence a draft via `update_intent` (`""` clears). Procedure: gate 3 in
 [references/materialization-gates.md](references/materialization-gates.md).
 
 **Provenance — `draftedFromSourceSlug`.** When the material was a **bound document** (a PRD, an
-RFC, an ADR), pass the catalog source's slug. The intent then carries a *Drafted from* line
+RFC, an ADR), pass the catalog source's slug. The intent then carries a _Drafted from_ line
 pointing at that document, so the org's version and the board's version are visibly the same
 thing. Get slugs from `list_source_bindings` (the `sourceSlug` column). An unknown slug is
 **rejected** — the create fails rather than silently dropping the link, so read the bindings
 first rather than guessing a slug from the document's title. Omit it entirely when the material
 came from the conversation, a pasted file, or the architect's own description: this records where
-a draft *came from*, not what it is about.
+a draft _came from_, not what it is about.
 
 **Anchors.** Anchor a new intent to what it is about: board elements (node/edge), an aspect row
 (a table, an endpoint — pass `aspectKind`), or a child layer board. Add a note per anchor saying
@@ -103,7 +103,7 @@ why it is there; **the implementer reads it**. Anchors you author carry the `con
 - State the operation explicitly: **add / modify / remove**, with the target and the desired end
   state.
 - For a graph-shaped change, prefer making the actual board edit (diagram write tools — the
-  concrete diff mints its own `board_diff` intent when the session commits) over describing
+  concrete diff generates its own `board_diff` intent when the session commits) over describing
   the change in prose.
 
 **Pre-land self-review — run before anything lands, fix silently.** First the defect scan —
@@ -125,7 +125,7 @@ Surface to the architect only the fixes that change meaning; everything else jus
 
 ## The authoring loop — impact → attach → describe
 
-Attaching elements and describing *why each is attached* is the platform's most important
+Attaching elements and describing _why each is attached_ is the platform's most important
 authoring feature — do it natively, never as an afterthought. The loop (route first per
 architect-core's taxonomy — intents are legal only on code-bound boards):
 
@@ -143,38 +143,38 @@ architect-core's taxonomy — intents are legal only on code-bound boards):
    which root-landscape systems are implicated. Then the close-in sweep — facts from reads,
    ranking from judgment: spine radius (`get_edges` with `nodeSlugs` on the seeds; one more
    hop only for hubs; classify inbound/outbound); aspect fan-out (`get_node_aspects` on seeds
-   + implicated neighbours — the pages, endpoints, tables, channels, authz entries the change
-   actually touches); affected child layers (`layerBoardSlug` ⇒ layer anchors). **Candidates
-   on other boards become separate per-board intents** — group by home board; an intent is
-   single-board (cross-board anchors are inert).
+   - implicated neighbours — the pages, endpoints, tables, channels, authz entries the change
+     actually touches); affected child layers (`layerBoardSlug` ⇒ layer anchors). **Candidates
+     on other boards become separate per-board intents** — group by home board; an intent is
+     single-board (cross-board anchors are inert).
 4. **The materialization gates.** Three checks against the existing intent estate — every one
    must pass before anything lands
    ([references/materialization-gates.md](references/materialization-gates.md)):
    **duplicate** (`list_intents` `scope: 'tree'` — anchor overlap, same-verb-on-same-element,
    or name similarity against any non-terminal intent → merge / supersede / proceed);
    **already implemented** (terminal intents with overlapping anchors, or an aspect row that
-   already carries the capability → modification, the directive verb becoming *change* — or
+   already carries the capability → modification, the directive verb becoming _change_ — or
    duplicate: stop, name the existing intent); **sequencing** (must this land after a related
    open intent? → `afterIntentSlug` on the payload; a draft re-sequences or clears via
    `update_intent`).
 5. **Propose.** Ranked table per board (≤15 rows, "+N more"): slug, type (+aspectKind),
-   one-line *why affected*. AskUserQuestion multiSelect — the architect prunes and adds.
+   one-line _why affected_. AskUserQuestion multiSelect — the architect prunes and adds.
 6. **Describe — the recording session, spoken.** Per attached anchor, ask the platform's own
-   question with the platform's verbs (*change / add / fix / remove / investigate*) and compose
+   question with the platform's verbs (_change / add / fix / remove / investigate_) and compose
    the note exactly as the web Intent Editor does — `"Change: collect the new consent field
-   before submit"`. Templates and composition rules:
+before submit"`. Templates and composition rules:
    [references/anchor-recording.md](references/anchor-recording.md). Batch a few per round;
    skipping is fine (the anchor attaches noteless).
 7. **Grill the gaps.** When the material is thin — no why, no done-bar, no named elements —
    run a round or two from [references/authoring-interview.md](references/authoring-interview.md):
-   2–4 questions chosen by what the material *lacks*, never the whole bank as a form. This is
+   2–4 questions chosen by what the material _lacks_, never the whole bank as a form. This is
    what `/author-intent` runs long-form.
 8. **Self-review.** Run the pre-land self-review (above): the defect scan, then the
    five-point check. Fix silently; surface only what changes meaning.
 9. **Read-back — the one landing gate.** Render the assembled intent once: name, description,
    directive (grouped per `composeDirective`), narrative — or the line "— omitted, reasoning
-   lives on the linked finding" — anchor table (slug · type · note), the *Drafted from*
-   line when `draftedFromSourceSlug` is set, and the *After* line when `afterIntentSlug`
+   lives on the linked finding" — anchor table (slug · type · note), the _Drafted from_
+   line when `draftedFromSourceSlug` is set, and the _After_ line when `afterIntentSlug`
    is set. One AskUserQuestion: **Land as draft** /
    **Revise**. Multi-board split → render every per-board intent, one question for the batch.
    Revise loops back to the step that owns the field, then re-renders once — the second
@@ -186,7 +186,7 @@ architect-core's taxonomy — intents are legal only on code-bound boards):
     Multi-board ⇒ the `create_intent` calls share the one working copy automatically; report
     each created draft by slug.
 
-**Enrichment and revision — `update_intent`.** An already-minted `draft` or
+**Enrichment and revision — `update_intent`.** An already-generated `draft` or
 `needs_clarification` intent is revised in place: name, directive, description, narrative,
 priority, effort, sequencing (`afterIntentSlug` — `""` clears), and its **context anchors**
 (replace-all — capture-owned `changed` anchors and the
@@ -194,7 +194,7 @@ staged board diff are preserved; withdrawing staging stays an explicit act via `
 or transition→rejected). Null/omitted fields stay unchanged; origin is immutable; changing
 anchors re-baselines the intent and clears staleness. A revision lands like a creation: the materialization gates, the pre-land self-review, and
 the read-back gate (loop steps 4, 8–9) run before `update_intent`; shaping is skipped — the
-approach was settled when the intent was minted. **The bounced-intent loop is now real:**
+approach was settled when the intent was generated. **The bounced-intent loop is now real:**
 `needs_clarification` → read the developer's question (`get_intent`), revise via
 `update_intent` — answering the question in the directive, not in chat — then re-open with
 `transition_intent`. Locked (open/assigned/in_progress/
@@ -206,7 +206,7 @@ Two channels, both reviewed:
 
 1. **Directive intent** (`create_intent`) — work for a developer to implement in code.
 2. **Direct board edit** (diagram write tools) — the architect's own change to the diagram;
-   on a governed board it stages and mints a `board_diff` intent automatically.
+   on a governed board it stages and generates a `board_diff` intent automatically.
 
 Pick by where the truth changes: code change wanted → directive intent; diagram change wanted →
 board edit.

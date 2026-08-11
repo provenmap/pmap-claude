@@ -18,7 +18,7 @@ authoring ergonomics, but the server reconciles all three as independent rows.
 
 ## Golden rule — read this first, it's the opposite of `ui.pages`
 
-**`channels[].slug` is a FRESH aspect-local identity you mint — it must NOT be an existing spine node
+**`channels[].slug` is a FRESH aspect-local identity you generate — it must NOT be an existing spine node
 slug.** This is the reverse of the `ui.pages` rule (where `Page.slug` had to reuse a node the spine
 already had): a channel is its own thing (a topic, queue, or stream), not a node in the architecture
 graph. Mint one stable kebab-case slug per channel (e.g. `order-events`, `user-created-v2`) and keep it
@@ -40,17 +40,17 @@ the ones that must resolve against the spine — never the channel's own `slug`.
 
 `broker` is a closed enum — use exactly one of these eight values, matching what you find:
 
-| Source | Where it lives | `broker` value |
-| --- | --- | --- |
-| **AsyncAPI spec** | `asyncapi.{json,yaml}` — the richest single source; read this first if present, it maps directly to channels/messages/operations | per `servers[].protocol` |
-| **Kafka** | topic configs, `kafkajs`/`node-rdkafka` producer/consumer instantiation, Confluent Schema Registry subject registrations | `kafka` |
-| **AWS SQS** | CDK/Terraform/SAM `AWS::SQS::Queue`, `@aws-sdk/client-sqs` call sites | `sqs` |
-| **AWS SNS** | CDK/Terraform/SAM `AWS::SNS::Topic`, `@aws-sdk/client-sns` call sites | `sns` |
-| **AWS EventBridge** | CDK/Terraform/SAM `AWS::Events::Rule` / `EventBus`, `@aws-sdk/client-eventbridge` call sites | `eventbridge` |
-| **RabbitMQ** | `amqplib` exchange/queue/binding declarations | `rabbitmq` |
-| **Google Pub/Sub** | Terraform/gcloud topic + subscription resources, `@google-cloud/pubsub` client | `pubsub` |
-| **Redis Streams** | `XADD`/`XREADGROUP` call sites, stream key declarations | `redis-stream` |
-| **NATS** | subject declarations, `nats`/`nats.ws` client instantiation, JetStream stream configs | `nats` |
+| Source              | Where it lives                                                                                                                   | `broker` value           |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| **AsyncAPI spec**   | `asyncapi.{json,yaml}` — the richest single source; read this first if present, it maps directly to channels/messages/operations | per `servers[].protocol` |
+| **Kafka**           | topic configs, `kafkajs`/`node-rdkafka` producer/consumer instantiation, Confluent Schema Registry subject registrations         | `kafka`                  |
+| **AWS SQS**         | CDK/Terraform/SAM `AWS::SQS::Queue`, `@aws-sdk/client-sqs` call sites                                                            | `sqs`                    |
+| **AWS SNS**         | CDK/Terraform/SAM `AWS::SNS::Topic`, `@aws-sdk/client-sns` call sites                                                            | `sns`                    |
+| **AWS EventBridge** | CDK/Terraform/SAM `AWS::Events::Rule` / `EventBus`, `@aws-sdk/client-eventbridge` call sites                                     | `eventbridge`            |
+| **RabbitMQ**        | `amqplib` exchange/queue/binding declarations                                                                                    | `rabbitmq`               |
+| **Google Pub/Sub**  | Terraform/gcloud topic + subscription resources, `@google-cloud/pubsub` client                                                   | `pubsub`                 |
+| **Redis Streams**   | `XADD`/`XREADGROUP` call sites, stream key declarations                                                                          | `redis-stream`           |
+| **NATS**            | subject declarations, `nats`/`nats.ws` client instantiation, JetStream stream configs                                            | `nats`                   |
 
 **Never call a live broker's admin API or connect to consume/produce a probe message** — read the
 declarations (IaC, config files, client instantiation call sites) the same way `database.schema` reads
@@ -58,7 +58,7 @@ ORM schemas without booting the app.
 
 ## Per-channel fields
 
-- `slug` — see the golden rule above (fresh mint, not a spine slug).
+- `slug` — see the golden rule above (fresh generate, not a spine slug).
 - `broker`, `channelName` (the raw topic/queue/subject/stream name as declared).
 - `ordering` — `fifo` | `unordered` | `per-partition-key`, or `null` if not determinable.
 - `deliveryGuarantee` — `at-least-once` | `at-most-once` | `exactly-once`, or `null`. Read the broker's
@@ -107,13 +107,13 @@ per distinct consumer binding.
 Read `.provenmap/boards/<board-slug>.json` for the node `slug`s the spine already has. Every node-ref
 field below must be one of them (except `channels[].slug` itself — see the golden rule):
 
-- **`ownerSlug`** — the node that *owns* the channel: the service that provisions/defines the
+- **`ownerSlug`** — the node that _owns_ the channel: the service that provisions/defines the
   topic/queue/stream (e.g. the `order-service` node for an `order-events` topic it creates). Omit
   (`null`) if unsure — the D5 pass heals it after the next `/sync`.
-- **`producers[]`** — node slugs of every service that *publishes* to this channel. Raw slugs, not a
+- **`producers[]`** — node slugs of every service that _publishes_ to this channel. Raw slugs, not a
   `{nodeSlug, relation, evidence}` shape (this aspect has no generic `references[]` list — producers and
   consumers ARE the reference shape here).
-- **`consumers[]`** — node slugs of every service that *consumes* from this channel at the channel level
+- **`consumers[]`** — node slugs of every service that _consumes_ from this channel at the channel level
   (broad awareness). Use `subscriptions[].consumerNode` instead when you can identify the specific
   binding — a service can appear in both if useful.
 - Unknown slugs are kept unresolved and auto-heal on the next `/sync` — emit them, don't drop them.
@@ -121,6 +121,6 @@ field below must be one of them (except `channels[].slug` itself — see the gol
 ## Cross-aspect tip
 
 If you're also adopting `api.surface` for this repo, an endpoint's `outboundEvents[].channelSlug` can
-point at a channel modeled here — keep the channel `slug` you mint identical across both extractions so
+point at a channel modeled here — keep the channel `slug` you generate identical across both extractions so
 the two aspects reconcile against the same identity instead of silently describing two different
 channels with the same name.

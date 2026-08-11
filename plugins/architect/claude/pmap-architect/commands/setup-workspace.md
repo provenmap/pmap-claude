@@ -6,7 +6,7 @@ allowed-tools: AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenm
 
 The top of the funnel: a ready-but-empty workspace and an architect who either knows the org or
 is founding something new. Fork first, interview briefly, draw the landscape on the root board,
-then — map mode — mint app boards and hand off bindings, or — found mode — stop at the
+then — map mode — generate app boards and hand off bindings, or — found mode — stop at the
 strategic level and name the graduation path. Doctrine, archetype selection, both divergences,
 and the checklist contract live in **landscape-modeling**; load it plus **architect-core** and
 **board-reading**. Render step banners and glyphs per architect-core's formatting norms.
@@ -22,7 +22,7 @@ architect to decide the pending work first (architect-core).
 
 - **Empty root** (0 nodes/edges, ≤1 top-level board, no bindings) → full interview, starting at
   the fork.
-- **Sparse root, no code-plugin binding anywhere yet** → *continue* mode: extend what exists,
+- **Sparse root, no code-plugin binding anywhere yet** → _continue_ mode: extend what exists,
   don't restart (keep the mode the scaffold drafts file recorded; ask the fork only if no
   drafts file exists).
 - **Populated or bound** → this command's window has closed: route to `/board` (landscape mode)
@@ -30,8 +30,8 @@ architect to decide the pending work first (architect-core).
 
 ### Step 2 — the fork, the source gate, then the interview (ELICIT)
 
-**The fork** (AskUserQuestion, the first interview move): *"Are we mapping an estate that
-exists, or founding something new?"*
+**The fork** (AskUserQuestion, the first interview move): _"Are we mapping an estate that
+exists, or founding something new?"_
 
 **The source gate (map mode only, before any estate question)** — AskUserQuestion,
 multi-select, mixing is normal: **describe it in conversation** · **scan repo folders** ·
@@ -42,7 +42,7 @@ the paths, then
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --scan-repos --paths <p1,p2,...>
 ```
 
-and the output becomes interview *candidates* presented for confirm/rename/drop — never
+and the output becomes interview _candidates_ presented for confirm/rename/drop — never
 conclusions; relay `skipped[]` and `truncated` honestly. **Never touch the filesystem, git
 state, or any repository unprompted.** Record the gate choice and any scan inventory in the
 drafts file — a resumed interview neither re-asks nor re-scans.
@@ -78,8 +78,8 @@ the payload (`--validate diagram`) → containers, then ONE `create_nodes` call,
   get system archetypes; `SaaS` gets the external-integration archetype; `planned` gets a
   system archetype + the graduation-path narration (found-mode treatment — landscape-modeling).
 - Found mode: **system archetypes only** — a planned system is not yet bindable; the plan
-  table's kind column reads `planned`. Narrate the founding truth: *"this is target state —
-  systems graduate as they become real."*
+  table's kind column reads `planned`. Narrate the founding truth: _"this is target state —
+  systems graduate as they become real."_
 
 ### Step 3.5 — style the landscape (board-styling skill)
 
@@ -92,7 +92,7 @@ working copy as the nodes and edges — one commit ships structure and styling t
 If validation fails twice, skip styling (say so) and continue to Step 4; the architect can run
 /style-board later.
 
-### Step 4 — mint app boards (APP BOARDS — map mode only)
+### Step 4 — generate app boards (APP BOARDS — map mode only)
 
 `create_board(ownerNodeSlug, newBoardSlug, name)` per `repo`-kind node. Born empty — **never
 draw inside**: content arrives from developer pushes. If the response carries a server-built
@@ -104,7 +104,7 @@ the strategic level; boards arrive at graduation (landscape-modeling's graduatio
 ### Step 5 — commit the scaffold, complete the bindings (or hand off)
 
 The closing move (architect-core): `preview_write_session_commit` → present the plan → ask for
-title/summary (AskUserQuestion) → `commit_write_session` → narrate what was minted, printing
+title/summary (AskUserQuestion) → `commit_write_session` → narrate what was generated, printing
 `🔗 View board: <url>` for any board whose tool response carried a server-built `viewUrl`
 (commit, `create_board`, `convert_node_to_app` — skip silently when absent). Then:
 

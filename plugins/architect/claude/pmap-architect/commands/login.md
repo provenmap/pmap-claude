@@ -1,18 +1,18 @@
 ---
 category: connect
-description: "Account · Sign in to ProvenMap in the browser and mint an architect MCP token (no copy-paste)"
+description: "Account · Sign in to ProvenMap in the browser and generate an architect MCP token (no copy-paste)"
 argument-hint: "[server-url]"
 allowed-tools: Bash(node:*)
 ---
 
 Connect to the ProvenMap MCP server by signing in through the browser: pick a workspace, scope,
-and optional board restriction there, and the minted **MCP bearer token** is stored for you
+and optional board restriction there, and the generated **MCP bearer token** is stored for you
 (user-scope, `~/.provenmap/architect-mcp.json`) and written into the host's MCP config when
 scriptable. The token never transits this chat. **The token acts as you**: writes made here
 join your one workspace working copy — the same session the web app shows — and committing or
 discarding from either surface decides both.
 
-> Prefer manual setup, or minting from the settings UI? Use **`/configure`** — it stays fully
+> Prefer manual setup, or generating from the settings UI? Use **`/configure`** — it stays fully
 > supported (and is the only path when you lack workspace-admin permission to approve).
 
 ## Login Workflow
@@ -68,8 +68,8 @@ Print the JSON `display` field verbatim. Then, by `status`:
 
 ## Notes
 
-- **Approval needs workspace admin** (access-manage) — the same gate as minting a token in the
-  settings UI. Without it, an admin mints the token there and the user wires it via `/configure`.
+- **Approval needs workspace admin** (access-manage) — the same gate as generating a token in the
+  settings UI. Without it, an admin generates the token there and the user wires it via `/configure`.
 - **Non-default server (self-hosted, on-prem, staging):** pass the server as
   the command's argument — `/login https://<your-server>/api` — no environment
   variable needed, and it works in every host. `PMAP_BASE_URL` remains

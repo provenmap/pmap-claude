@@ -29,11 +29,11 @@ loop from the **intents-authoring** skill; load it (and **architect-core**) firs
      the pre-land self-review + read-back gate, then apply with `update_intent` (anchors +
      notes land on the real intent) and release with `transition_intent`.
    - **Author, free-form** ("here's what I want done"): classify per board-reading —
-     *diagram-shaped* → make the board edit (it joins the working copy; committing later mints
-     the `board_diff` intent), then optional context anchors via the loop; *code-shaped* →
+     _diagram-shaped_ → make the board edit (it joins the working copy; committing later generates
+     the `board_diff` intent), then optional context anchors via the loop; _code-shaped_ →
      directive intent through the full loop (shape when unsettled → holistic sweep →
      materialization gates → propose → describe → grill → self-review → read-back → land,
-     `--validate intent` before `create_intent`); *both* → edit first, then the directive
+     `--validate intent` before `create_intent`); _both_ → edit first, then the directive
      intent citing the edited elements.
    - **Queue management** → `transition_intent` (draft→open locks it for developer pulls;
      →rejected reverts staged changes — state that consequence), `assign_intent` (empty list
@@ -44,7 +44,7 @@ loop from the **intents-authoring** skill; load it (and **architect-core**) firs
      deletion.
 5. **Close** — if this session made board edits, run the closing move: `preview_write_session_commit`
    → present the plan → title/summary (AskUserQuestion) → `commit_write_session` → narrate the
-   minted intents by slug, offer `publish`. Report every write from its result message,
+   generated intents by slug, offer `publish`. Report every write from its result message,
    slug-first. No dead ends: name the next command (`/board`, `/insights`, `/hub`).
 
 ## Failure branches

@@ -47,10 +47,10 @@ see [references/analysis-patterns.md](references/analysis-patterns.md)), pull th
 (`get_nodes`, `get_edges` with `nodeSlugs`, `get_node_aspects`), follow `childBoardSlug` only
 when the answer lives a layer down.
 
-**Answer-mode heuristic:** prose is the default. Escalate to a *drawn* answer when the answer
+**Answer-mode heuristic:** prose is the default. Escalate to a _drawn_ answer when the answer
 IS a subgraph — dependency/impact traces, cross-app flows, "show me how X reaches Y", anything
 where prose would enumerate more than ~5 elements plus their relationships. The drawn form:
-`create_context_board {name, question}` mints an ephemeral standalone `contextmap` (outside
+`create_context_board {name, question}` generates an ephemeral standalone `contextmap` (outside
 the tree — clean by construction); draw the answer-subgraph on it with the normal diagram
 tools (ungoverned — nothing is staged), hand back its slug + a prose précis, and clean up with
 `delete_context_board` when the conversation is done — never `discard_write_session`, which
@@ -74,13 +74,13 @@ into it **before** answering.
 
 Detect what the user wants (from the platform's intent-detection signals):
 
-| Signal | Keywords | Shape |
-|---|---|---|
-| Creation | add, create, new, introduce, build | new elements integrating with existing structure |
-| Modification | update, change, rename, move, reparent | `get_nodes` first, then `update_nodes` |
-| Deletion | remove, delete, drop | identify cascade effects first |
-| Analysis | show, what, why, how, analyze, assess | read tools only — report what exists, no speculation |
-| Hybrid | and, also, then | execute in order: analyze → delete → modify → create → verify |
+| Signal       | Keywords                               | Shape                                                         |
+| ------------ | -------------------------------------- | ------------------------------------------------------------- |
+| Creation     | add, create, new, introduce, build     | new elements integrating with existing structure              |
+| Modification | update, change, rename, move, reparent | `get_nodes` first, then `update_nodes`                        |
+| Deletion     | remove, delete, drop                   | identify cascade effects first                                |
+| Analysis     | show, what, why, how, analyze, assess  | read tools only — report what exists, no speculation          |
+| Hybrid       | and, also, then                        | execute in order: analyze → delete → modify → create → verify |
 
 Ambiguous element reference → list the candidates with slugs and ask which one. See
 [references/analysis-patterns.md](references/analysis-patterns.md) for the analysis types,
@@ -93,7 +93,7 @@ Diagram writes (`create_nodes`, `update_nodes`, `delete_nodes`, `create_edges`, 
 `delete_edges`, `apply_diagram_info`, `apply_semantic_styles`, `apply_composition`,
 `apply_icon_shape_styles` — styling methodology: the board-styling skill) are exposed and
 journaled: every write joins the architect's working copy, and **nothing is staged until the
-session commits** (on a governed board, commit mints one reviewable `board_diff` intent per
+session commits** (on a governed board, commit generates one reviewable `board_diff` intent per
 governed root).
 Narrate the journal after a batch: "Saved to your working copy — N uncommitted changes across
 M boards."

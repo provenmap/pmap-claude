@@ -20,14 +20,14 @@ documents — and shape it into a single `AuthzRegistryPayload`:
 **The payload is a SINGLETON — one registry object per push, never `{ registries: [...] }`.** A
 board has at most one `authz.registry`. Unlike `database.schema`'s `tables[]` or `event.catalog`'s
 `channels[]`, there is no top-level array of registries to loop over — `roles[]`/`resourceTypes[]`/
-`permissions[]`/`policies[]` are the four child arrays *inside* the one registry object you emit. If
+`permissions[]`/`policies[]` are the four child arrays _inside_ the one registry object you emit. If
 this repo's authorization model spans multiple engines/files (e.g. CASL rules AND an IAM policy
 document), merge them into this ONE registry payload — don't emit one payload per source.
 
 ## Critical safety rule — read this before touching any policy source
 
-**NEVER evaluate or execute a policy against real inputs.** This aspect is policy *inspection*, not
-policy *enforcement* — parse policy definitions and display their declared shape only. Do not call
+**NEVER evaluate or execute a policy against real inputs.** This aspect is policy _inspection_, not
+policy _enforcement_ — parse policy definitions and display their declared shape only. Do not call
 `ability.can(...)`, do not run `opa eval`, do not invoke Cerbos's check API, do not query a live IAM
 policy simulator, and do not run a query against a live roles/permissions table's rows. Read source
 files (rule definitions, `.rego`/`.polar` files, IAM JSON documents, table/column schema definitions)
@@ -37,15 +37,15 @@ statically — the same way `database.schema` reads ORM schemas without booting 
 
 `engine` (on each `policies[]` entry) is a closed enum — use exactly one of these seven values:
 
-| Source | Where it lives | `engine` value |
-| --- | --- | --- |
-| **CASL** | `defineAbility`/`AbilityBuilder` rule definitions (JS/TS) — `can`/`cannot` calls name the action/subject/conditions | `casl` |
-| **Cerbos** | policy YAML files (`resource_policies/*.yaml`, `derived_roles/*.yaml`) | `cerbos` |
-| **OPA Rego** | `.rego` policy files | `opa_rego` |
-| **Oso Polar** | `.polar` files | `oso_polar` |
-| **AWS IAM** | IAM policy documents (JSON) — CDK/Terraform/CloudFormation-authored or standalone | `aws_iam` |
-| **DB-backed RBAC** | a roles/permissions table's **schema only** — column definitions, never live rows | `db_table` |
-| *(anything else)* | a custom/home-grown authorization scheme | `custom` |
+| Source             | Where it lives                                                                                                      | `engine` value |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------- | -------------- |
+| **CASL**           | `defineAbility`/`AbilityBuilder` rule definitions (JS/TS) — `can`/`cannot` calls name the action/subject/conditions | `casl`         |
+| **Cerbos**         | policy YAML files (`resource_policies/*.yaml`, `derived_roles/*.yaml`)                                              | `cerbos`       |
+| **OPA Rego**       | `.rego` policy files                                                                                                | `opa_rego`     |
+| **Oso Polar**      | `.polar` files                                                                                                      | `oso_polar`    |
+| **AWS IAM**        | IAM policy documents (JSON) — CDK/Terraform/CloudFormation-authored or standalone                                   | `aws_iam`      |
+| **DB-backed RBAC** | a roles/permissions table's **schema only** — column definitions, never live rows                                   | `db_table`     |
+| _(anything else)_  | a custom/home-grown authorization scheme                                                                            | `custom`       |
 
 There's no natural richness ordering across these — unlike the IaC-based aspects, these are genuinely
 different tool families with different levels of introspectable detail. Read whichever the repo
@@ -69,7 +69,7 @@ actually uses; don't prefer one over another when several appear together.
 
 `{ slug, name, inherits[], isBuiltIn, textual }` — one entry per distinct role.
 
-- `slug` — a FRESH aspect-local identity you mint (kebab-case, e.g. `org-admin`, `billing-viewer`) —
+- `slug` — a FRESH aspect-local identity you generate (kebab-case, e.g. `org-admin`, `billing-viewer`) —
   **not** a spine node slug. Keep it stable across re-extracts; the server reconciles by it.
 - `inherits[]` — slugs of OTHER roles in this SAME `roles[]` array that this role inherits
   permissions from. Self-referential: it points within the payload, never at the spine. `/adopt`
@@ -84,7 +84,7 @@ actually uses; don't prefer one over another when several appear together.
 `{ slug, name, parentType, textual }` — one entry per distinct resource type the policies govern
 (e.g. `document`, `workspace`, `invoice`).
 
-- `slug` — fresh aspect-local identity, same minting rule as `roles[].slug`.
+- `slug` — fresh aspect-local identity, same generating rule as `roles[].slug`.
 - `parentType` — another `resourceTypes[].slug` in this SAME payload if this resource type nests
   under a broader one (e.g. `document`'s `parentType` is `workspace`), else `null`. Self-referential,
   same pattern as `roles[].inherits` — validated to resolve within the payload (existence only, see
@@ -133,7 +133,7 @@ distinct grant/deny rule.
 
 Read `.provenmap/boards/<board-slug>.json` for the node slugs the spine already has. Unlike every
 other aspect, **`ownerSlug` is the ONLY field checked against the spine.** Every role/resourceType/
-permission/policy identity is either this aspect's own fresh mint (`roles[].slug`,
+permission/policy identity is either this aspect's own fresh generate (`roles[].slug`,
 `resourceTypes[].slug`) or a reference to another row within this SAME payload (`roles[].inherits[]`,
 `resourceTypes[].parentType`, `permissions[].roleSlug`, `permissions[].resourceType`) — none of them
 name a node on the architecture graph, so none of them belong in the spine cross-check. `/adopt`
@@ -151,7 +151,7 @@ enforces this split for you:
 ## Cross-aspect tip
 
 `ui.pages`' `authGuards[].requiredRoles[]` and `api.surface`'s `requiredRoles[]` both name role slugs
-from this aspect. Keep the `roles[].slug` you mint here stable across re-extracts so those two
+from this aspect. Keep the `roles[].slug` you generate here stable across re-extracts so those two
 aspects' role references resolve against the same identity once `authz.registry` is adopted too — the
 aspects reconcile independently (adopting them in any order is fine), but consistent slugs are what
 makes the cross-references meaningful once all three are on the board.
@@ -160,9 +160,11 @@ makes the cross-references meaningful once all three are on the board.
 
 Write the payload to `.provenmap/aspects/tmp/authz-payload.json`, then adopt it the same way every
 other aspect kind does:
+
 ```
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-adopt.js --aspect authz.registry --payload .provenmap/aspects/tmp/authz-payload.json --mode <mode>
 ```
+
 State is recorded exactly like every other aspect kind — `writeAspectState()`'s existing
 `${boardSlug}.${aspect}.json` naming (with `.` replaced by `-`, giving `<board>.authz-registry.json`)
 already fits a singleton payload perfectly. It was never keyed by row id in the first place, so there

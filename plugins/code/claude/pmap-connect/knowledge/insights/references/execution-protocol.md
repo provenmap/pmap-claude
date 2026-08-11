@@ -17,11 +17,13 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --list-insight-skills
 ```
 
 Parse the JSON output:
+
 - `featureAvailable === false` → report "Insights not available for this account" and stop
 - `skills === []` → report "No insight skills configured" and stop
 - Otherwise, use the `skills[]` precis data (slug, name, description, category, duration) for skill selection
 
 The precis list is used in two ways depending on how the command was invoked:
+
 - **Agent-inferred mode**: Claude semantically matches the user's natural-language prompt to skill names and descriptions to select the best-fit skill(s)
 - **User-selection mode**: Claude displays the skills list and collects an explicit user choice plus a mandatory focus prompt before proceeding
 
@@ -34,6 +36,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --get-insight-skill <slug>
 ```
 
 Parse the JSON output:
+
 - On success, the `skill` field contains the full skill with `instructions` and `references[]`
 - Exit code 3 with 404 → skill not found, skip it
 - If `skill.instructions` is null → skip and report "Insight skill has no instructions"
@@ -42,7 +45,7 @@ For `--all`, fetch each skill's full data one at a time before executing it.
 
 ### 2. Extract Board Context
 
-**Preferred:** run the context prepass (`pmap-insights.js --build-context --board-slug <boardSlug> --out .provenmap/insights/<boardSlug>.context.json`) and read the pack. This canonical path is also what `--save-insight` loads as the oracle for its quality gates. It resolves the board universe (insights mode: root + child subtree + siblings; demo mode `--demo`: start board + direct children only) and emits the skill variables, the keyed element index, the edge adjacency, and a degree table — so you don't read every board JSON or mint scope keys by hand. The manual walk below is the **fallback** when the pack is unavailable.
+**Preferred:** run the context prepass (`pmap-insights.js --build-context --board-slug <boardSlug> --out .provenmap/insights/<boardSlug>.context.json`) and read the pack. This canonical path is also what `--save-insight` loads as the oracle for its quality gates. It resolves the board universe (insights mode: root + child subtree + siblings; demo mode `--demo`: start board + direct children only) and emits the skill variables, the keyed element index, the edge adjacency, and a degree table — so you don't read every board JSON or generate scope keys by hand. The manual walk below is the **fallback** when the pack is unavailable.
 
 Fallback — read the board's analysis data from `.provenmap/boards/<boardSlug>.json` and extract skill variables — see [graph-context.md](graph-context.md) for details. Also read `.provenmap/boards/manifest.json` (if it exists) to discover child/layer boards. For nodes that have a `layerBoardSlug`, read that child board's data file too to enable cross-board analysis. Also read any sibling boards discovered from the manifest to enable cross-domain paths.
 
@@ -74,14 +77,14 @@ If the skill has no `instructions` (null), skip it and report "Insight skill has
 
 Replace `{{variable}}` placeholders in the instructions with values from the board context (step 2) and the user's prompt:
 
-| Variable | Source | Example Value |
-|---|---|---|
-| `{{boardSlug}}` | `metadata.boardSlug` | `my-app-overview` |
-| `{{techStacks}}` | `metadata.techStacks` joined by `, ` | `react, node, postgres` |
-| `{{detectedLanguages}}` | `metadata.languages` joined by `, ` | `typescript` |
-| `{{nodeArchetypes}}` | Unique `type` values from `nodes[]` | `Service, Database, Queue` |
-| `{{focusNodes}}` | Formatted node list | `- auth-service (Service): Handles login` |
-| `{{userPrompt}}` | User-provided focus prompt (empty string if not provided) | `check the auth service for OWASP risks` |
+| Variable                | Source                                                    | Example Value                             |
+| ----------------------- | --------------------------------------------------------- | ----------------------------------------- |
+| `{{boardSlug}}`         | `metadata.boardSlug`                                      | `my-app-overview`                         |
+| `{{techStacks}}`        | `metadata.techStacks` joined by `, `                      | `react, node, postgres`                   |
+| `{{detectedLanguages}}` | `metadata.languages` joined by `, `                       | `typescript`                              |
+| `{{nodeArchetypes}}`    | Unique `type` values from `nodes[]`                       | `Service, Database, Queue`                |
+| `{{focusNodes}}`        | Formatted node list                                       | `- auth-service (Service): Handles login` |
+| `{{userPrompt}}`        | User-provided focus prompt (empty string if not provided) | `check the auth service for OWASP risks`  |
 
 After replacing all `{{variable}}` placeholders, if `{{userPrompt}}` is non-empty, append the following section at the end of the instructions:
 
@@ -95,6 +98,7 @@ Use this focus to prioritise findings, narrow scope, or highlight areas the user
 ### 5. Execute Analysis
 
 Follow the interpolated instructions. Typically this involves:
+
 - Reading source files via Read/Glob/Grep tools
 - Scanning for patterns described in the instructions
 - Consulting references when the instructions say "see `<reference-name>`"
@@ -110,6 +114,7 @@ References are named markdown documents that provide detailed detection patterns
 **Author this first**, before findings/paths/suggestions — everything else references it.
 
 **From the pack (preferred):** copy `pack.scopeBoards` into `scope.boards` (its aliases are normalized board slugs — copy verbatim, don't shorten to mnemonics like the examples below). For each cited element, emit `{ key, slug, board }` **verbatim** from its `pack.elements` row plus `role`/`emphasis` (drop `type`/`name`/`description`). This is what guarantees the payload passes scope validation on the first try. Three rules:
+
 - **Cite only what you use** (plus deliberate `context` elements) — do not dump the whole index.
 - **All-or-nothing boards:** every cited element's board must be present in `scope.boards` (copying `pack.scopeBoards` whole satisfies this); never prune a board you still reference.
 - **Discovered in source?** A component you find in the source that has no `pack.elements` row must become a `GraphSuggestion` (`action:"add"`, `element:null`) — never invent a key and cite it.
@@ -125,14 +130,15 @@ References are named markdown documents that provide detailed detection patterns
     ],
     "elements": [
       { "key": "e1", "slug": "auth-service", "board": "auth", "role": "focus" },
-      { "key": "e2", "slug": "api-gateway",  "board": "ovw", "role": "focus" },
-      { "key": "e3", "slug": "user-db",      "board": "auth", "role": "context" }
+      { "key": "e2", "slug": "api-gateway", "board": "ovw", "role": "focus" },
+      { "key": "e3", "slug": "user-db", "board": "auth", "role": "context" }
     ]
   }
 }
 ```
 
 Conventions:
+
 - **`alias`** — short token, regex `^[a-z0-9_-]+$`, max 20 chars. Pick something memorable from the slug (e.g. `ovw` for `my-project-overview`, `auth` for `auth-domain`). Boards reference each other only by alias inside this payload.
 - **`key`** — short token, regex `^[a-z0-9_-]+$`, max 12 chars. Either sequential (`e1`, `e2`) or semantic (`auth`, `gw`, `db`). Keys are referenced from findings, paths, and suggestions.
 - **`role`** — `focus` for elements your analysis anchors findings or paths on; `context` for elements referenced only for surrounding context. Default is `focus` if omitted.
@@ -160,11 +166,12 @@ For each finding, create an `ElementInsight` referencing scope by element key:
 ```
 
 Field guide:
+
 - **`id`** — unique within this analysis (e.g., `sec-001`, `perf-003`).
 - **`element`** — ElementKey from `scope.elements`. Null/omit for board-wide findings that don't anchor to a single element.
 - **`relatedElements`** — array of ElementKeys also implicated. The diagram highlights all of them together.
 - **`name`** — short label (≤ 100 chars).
-- **`insight`** — evidence-driven description (5–500 chars). State *what* you found and *why* it matters. Opinion lives in `recommendation`.
+- **`insight`** — evidence-driven description (5–500 chars). State _what_ you found and _why_ it matters. Opinion lives in `recommendation`.
 - **`polarity`** — one of `risk`, `strength`, `opportunity`, `observation`. (No "metric" — measurements are a separate field, see below.)
 - **`priority`** — one of `critical`, `high`, `medium`, `low`. Orthogonal to polarity (a strength can still be high priority to highlight).
 - **`confidence`** — one of `verified` (read the code), `likely` (strong evidence), `inferred` (derived from patterns), `speculative` (pattern-match guess). Be honest; the renderer surfaces this.
@@ -190,7 +197,13 @@ When a finding has a quantitative dimension, attach a `measurement` rather than 
   "polarity": "observation",
   "priority": "medium",
   "confidence": "likely",
-  "measurement": { "value": 850, "unit": "ms", "baseline": 200, "threshold": 500, "trend": "increasing" },
+  "measurement": {
+    "value": 850,
+    "unit": "ms",
+    "baseline": 200,
+    "threshold": 500,
+    "trend": "increasing"
+  },
   "context": "Bcrypt cost factor is 14, set in 2019; modern hardware supports 12 without weakening security."
 }
 ```
@@ -210,8 +223,16 @@ Create `InsightPath` objects only when the analysis traces connected flows throu
   "priority": "high",
   "defaultBoard": "ovw",
   "steps": [
-    { "element": "e2", "label": "Receives login request", "annotation": "Rate limited 10 req/s" },
-    { "element": "e1", "label": "Validates credentials", "findingRef": "sec-001" },
+    {
+      "element": "e2",
+      "label": "Receives login request",
+      "annotation": "Rate limited 10 req/s"
+    },
+    {
+      "element": "e1",
+      "label": "Validates credentials",
+      "findingRef": "sec-001"
+    },
     { "element": "e3", "label": "Reads user record" }
   ],
   "tags": ["auth", "latency"]
@@ -219,6 +240,7 @@ Create `InsightPath` objects only when the analysis traces connected flows throu
 ```
 
 Field guide:
+
 - **`id`**, **`title`**, **`description`** — as before. Title ≤ 100 chars, description ≤ 500.
 - **`polarity`**, **`priority`** — overall nature of the path.
 - **`defaultBoard`** — BoardAlias from `scope.boards`. The most common board across the steps; used for fast UI lookup. Each step's element resolves to its own board via `scope.elements` regardless of this default.
@@ -247,9 +269,13 @@ Field guide:
   "steps": [
     { "element": "pay", "label": "payment-service outage" },
     {
-      "element": "ord", "label": "order-service blocks on retries",
+      "element": "ord",
+      "label": "order-service blocks on retries",
       "branches": [
-        { "element": "ntf", "label": "notification-service skips confirmation" },
+        {
+          "element": "ntf",
+          "label": "notification-service skips confirmation"
+        },
         { "element": "anly", "label": "analytics pipeline misses event" }
       ]
     },
@@ -276,6 +302,7 @@ When the analysis identifies structural improvements to the board, create `Graph
 ```
 
 Field guide:
+
 - **`action`** — `add`, `remove`, or `modify`.
 - **`targetType`** — `node`, `edge`, or `container`.
 - **`element`** — ElementKey of the element to remove or modify. Null/omit for `add` actions.
@@ -289,6 +316,7 @@ For adding a new element that doesn't yet exist in scope, omit `element` and des
 ### 11. Write Markdown Report
 
 Compose a markdown report for the `content` field:
+
 - Summary with finding counts by priority and polarity
 - Detailed findings grouped by element or category, mentioning each finding's confidence and (where set) measurement
 - Paths traced through the architecture
@@ -310,8 +338,13 @@ Build the `PushInsightsCommand` JSON. Every reference inside `insights`/`paths`/
         { "slug": "auth-domain", "alias": "auth" }
       ],
       "elements": [
-        { "key": "e1", "slug": "auth-service", "board": "auth", "role": "focus" },
-        { "key": "e2", "slug": "api-gateway",  "board": "ovw", "role": "focus" }
+        {
+          "key": "e1",
+          "slug": "auth-service",
+          "board": "auth",
+          "role": "focus"
+        },
+        { "key": "e2", "slug": "api-gateway", "board": "ovw", "role": "focus" }
       ]
     },
     "insights": [
@@ -335,7 +368,11 @@ Build the `PushInsightsCommand` JSON. Every reference inside `insights`/`paths`/
         "defaultBoard": "ovw",
         "steps": [
           { "element": "e2", "label": "Receives login" },
-          { "element": "e1", "label": "Validates credentials", "findingRef": "sec-001" }
+          {
+            "element": "e1",
+            "label": "Validates credentials",
+            "findingRef": "sec-001"
+          }
         ]
       }
     ],
@@ -366,6 +403,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-context-tags.js
 ```
 
 Note:
+
 - `insights.scope` is **required**. `insights.insights`, `insights.paths`, `insights.suggestions` are all optional — include only what the analysis produces.
 - **`tags`** — curated ContextTag names classifying the **whole** insight (risk area, domain, lifecycle). Copy names **verbatim** from `pmap-context-tags.js` output (`tagNames`); the server **drops** any name not in the vocabulary, so never invent one. Optional — omit or use `[]` when none fit. This is distinct from the per-finding `tags` inside each ElementInsight, which are free-text keywords.
 - Do not set `insights.name` — the data layer fills it from the parent record's title at render time.
@@ -378,6 +416,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight <path> --boar
 ```
 
 The CLI runs three validation gates before writing/pushing:
+
 1. Zod schema (structural validity).
 2. `validateScopeReferences` (every `element`/`fromElement`/`toElement` ElementKey resolves in `scope.elements`; every `scope.elements[].board` and every `defaultBoard` BoardAlias resolves in `scope.boards`; every `findingRef`/`relatedFindings` id matches a finding; **unique ids**; **no self-reference**; **no consecutive-duplicate path steps**; **finite measurement values**; no `ElementInsight` has both `recommendation` and `context`).
 3. `validateInsightContent` against the context pack (when present): every cited `scope.elements` `{slug,board}` **exists in the pack**; the primary board is not in `pack.stats.unresolved`; same-board path step pairs are **edge-grounded** against `pack.edges` (HARD for `/demo-insights`, a warning for `/insights`).

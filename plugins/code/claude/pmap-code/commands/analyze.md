@@ -1,7 +1,8 @@
 ---
 category: map
 description: "Map · Analyze codebase architecture with layered board support"
-argument-hint: [--clean | --drill <parent-board-slug>/<node-slug> | --all | --auto]
+argument-hint:
+  [--clean | --drill <parent-board-slug>/<node-slug> | --all | --auto]
 allowed-tools: Read, Glob, Grep, Write, Bash(node:*, git:*), AskUserQuestion, Task
 ---
 
@@ -114,12 +115,12 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js
 
 Print the JSON's `display` field **verbatim** — do not reformat, reorder, or summarise it.
 
-| exit | meaning | action |
-| ---- | ------- | ------ |
-| 0 | Proceed | Continue to the next step. If `repairs.boardsRecovered` is non-empty, local state was just restored from the server — say so once (the `display` already carries the sentence) and continue. |
-| 1 | Not connected, or credentials rejected | Make the **connect-now offer**: AskUserQuestion "Connect to ProvenMap now?" → **Connect now** runs `pmap-login.js --start` then `--poll` inline (print each `display` verbatim) and resumes this command on `status: "complete"`; **Not now** stops with the `error` sentence verbatim. In `--auto` mode skip the offer and stop with the `error` sentence verbatim. |
-| 2 | Binding could not be verified | Print `error` verbatim and stop. Name `/status` for the full local picture. |
-| 11 | Branch mismatch | Print `display` verbatim, then ask via AskUserQuestion (in `--auto` mode: stop after printing — the `display` already carries the `git switch` recovery). Header: `Branch`. Question: `"This project is bound to a different branch. How do you want to proceed?"` Options: **Re-bind to this branch (`/login`)** — run the `/login` workflow inline, then re-run this step; **Stop — I'll switch branches myself** — stop, having already printed the `git switch` line. Never run `git switch` yourself: the working tree may be dirty. |
+| exit | meaning                                | action                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ---- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0    | Proceed                                | Continue to the next step. If `repairs.boardsRecovered` is non-empty, local state was just restored from the server — say so once (the `display` already carries the sentence) and continue.                                                                                                                                                                                                                                                                                                                                              |
+| 1    | Not connected, or credentials rejected | Make the **connect-now offer**: AskUserQuestion "Connect to ProvenMap now?" → **Connect now** runs `pmap-login.js --start` then `--poll` inline (print each `display` verbatim) and resumes this command on `status: "complete"`; **Not now** stops with the `error` sentence verbatim. In `--auto` mode skip the offer and stop with the `error` sentence verbatim.                                                                                                                                                                      |
+| 2    | Binding could not be verified          | Print `error` verbatim and stop. Name `/status` for the full local picture.                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| 11   | Branch mismatch                        | Print `display` verbatim, then ask via AskUserQuestion (in `--auto` mode: stop after printing — the `display` already carries the `git switch` recovery). Header: `Branch`. Question: `"This project is bound to a different branch. How do you want to proceed?"` Options: **Re-bind to this branch (`/login`)** — run the `/login` workflow inline, then re-run this step; **Stop — I'll switch branches myself** — stop, having already printed the `git switch` line. Never run `git switch` yourself: the working tree may be dirty. |
 
 ### Step -1: Archetype precondition check
 
@@ -133,21 +134,20 @@ Print the JSON's `display` field **verbatim** — do not reformat, reorder, or s
 
 2. Parse the JSON output. The `status` field + exit code drive behaviour:
 
-   | status            | exit | requiresPrompt | action                                                                                                                                                       |
-   | ----------------- | ---- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-   | `ok`              | 0    | false          | Proceed silently to Step 0.                                                                                                                                  |
-   | `pending`         | 0    | false          | Print the `reason` from the JSON as a warning, then proceed.                                                                                                 |
-   | `missing`         | 10   | true           | Lock file does not exist. Prompt the user (see step 3).                                                                                                      |
-   | `stale_commit`    | 10   | true           | Codebase has moved since the last archetype scan. Prompt (see step 3).                                                                                       |
-   | `stale_catalogue` | 10   | true           | Server catalogue has changed since the last scan. Prompt (see step 3).                                                                                       |
-   | `skipped`         | 10   | true           | Last run was skipped — **skip is one-shot, this re-prompts on every `/analyze`**. Prompt (see step 3).                                                       |
+   | status            | exit | requiresPrompt | action                                                                                                 |
+   | ----------------- | ---- | -------------- | ------------------------------------------------------------------------------------------------------ |
+   | `ok`              | 0    | false          | Proceed silently to Step 0.                                                                            |
+   | `pending`         | 0    | false          | Print the `reason` from the JSON as a warning, then proceed.                                           |
+   | `missing`         | 10   | true           | Lock file does not exist. Prompt the user (see step 3).                                                |
+   | `stale_commit`    | 10   | true           | Codebase has moved since the last archetype scan. Prompt (see step 3).                                 |
+   | `stale_catalogue` | 10   | true           | Server catalogue has changed since the last scan. Prompt (see step 3).                                 |
+   | `skipped`         | 10   | true           | Last run was skipped — **skip is one-shot, this re-prompts on every `/analyze`**. Prompt (see step 3). |
 
    On exit code `1` (not connected — `status: not_connected`) or `2` (API error): print the script's `error` field verbatim and stop. Step -2 has already offered to connect, so a `1` here means the user declined or the credentials are still rejected.
 
-3. When `requiresPrompt` is true, ask via AskUserQuestion. In `--auto` mode do not ask and do not skip: stop with the script's `reason` verbatim plus *"Archetype check needs a decision — run `/analyze-archetypes` first, or run `/analyze` without `--auto` to decide interactively."* Header: `Archetype check`. Question: include the script's `reason` verbatim, then `"How do you want to proceed?"`. Provide exactly these two options:
-
+3. When `requiresPrompt` is true, ask via AskUserQuestion. In `--auto` mode do not ask and do not skip: stop with the script's `reason` verbatim plus _"Archetype check needs a decision — run `/analyze-archetypes` first, or run `/analyze` without `--auto` to decide interactively."_ Header: `Archetype check`. Question: include the script's `reason` verbatim, then `"How do you want to proceed?"`. Provide exactly these two options:
    - **Run /analyze-archetypes now (recommended)** — Invoke the `/analyze-archetypes` flow now.
-     - If the user submits proposals there → **exit `/analyze`** with: *"Proposals submitted. Re-run `/analyze` after admin approval."*
+     - If the user submits proposals there → **exit `/analyze`** with: _"Proposals submitted. Re-run `/analyze` after admin approval."_
      - If `/analyze-archetypes` reports the catalogue is complete (no gaps) → re-run `pmap-precondition.js` to confirm `status: ok`, then continue.
      - If the user skips inside `/analyze-archetypes` → the lock will be written with `skippedAt`. Re-run `pmap-precondition.js`; it will return `status: skipped` and you must surface the prompt again (loop) — do not auto-continue.
    - **Skip and proceed (one-shot)** — Write `.provenmap/archetype-analysis.lock.json` with the JSON shape below using values from the script's output, then continue to Step 0.
@@ -305,7 +305,7 @@ Add `--skeleton .provenmap/skeletons/<board-slug>.json` to either mode to digest
 - Treat the digest's directory rollup (plus any `--detail` slices) as the ground-truth file inventory — do NOT re-glob or re-apply exclusion rules (already applied), and do NOT read the skeleton JSON whole.
 - Treat the skeleton's edges as the authoritative `imports` edges for **every supported language** (JS/TS, Python, Go, Java, Ruby, Rust, C#) — do NOT re-parse imports by hand in any of them. The digest's `stats.importEdgesByLanguage` shows what each stack contributed; a language with files but no edges there is the only case worth a manual look.
 - The skeleton is **file-granular** (the digest rolls it up for you). At **L2/L3** its nodes map ~1:1 to board nodes — slice with `--detail` to name them. At **L0/L1**, **aggregate** directories into coarse domain/component nodes (each node's `coveredFiles` claims its files); edge rollup is Step 6's script (`--rollup`) — do not map `imports` edges by hand.
-- **Persist the mapping — coverage provenance.** The tempId→node-slug file aggregation you just made IS the coverage relation; record it on every node as `coveredFiles` (repo-relative paths, or directory globs like `src/billing/**` when a node owns a whole subtree — prefer globs for large subtrees). Every skeleton file must end up in exactly one node's `coveredFiles`, OR in the board metadata's `waivedFiles` (files you judge non-architectural — never silently drop them), OR deliberately unclaimed (it will surface as *pending* in coverage reports). **Hard rules the coverage dashboard enforces/surfaces:** never claim the same file from two nodes (double claims are flagged as defects); a node claiming a **large share of the board's files** must either set `layerBoardSlug` (drill-down candidate — its files count as *mapped, not analysed* until the child board analyses them) or be split into finer nodes; the dashboard flags oversized claims as broad claims and **excludes their files from the analysed percentage**; waive **exact paths only, never globs** — waiving shrinks the denominator and the dashboard lists what was waived.
+- **Persist the mapping — coverage provenance.** The tempId→node-slug file aggregation you just made IS the coverage relation; record it on every node as `coveredFiles` (repo-relative paths, or directory globs like `src/billing/**` when a node owns a whole subtree — prefer globs for large subtrees). Every skeleton file must end up in exactly one node's `coveredFiles`, OR in the board metadata's `waivedFiles` (files you judge non-architectural — never silently drop them), OR deliberately unclaimed (it will surface as _pending_ in coverage reports). **Hard rules the coverage dashboard enforces/surfaces:** never claim the same file from two nodes (double claims are flagged as defects); a node claiming a **large share of the board's files** must either set `layerBoardSlug` (drill-down candidate — its files count as _mapped, not analysed_ until the child board analyses them) or be split into finer nodes; the dashboard flags oversized claims as broad claims and **excludes their files from the analysed percentage**; waive **exact paths only, never globs** — waiving shrinks the denominator and the dashboard lists what was waived.
 - The prepass does NOT classify archetypes, group the database layer, write descriptions, or detect non-import edges — those remain your job in Steps 5–6.
 
 Run this on every analysis (full and incremental); it is deterministic and fast, and always reflects current HEAD.
@@ -350,8 +350,8 @@ keep a low-cohesion container, write the reason into its description starting wi
 **For L0 (Overview):** Identify high-level domains, services, and major components. Keep to 10-30 nodes. Mark nodes that are good candidates for drill-down by setting `layerBoardSlug` to a proposed slug.
 
 **L0 targets significance, not exhaustiveness.** Coverage is satisfied when every file
-is claimed by *some* node — and a container may claim its whole subtree via
-`coveredFiles` and defer the detail to a child board (`layerBoardSlug`). Do NOT mint an
+is claimed by _some_ node — and a container may claim its whole subtree via
+`coveredFiles` and defer the detail to a child board (`layerBoardSlug`). Do NOT generate an
 L0 node per leftover directory just to claim its files; fold small leftovers into the
 nearest significant container and let the drill-down carry the detail. More L0 nodes
 means more rolled-up L0 edges — breadth here is what creates hairballs.
@@ -405,6 +405,7 @@ rollup script reads this file; edges come next.
   `metadata.hubInDegree = distinctSources` — the fact survives without N identical
   edges. Do NOT hand-map skeleton edges yourself; the script owns those rules, and
   it resolves imports for every supported language — never re-parse them by hand.
+
 - **Reclassify where you know better:** the rollup can only ever say `uses`. Where
   reading the involved files shows the real relation, change the edge's `type`
   (`db_read`, `api_call`, `publishes`, …) and **keep its `metadata.weight`** — the
@@ -443,7 +444,7 @@ Scope all edges to this board's nodes only.
 **Incremental (edge provenance):** edges carrying `metadata.weight` are
 **rollup-owned** — delete them all and re-run the rollup (it is deterministic and
 cheap); re-apply any reclassified `type`s you noted from the old edge set when
-merging. Edges *without* `metadata.weight` are **model-owned** (semantic) — keep
+merging. Edges _without_ `metadata.weight` are **model-owned** (semantic) — keep
 them unless an endpoint node was removed.
 
 ### Step 7: Identify Drill-Down Candidates
@@ -530,7 +531,7 @@ not already loaded):
 2. Author the styling plan from the signals and write it to
    `.provenmap/styling/<board-slug>.plan.json`.
 3. `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --validate-styles --file
-   .provenmap/styling/<board-slug>.plan.json --against <signalsPath>` — exit 3 → fix and
+.provenmap/styling/<board-slug>.plan.json --against <signalsPath>` — exit 3 → fix and
    re-validate, **max 2 rounds**; still failing → delete the plan file, continue unstyled, and
    note `Styling skipped — run /restyle <board-slug> later.`
 
@@ -560,7 +561,7 @@ The Step 8.5 JSON also carries `recommendations` — the deterministic next-step
    - Always last: **Sync what I have** — description: "Stop analysing; push the boards + this coverage snapshot to the platform."
 4. If the user picks a single recommendation, run another incremental pass scoped to it, then **return to Step 8.5** (refresh, dashboard, ask again — the loop ends when the user syncs or nothing is left). If the user selected **multiple** areas, go to Step 8.7 instead — it owns the batch and returns to Step 8.5 itself. Per-kind mechanics:
    - `stale-board` → re-analyze that board's `staleNodes[].changedFiles` (Steps 5–8 scoped to those files)
-   - `drill-down` → build (or re-run) the child board: the `--drill <boardSlug>/<nodeSlug>` flow for the recommendation's node — this is what converts *mapped* files into *analysed* ones
+   - `drill-down` → build (or re-run) the child board: the `--drill <boardSlug>/<nodeSlug>` flow for the recommendation's node — this is what converts _mapped_ files into _analysed_ ones
    - `pending-area` → analyze the pending files under its `path` (take them from the ledger's `pendingFiles`; if `pendingTotal` exceeds the listed files, derive the remainder from `.provenmap/skeletons/repo.json` minus covered/waived) and place the resulting nodes on the board that owns that scope (L0, or the matching drill-down board)
    - `broad-claim` → re-analyze that node's subtree, splitting it into finer nodes with their own `coveredFiles` — or set `layerBoardSlug` on it to defer honestly to a drill-down
    - `edge-gap` → relationships the import graph justifies are missing from that board: re-run Step 6's rollup for it and **merge the emitted edges** (the usual cause is a run where the rollup output was never merged), then reclassify types as Step 6 describes

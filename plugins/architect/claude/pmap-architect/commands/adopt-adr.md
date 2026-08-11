@@ -6,7 +6,7 @@ allowed-tools: AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenm
 ---
 
 Turn a decision into governance: normalized record → a durable `ADR:` decision board (where the
-rule lives) → compliance insight runs (the *is*) → per-app remediation intents (the work owed).
+rule lives) → compliance insight runs (the _is_) → per-app remediation intents (the work owed).
 The whole arc lives in **adr-adoption** — load it plus **architect-core**; sweeps use
 **board-reading**, landing uses **intents-authoring** conventions.
 
@@ -29,7 +29,7 @@ The whole arc lives in **adr-adoption** — load it plus **architect-core**; swe
    per affected code-bound app board where compliance needs work no finding covers
    (`--validate intent` first). Unbound affected boards named + skipped with the binding gate
    narrated. Close with the standard move: `preview_write_session_commit` → present the plan →
-   title/summary (AskUserQuestion) → `commit_write_session` → narrate what was minted.
+   title/summary (AskUserQuestion) → `commit_write_session` → narrate what was generated.
 7. **Hand off** — enrich the drafts via the intents-authoring loop, or stop; not now →
    `/insights`, `/intents`. Every stop names the next command.
 

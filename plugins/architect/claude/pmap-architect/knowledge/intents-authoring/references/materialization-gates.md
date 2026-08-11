@@ -38,11 +38,11 @@ The ask may already be built. Two probes:
   `implemented` without `verifiedAt` is the developer's claim, not the server's proof — say
   which one you are looking at.
 - **Aspect reality** — the aspect rows the sweep surfaced: does the endpoint / page / table /
-  channel the ask wants to *add* already exist? An `add` on an existing row is the strongest
+  channel the ask wants to _add_ already exist? An `add` on an existing row is the strongest
   already-built signal.
 
 Hit → ask: **modification** (the behavior exists and should change — the directive's verb
-becomes *change*, and the narrative references the existing behavior and why it changes) or
+becomes _change_, and the narrative references the existing behavior and why it changes) or
 **duplicate** (the ask is already satisfied — stop; name the existing intent and its state;
 nothing lands)?
 
@@ -54,9 +54,9 @@ otherwise: must this land **after** one of these?
 
 Record the answer as `afterIntentSlug` on the `create_intent` payload. The server resolves
 the slug (same board only; an unknown slug fails the create rather than silently dropping the
-ordering) and `get_intent` returns it resolved — slug, name, status. On an already-minted
+ordering) and `get_intent` returns it resolved — slug, name, status. On an already-generated
 draft, `update_intent` re-sequences with a new slug or clears with `afterIntentSlug: ""`.
-When the *reason* for the ordering is worth keeping, one line in the narrative says why.
+When the _reason_ for the ordering is worth keeping, one line in the narrative says why.
 
 A "this must land BEFORE `intent-y`" answer is the same fact authored from the other side:
 set `afterIntentSlug` on `intent-y` via `update_intent` — possible while `intent-y` is still

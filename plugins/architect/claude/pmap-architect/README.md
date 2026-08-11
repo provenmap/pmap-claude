@@ -2,7 +2,7 @@
 
 Architect workbench for ProvenMap boards, running in Claude Code. Explore the board graph,
 review insights, and author intents — living specs — with the platform keeping governance: **writes
-gather in your working copy**, and committing mints a reviewable plan (one intent per governed
+gather in your working copy**, and committing generates a reviewable plan (one intent per governed
 app) in ProvenMap — never direct truth.
 
 Where the ProvenMap code plugins serve developers (analyze a codebase or document set → push
@@ -33,29 +33,29 @@ The plugin talks to the ProvenMap **MCP server** with a workspace-scoped bearer 
 
 ## Commands
 
-| Command | What it does |
-|---|---|
-| `/pmap-architect:start [ask]` | **Start here** — reads your real state and names the next step; routes any open-ended ask |
-| `/pmap-architect:setup-workspace` | Bootstrap an empty workspace: estate interview → landscape → app boards → binding handoff |
-| `/pmap-architect:new-app <idea>` | Plan a new system on the landscape: grill, place, sketch the target, draft the founding intent |
-| `/pmap-architect:author-intent [slug]` | Guided intent authoring: context pull, the grill, a well-grounded draft intent |
-| `/pmap-architect:adopt-adr` | Adopt a decision: durable record + compliance review + per-app remediation intents |
-| `/pmap-architect:intents` | Turn anything into governed, well-anchored work; manage the queue |
-| `/pmap-architect:ask-board <question>` | Ask the architecture a question — slug-grounded answer or highlighted subgraph |
-| `/pmap-architect:assess` | Structured review: frame, sweep, defend findings, record the run |
-| `/pmap-architect:insights` | Review insight runs; promote reviewed findings into draft intents |
-| `/pmap-architect:board [slug]` | Work a board conversationally — portfolio view on the landscape, canvas elsewhere |
-| `/pmap-architect:hub` | The command center, attention-first: what needs you, then the portfolio |
-| `/pmap-architect:login` `:configure` `:status` `:logout` | Connection lifecycle (MCP token) |
-| `/pmap-architect:help` `:update` | Command reference · plugin update |
+| Command                                                   | What it does                                                                                   |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `/pmap-architect:start [ask]`                            | **Start here** — reads your real state and names the next step; routes any open-ended ask      |
+| `/pmap-architect:setup-workspace`                        | Bootstrap an empty workspace: estate interview → landscape → app boards → binding handoff      |
+| `/pmap-architect:new-app <idea>`                         | Plan a new system on the landscape: grill, place, sketch the target, draft the founding intent |
+| `/pmap-architect:author-intent [slug]`                   | Guided intent authoring: context pull, the grill, a well-grounded draft intent                 |
+| `/pmap-architect:adopt-adr`                              | Adopt a decision: durable record + compliance review + per-app remediation intents             |
+| `/pmap-architect:intents`                                | Turn anything into governed, well-anchored work; manage the queue                              |
+| `/pmap-architect:ask-board <question>`                   | Ask the architecture a question — slug-grounded answer or highlighted subgraph                 |
+| `/pmap-architect:assess`                                 | Structured review: frame, sweep, defend findings, record the run                               |
+| `/pmap-architect:insights`                               | Review insight runs; promote reviewed findings into draft intents                              |
+| `/pmap-architect:board [slug]`                           | Work a board conversationally — portfolio view on the landscape, canvas elsewhere              |
+| `/pmap-architect:hub`                                    | The command center, attention-first: what needs you, then the portfolio                        |
+| `/pmap-architect:login` `:configure` `:status` `:logout` | Connection lifecycle (MCP token)                                                               |
+| `/pmap-architect:help` `:update`                         | Command reference · plugin update                                                              |
 
 ## How governance works
 
 Reads are unrestricted within the token's workspace (and board restriction, if set). The token
 acts as **you**: writes join your one workspace working copy — the same session the ProvenMap
 web app shows — where they stay undoable until you decide. **Committing** the working copy
-mints a reviewable plan: one `board_diff` intent per governed app, named by your commit
-message; **discarding** reverts everything since the last decision. Rejecting a minted intent
+generates a reviewable plan: one `board_diff` intent per governed app, named by your commit
+message; **discarding** reverts everything since the last decision. Rejecting a generated intent
 reverts what it staged. Architects propose; the platform review decides.
 
 ## Working with documents

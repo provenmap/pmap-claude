@@ -23,12 +23,12 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js
 
 Print the JSON's `display` field **verbatim** — do not reformat, reorder, or summarise it.
 
-| exit | meaning | action |
-| ---- | ------- | ------ |
-| 0 | Proceed | Continue to the next step. If `repairs.boardsRecovered` is non-empty, local state was just restored from the server — say so once (the `display` already carries the sentence) and continue. |
-| 1 | Not connected, or credentials rejected | Make the **connect-now offer**: AskUserQuestion "Connect to ProvenMap now?" → **Connect now** runs `pmap-login.js --start` then `--poll` inline (print each `display` verbatim) and resumes this command on `status: "complete"`; **Not now** stops with the `error` sentence verbatim. |
-| 2 | Binding could not be verified | Print `error` verbatim and stop. Name `/status` for the full local picture. |
-| 11 | Branch mismatch | Print `display` verbatim, then ask via AskUserQuestion. Header: `Branch`. Question: `"This project is bound to a different branch. How do you want to proceed?"` Options: **Re-bind to this branch (`/login`)** — run the `/login` workflow inline, then re-run this step; **Stop — I'll switch branches myself** — stop, having already printed the `git switch` line. Never run `git switch` yourself: the working tree may be dirty. |
+| exit | meaning                                | action                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ---- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0    | Proceed                                | Continue to the next step. If `repairs.boardsRecovered` is non-empty, local state was just restored from the server — say so once (the `display` already carries the sentence) and continue.                                                                                                                                                                                                                                            |
+| 1    | Not connected, or credentials rejected | Make the **connect-now offer**: AskUserQuestion "Connect to ProvenMap now?" → **Connect now** runs `pmap-login.js --start` then `--poll` inline (print each `display` verbatim) and resumes this command on `status: "complete"`; **Not now** stops with the `error` sentence verbatim.                                                                                                                                                 |
+| 2    | Binding could not be verified          | Print `error` verbatim and stop. Name `/status` for the full local picture.                                                                                                                                                                                                                                                                                                                                                             |
+| 11   | Branch mismatch                        | Print `display` verbatim, then ask via AskUserQuestion. Header: `Branch`. Question: `"This project is bound to a different branch. How do you want to proceed?"` Options: **Re-bind to this branch (`/login`)** — run the `/login` workflow inline, then re-run this step; **Stop — I'll switch branches myself** — stop, having already printed the `git switch` line. Never run `git switch` yourself: the working tree may be dirty. |
 
 ### Step 1: Validate prerequisites
 
@@ -46,7 +46,7 @@ Read `.provenmap/monitoring/config.json` if it exists (created by `/monitor setu
 
 - If `$ARGUMENTS` contains `--input <file>`: read that file. If it already matches the normalized signals schema (`version: 1` + `signals[]`), use it as-is; otherwise normalize it per the vendor recipes.
 - Otherwise, look for connected observability MCP tools in the session (Sentry, CloudWatch, AWS, Datadog, Grafana). If none are available → stop and print the connect one-liner for the user's tool from [references/vendor-recipes.md](../knowledge/monitoring-correlation/references/vendor-recipes.md), then: "Connect a monitoring MCP and rerun `/monitor`, or rerun with `--input <exported-file>`".
-- Pull signals for the window per the vendor recipe and normalize them into `.provenmap/monitoring/signals.json` (schema in the skill). Signal `id`s are **stable vendor fingerprints** — they are the cross-run lifecycle keys; never invent or re-mint them. If `$ARGUMENTS` is a focus prompt (e.g. "checkout errors only"), use it to filter which signals to include.
+- Pull signals for the window per the vendor recipe and normalize them into `.provenmap/monitoring/signals.json` (schema in the skill). Signal `id`s are **stable vendor fingerprints** — they are the cross-run lifecycle keys; never invent or re-generate them. If `$ARGUMENTS` is a focus prompt (e.g. "checkout errors only"), use it to filter which signals to include.
 
 ### Step 3: Correlate (deterministic)
 
@@ -103,7 +103,12 @@ If `--propose-intents` proposed any (`proposedIntentIds[]`), add: "N intents pro
 1. Ask (AskUserQuestion, one question set): which signal source(s) — Sentry / AWS CloudWatch / AWS costs / Datadog or Grafana / exported file — and the cadence (daily is the default).
 2. Write `.provenmap/monitoring/config.json`:
    ```json
-   { "version": 1, "insightSkillSlug": "operational-signals", "windowDays": 7, "sources": [{ "vendor": "sentry" }] }
+   {
+     "version": 1,
+     "insightSkillSlug": "operational-signals",
+     "windowDays": 7,
+     "sources": [{ "vendor": "sentry" }]
+   }
    ```
 3. For each chosen source, print the MCP connect one-liner and auth note from [references/vendor-recipes.md](../knowledge/monitoring-correlation/references/vendor-recipes.md). Never ask the user to paste a token into the chat — name the env var and where to set it.
 4. Scheduling — follow [references/scheduling.md](../knowledge/monitoring-correlation/references/scheduling.md): if this host can create schedules from the session (a `/schedule`-style skill for cloud routines, or the desktop app's scheduled tasks), offer to create a recurring "`run /monitor`" at the chosen cadence now (the user confirms). Otherwise print the copy-paste setup block from that reference. For cloud/unattended runs, note that credentials go in the run environment as `PMAP_BINDING_TOKEN` / `PMAP_API_SECRET`, and correlation uses `--from-server`.

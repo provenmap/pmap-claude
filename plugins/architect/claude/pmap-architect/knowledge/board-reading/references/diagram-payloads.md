@@ -60,4 +60,4 @@ becomes a staged mark (inside a reviewable intent) only when the session commits
 4. Execute: single `create_nodes` call with ALL nodes, then single `create_edges` call with ALL
    edges.
 5. Summarize what was created and the journal state ("saved to your working copy — commit to
-   mint the reviewable plan").
+   generate the reviewable plan").

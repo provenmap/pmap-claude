@@ -36,7 +36,7 @@ the deliberate divergence landscape-modeling documents. Narrate the reconciliati
 the repo binds and pushes, analysis reconciles against this sketch — expect intents where
 reality disagrees. Then the closing move (architect-core): `preview_write_session_commit` →
 present the plan → title/summary (AskUserQuestion) → `commit_write_session` → narrate the
-minted intents, offer `publish`.
+generated intents, offer `publish`.
 
 ### Step 3.5 — style the sketch (board-styling skill)
 
@@ -55,8 +55,8 @@ then close the gate without a portal trip:
   rules; credentials never issued here — the developer's code plugin connects separately).
 - Planning material is a document → `bind_reference_source` on the new board (enough to
   author).
-- Architect defers → the classic narration: *"Intents need a code-bound board — bind the repo,
-  then rerun `/author-intent <board>` and I'll land this draft."*
+- Architect defers → the classic narration: _"Intents need a code-bound board — bind the repo,
+  then rerun `/author-intent <board>` and I'll land this draft."_
 
 Once authorable: `create_intent` (with `anchors[]` grounding the L1 sketch), then enrich via
 the intents-authoring describe loop.

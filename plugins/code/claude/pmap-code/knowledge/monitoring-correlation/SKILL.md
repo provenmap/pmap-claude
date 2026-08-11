@@ -18,7 +18,7 @@ the portal, where architects promote them to intents. The division of labour is 
   intent-ready finding (see `references/insight-shaping.md`).
 - **The CLI (`pmap-insights.js --correlate`)**: everything mechanical — locator→element matching,
   mapping overrides, scope/key assignment from the context pack, skeleton generation. Never
-  hand-match signals to elements or mint scope keys; that is the correlator's job.
+  hand-match signals to elements or generate scope keys; that is the correlator's job.
 
 ## The normalized signals file
 
@@ -28,26 +28,35 @@ the portal, where architects promote them to intents. The division of labour is 
 {
   "version": 1,
   "window": { "from": "<ISO>", "to": "<ISO>" },
-  "signals": [{
-    "id": "sentry:CHECKOUT-4Q2",       // REQUIRED: "<vendor>:<vendor-fingerprint>" — stable across runs
-    "vendor": "sentry",                 // sentry | cloudwatch | aws | datadog | grafana | …
-    "kind": "error",                    // error | log-pattern | performance | availability | cost | security | custom
-    "title": "TypeError in CheckoutSession.finalize",
-    "severity": "high",                 // critical | high | medium | low | info
-    "measurement": {                    // optional, wire-aligned: one primary number per signal
-      "value": 412, "unit": "events",   // unit e.g. "events" | "ms" | "%" | "USD"
-      "baseline": 12,                   // optional reference (prior period, SLA, budget)
-      "trend": "increasing"             // increasing | decreasing | stable
+  "signals": [
+    {
+      "id": "sentry:CHECKOUT-4Q2", // REQUIRED: "<vendor>:<vendor-fingerprint>" — stable across runs
+      "vendor": "sentry", // sentry | cloudwatch | aws | datadog | grafana | …
+      "kind": "error", // error | log-pattern | performance | availability | cost | security | custom
+      "title": "TypeError in CheckoutSession.finalize",
+      "severity": "high", // critical | high | medium | low | info
+      "measurement": {
+        // optional, wire-aligned: one primary number per signal
+        "value": 412,
+        "unit": "events", // unit e.g. "events" | "ms" | "%" | "USD"
+        "baseline": 12, // optional reference (prior period, SLA, budget)
+        "trend": "increasing", // increasing | decreasing | stable
+      },
+      "locators": [
+        // how to find the element(s); order = priority
+        {
+          "type": "code-path",
+          "path": "src/services/checkout.service.ts",
+          "line": 88,
+        },
+        { "type": "resource", "name": "orders-queue", "arn": "arn:aws:sqs:…" },
+        { "type": "service", "name": "payment-api" },
+        { "type": "route", "method": "POST", "path": "/api/checkout" },
+        { "type": "tag", "key": "team", "value": "payments" },
+      ],
+      "evidence": { "url": "https://sentry.io/…", "sample": "TypeError: …" },
     },
-    "locators": [                       // how to find the element(s); order = priority
-      { "type": "code-path", "path": "src/services/checkout.service.ts", "line": 88 },
-      { "type": "resource",  "name": "orders-queue", "arn": "arn:aws:sqs:…" },
-      { "type": "service",   "name": "payment-api" },
-      { "type": "route",     "method": "POST", "path": "/api/checkout" },
-      { "type": "tag",       "key": "team", "value": "payments" }
-    ],
-    "evidence": { "url": "https://sentry.io/…", "sample": "TypeError: …" }
-  }]
+  ],
 }
 ```
 
@@ -86,13 +95,13 @@ future run resolves that locator deterministically.
 
 ## Files
 
-| File | Owner | Purpose |
-|---|---|---|
-| `.provenmap/monitoring/config.json` | `/monitor setup` | sources, window, skill slug |
-| `.provenmap/monitoring/signals.json` | you, each run | normalized signals |
-| `.provenmap/monitoring/map.json` | user-confirmed | teach-once locator→slug pins |
-| `.provenmap/monitoring/skeleton.json` | correlator → you | prefilled payload you finish and push |
-| `.provenmap/insights/<board>.context.json` | correlator | context pack (quality-gate oracle) |
+| File                                       | Owner            | Purpose                               |
+| ------------------------------------------ | ---------------- | ------------------------------------- |
+| `.provenmap/monitoring/config.json`        | `/monitor setup` | sources, window, skill slug           |
+| `.provenmap/monitoring/signals.json`       | you, each run    | normalized signals                    |
+| `.provenmap/monitoring/map.json`           | user-confirmed   | teach-once locator→slug pins          |
+| `.provenmap/monitoring/skeleton.json`      | correlator → you | prefilled payload you finish and push |
+| `.provenmap/insights/<board>.context.json` | correlator       | context pack (quality-gate oracle)    |
 
 ## References
 

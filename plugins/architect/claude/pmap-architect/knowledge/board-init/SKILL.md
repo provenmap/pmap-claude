@@ -12,7 +12,7 @@ The bootstrap for a board that exists but holds nothing yet. The exit bar for ev
 
 - **Empty app board** — 0 nodes/edges, below root, with a code-plugin binding (governing or
   reference) and no push yet — or unbound, but its owner node carries an **app archetype**
-  (a minted app slot).
+  (a generated app slot).
 - **Empty plain layer** — 0 nodes/edges, `isChildLayer`, no app-ness anywhere in its line: the
   lightweight variant at the bottom of this skill.
 
@@ -98,11 +98,11 @@ Whichever entry style ran, close against the same checklist:
    `bind_reference_source` (a bound document is something intents can point back at).
 2. **Founding intent(s) authored** — where the board is authorable (governing or reference
    binding), run the intents-authoring describe loop. Unbound board → offer the binding first,
-   the `/new-app` Step 4 gate verbatim: *"Intents need a code-bound board — bind the repo, then
-   rerun `/author-intent <board>` and I'll land this draft."*
+   the `/new-app` Step 4 gate verbatim: _"Intents need a code-bound board — bind the repo, then
+   rerun `/author-intent <board>` and I'll land this draft."_
 3. **Skills prepared** — see below.
 4. **The closing move** (architect-core): `preview_write_session_commit` → present the plan →
-   title/summary (AskUserQuestion) → `commit_write_session` → narrate the minted intents,
+   title/summary (AskUserQuestion) → `commit_write_session` → narrate the generated intents,
    offer `publish`.
 
 ## Skills prep

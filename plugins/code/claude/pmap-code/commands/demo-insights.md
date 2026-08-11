@@ -22,6 +22,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --list-insight-skills --boar
 ```
 
 Handle the result exactly as `/insights` does:
+
 - **Exit 1** → not configured — make the **connect-now offer** (see Error Handling)
 - **Exit 2** → "No board data found — run `/analyze` first" and stop
 - **Exit 3** → report the API `error` field and stop (if `errorType` is `auth_invalid`, credentials were rejected — make the **connect-now offer**, see Error Handling)
@@ -31,13 +32,14 @@ Handle the result exactly as `/insights` does:
 ### Step 1: Parse Arguments
 
 From `$ARGUMENTS`:
+
 - **count** — leading integer = how many demonstrative insights to create. Default **3**; clamp to **2–4** (a demo board stays legible).
 - **`--board <slug>`** — target board. Default: the config `boardSlug` (the root/L0 board, which usually has the richest edge set for paths).
 - **focus prompt** — any remaining natural-language text becomes `{{focus}}`, an optional theme that biases skill choice and path subjects. Omit if empty.
 
 ### Step 2: Select Path-Friendly Skills (distinct polarities)
 
-Demonstrative value comes from **variety**, not volume. Consult the skill → shape mapping in the methodology skill and pick `count` skills that each produce a different *kind* of path and a different polarity.
+Demonstrative value comes from **variety**, not volume. Consult the skill → shape mapping in the methodology skill and pick `count` skills that each produce a different _kind_ of path and a different polarity.
 
 Preferred picks when available, in order: **feature-journey** (observation flow), **blast-radius** (risk cascade), **hidden-dependency** (risk/observation chokepoint), then **how-does-it-work** / **onboarding-map** / **future-readiness**. If `{{focus}}` names a concern (e.g. "security", "performance"), include the matching skill and still pair it with at least one path-producing skill.
 
@@ -58,6 +60,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --build-context --board-slug
 ```
 
 Read the full pack from `.provenmap/insights/<board>.context.json` (the canonical path `--save-insight --demo` reads for its quality gates). It gives you, without any manual indexing:
+
 - **node index** — `pack.elements[]` (`{key, board, slug, type, name, description}`), with pre-assigned scope keys
 - **edge adjacency** — `pack.edges[]` (`{board, sourceKey, targetKey, type, description}`) — the source of truth for path grounding
 - **degree** — `pack.degree[]` (`{key, board, fanIn, fanOut}`), ranked most-connected first — your hub/chokepoint shortlist
@@ -69,7 +72,7 @@ Every path step you author must traverse a real edge from `pack.edges`. Do **not
 
 For each chosen skill, build a single push payload following the recipe in `references/path-recipes.md` and the schema in `report-output-format.md`:
 
-1. **Scope first (copy from the pack).** Copy `pack.scopeBoards` into `scope.boards`. For every node you cite, copy its row from `pack.elements` into `scope.elements` keeping the pre-assigned `key` and `board` verbatim, adding `role` (`focus`/`context`). Cite only what you use; never re-mint keys. Anything you spot in source that has no row in `pack.elements` belongs in a `GraphSuggestion` (`action: "add"`, `element: null`), not a cited finding.
+1. **Scope first (copy from the pack).** Copy `pack.scopeBoards` into `scope.boards`. For every node you cite, copy its row from `pack.elements` into `scope.elements` keeping the pre-assigned `key` and `board` verbatim, adding `role` (`focus`/`context`). Cite only what you use; never re-generate keys. Anything you spot in source that has no row in `pack.elements` belongs in a `GraphSuggestion` (`action: "add"`, `element: null`), not a cited finding.
 2. **1–3 findings.** Just enough to anchor the path — each path's key step should carry a `findingRef`. Use `recommendation` for `risk`/`opportunity`, `context` for `observation`/`strength` (never both).
 3. **At least one multi-node path** — this is the point of the command:
    - 3–6 nodes on the main line; every consecutive pair backed by a real edge.

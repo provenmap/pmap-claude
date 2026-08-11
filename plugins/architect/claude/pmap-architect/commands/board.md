@@ -77,7 +77,7 @@ already has — match its conventions, never restyle untouched elements inline).
 **Closing move (any session that wrote):** `preview_write_session_commit` → present the plan
 (per-root `+add ~modify −remove`, conflicts, what commits plain; the session may include the
 architect's own web-app changes — say so) → ask for title/summary (AskUserQuestion) →
-`commit_write_session` → narrate the minted intents by slug, offer `publish: true`. Or, if the
+`commit_write_session` → narrate the generated intents by slug, offer `publish: true`. Or, if the
 architect wants to abandon the batch: confirm the named boards + counts from
 `get_write_session`, then `discard_write_session` — it reverts the WHOLE working copy, app-made
 changes included; render `{reverted, conflicted, skipped}` honestly.

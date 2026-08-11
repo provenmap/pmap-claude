@@ -22,7 +22,7 @@ plus **architect-core**.
    session): emphasis + lg on the node the question was about, subtle on pure context, Flow
    tokens on the answer's path edges. Skip the pass entirely if the CLI is unavailable — a
    drawn answer beats a styled timeout. At the end of the session,
-   clean up with `delete_context_board` for boards this conversation minted — **never**
+   clean up with `delete_context_board` for boards this conversation generated — **never**
    `discard_write_session` (that reverts the architect's whole working copy, not just the
    canvas). Tool absent (older server) → `create_insight` with `scope.elements`; never fake a
    board.

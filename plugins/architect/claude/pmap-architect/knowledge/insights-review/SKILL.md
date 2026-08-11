@@ -17,23 +17,23 @@ Insight runs are stored analyses with **findings** (element-anchored observation
 `list_insights → get_insight (finding/suggestion ids) → review → promote_insight_findings
 (turn reviewed items into draft intents)`
 
-Cite finding **names** when discussing them; promotion mints one **draft** intent per reviewed
-item (passive review — narrate the minted drafts by slug).
+Cite finding **names** when discussing them; promotion generates one **draft** intent per reviewed
+item (passive review — narrate the generated drafts by slug).
 
-Heavy insight *generation* (scheduled analyses, deep research) runs in-platform. What you can do
+Heavy insight _generation_ (scheduled analyses, deep research) runs in-platform. What you can do
 here is **review** stored runs, **promote** what deserves delivery, and **record** your own
 session analysis as a draft run.
 
 ## The tools
 
-| Tool | Use |
-|---|---|
-| `list_insights` | runs as summaries; filter by `templateSlug`, `scope: 'tree'` spans the subtree |
-| `get_insight` | findings + suggestions with the ids that feed `promote_insight_findings`; raw report content is never returned |
-| `list_insight_skills` | insight templates in the org (slug, name, description, category) |
-| `get_insight_skill` | one template's full methodology: instructions + references — the faithful-run input |
-| `create_insight` | record an analysis as a **draft run**: markdown narrative + structured payload (scope, findings, paths, suggestions) |
-| `promote_insight_findings` | reviewed findings/suggestions → one draft intent each |
+| Tool                       | Use                                                                                                                  |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `list_insights`            | runs as summaries; filter by `templateSlug`, `scope: 'tree'` spans the subtree                                       |
+| `get_insight`              | findings + suggestions with the ids that feed `promote_insight_findings`; raw report content is never returned       |
+| `list_insight_skills`      | insight templates in the org (slug, name, description, category)                                                     |
+| `get_insight_skill`        | one template's full methodology: instructions + references — the faithful-run input                                  |
+| `create_insight`           | record an analysis as a **draft run**: markdown narrative + structured payload (scope, findings, paths, suggestions) |
+| `promote_insight_findings` | reviewed findings/suggestions → one draft intent each                                                                |
 
 ## Review workflow
 
@@ -42,7 +42,7 @@ session analysis as a draft run.
    (slug-first), severity, and suggestions.
 3. Triage with the architect: which findings are real, which suggestions deserve delivery.
 4. `promote_insight_findings` with the chosen ids — each becomes a draft intent; report the
-   minted intents by slug.
+   generated intents by slug.
 5. Point at `/intents` for queue management (open, assign).
 
 ## The assess arc (/assess) — structured review, recorded
