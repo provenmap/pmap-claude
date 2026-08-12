@@ -2,13 +2,14 @@
 category: review
 description: "Review · Review insight runs and promote reviewed findings into draft intents"
 argument-hint: "[board-slug] [insight-id]"
-allowed-tools: AskUserQuestion, mcp__plugin_pmap-architect_provenmap__*
+allowed-tools: Read, AskUserQuestion, mcp__plugin_pmap-architect_provenmap__*
 ---
 
 Review stored insight runs on a board — findings, suggestions — decide what deserves delivery,
 and promote it. Can also record an analysis you performed in this session as a draft run. The
-review workflow and promotion semantics live in the **insights-review** skill; load it (and
-**architect-core**) first.
+review workflow and promotion semantics live in
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/insights-review/SKILL.md`](../knowledge/insights-review/SKILL.md) — read it (and
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md)) first.
 
 ## Workflow
 

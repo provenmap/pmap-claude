@@ -2,13 +2,15 @@
 category: author
 description: "Author · WRITE-CAPABLE: Adopt an architecture decision — normalize it, measure the estate against it, land the decision record plus per-app remediation intents"
 argument-hint: "[decision material or file]"
-allowed-tools: AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
 ---
 
 Turn a decision into governance: normalized record → a durable `ADR:` decision board (where the
 rule lives) → compliance insight runs (the _is_) → per-app remediation intents (the work owed).
-The whole arc lives in **adr-adoption** — load it plus **architect-core**; sweeps use
-**board-reading**, landing uses **intents-authoring** conventions.
+The whole arc lives in [`${CLAUDE_PLUGIN_ROOT}/knowledge/adr-adoption/SKILL.md`](../knowledge/adr-adoption/SKILL.md)
+— read it plus [`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md);
+sweeps use [`${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md`](../knowledge/board-reading/SKILL.md),
+landing uses [`${CLAUDE_PLUGIN_ROOT}/knowledge/intents-authoring/SKILL.md`](../knowledge/intents-authoring/SKILL.md) conventions.
 
 ## Workflow
 

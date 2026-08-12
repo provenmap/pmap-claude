@@ -2,13 +2,15 @@
 category: review
 description: "Review · WRITE-CAPABLE: Run a structured architecture review — frame, sweep, defend the findings, record the run"
 argument-hint: "[board-slug] [template-or-dimension]"
-allowed-tools: AskUserQuestion, mcp__plugin_pmap-architect_provenmap__*
+allowed-tools: Read, AskUserQuestion, mcp__plugin_pmap-architect_provenmap__*
 ---
 
 The analyst's periodic review: frame against an org template or an ad-hoc dimension, sweep the
 board, review the findings with the architect, and record the surviving analysis as a draft
-insight run. The arc (frame→sweep→review→record, template honesty) lives in **insights-review**
-("The assess arc"); load it plus **architect-core** and **board-reading**.
+insight run. The arc (frame→sweep→review→record, template honesty) lives in
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/insights-review/SKILL.md`](../knowledge/insights-review/SKILL.md) ("The assess
+arc") — read it plus [`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md)
+and [`${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md`](../knowledge/board-reading/SKILL.md).
 
 ## Workflow
 

@@ -42,7 +42,8 @@ before capturing. Only the **propose** step (step 5) talks to the server.
      stop.
    - Exit 3 → the browser connection was lost; relay the `error` field and offer to `--start`
      again.
-3. **Interpret the session.** Load the **ui-inspection** skill and follow it. The `display`
+3. **Interpret the session.** Read [`${CLAUDE_PLUGIN_ROOT}/knowledge/ui-inspection/SKILL.md`](../knowledge/ui-inspection/SKILL.md)
+   and follow it. The `display`
    summary lists every selection and annotation with screenshot paths (relative to
    `sessionDir`). Read the selection clips (and the annotated composite when annotations exist),
    then give the user a concise readout: which components were picked, on which routes, what the

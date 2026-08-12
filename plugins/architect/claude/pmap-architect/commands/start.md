@@ -2,11 +2,13 @@
 category: start
 description: "Start here · Reads your real state and tells you what to run next — or routes any open-ended ask to the right workflow"
 argument-hint: "[what you want to do — optional]"
-allowed-tools: AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
 ---
 
 The one command to remember. No argument = "where am I, what next". With free text = route the
-ask to the right workflow and run it inline. Load **architect-core** first — the board taxonomy
+ask to the right workflow and run it inline. Read
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md) first — the board
+taxonomy
 and the workflow routing table live there.
 
 ## No argument — where am I, what next
@@ -44,8 +46,9 @@ Deterministic state first, judgment second:
 Classify against architect-core's **workflow routing table**:
 
 - **High confidence** → state the reading in one line ("that's an intent-authoring job") and run
-  the workflow inline: load its skill and continue — the named command remains the standalone
-  entry.
+  the workflow inline: read its doctrine from `${CLAUDE_PLUGIN_ROOT}/knowledge/<skill>/SKILL.md` (the
+  routing table names the skill per workflow) and continue — the named command remains the
+  standalone entry.
 - **Ambiguous** → AskUserQuestion with the top 2–3 candidate workflows, one line each.
 - **Compound** ("we're acquiring X — absorb their systems") → propose the sequenced plan
   (e.g. extend the landscape → `/new-app` per system → `/adopt-adr` for integration

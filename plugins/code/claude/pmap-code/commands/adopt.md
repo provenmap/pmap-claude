@@ -58,7 +58,8 @@ Read `.provenmap/boards/<board-slug>.json` and keep its node `slug`s handy — e
 ## Workflow
 
 1. **Resolve the aspect kind** from the table above (`--aspect` value directly, or `--db`/`--api` mapped to their `--aspect` equivalent, or asked via `AskUserQuestion`).
-2. **Load that kind's skill** and follow it to read the aspect from source — ORM schemas / migrations for `database.schema`, OpenAPI/controllers/routers for `api.surface`, route files for `ui.pages`, AsyncAPI specs / broker infra-as-code / client call sites for `event.catalog`, CASL/Cerbos/OPA/Polar/IAM policy definitions or a DB-backed RBAC table's schema for `authz.registry`. **Never run the app, connect to a live database, call a live endpoint, connect to a live broker, or evaluate a policy against real inputs** — read the definitions.
+2. **Read that kind's skill** — `${CLAUDE_PLUGIN_ROOT}/knowledge/<skill>/SKILL.md`, named in the table's
+   Skill column — and follow it to read the aspect from source — ORM schemas / migrations for `database.schema`, OpenAPI/controllers/routers for `api.surface`, route files for `ui.pages`, AsyncAPI specs / broker infra-as-code / client call sites for `event.catalog`, CASL/Cerbos/OPA/Polar/IAM policy definitions or a DB-backed RBAC table's schema for `authz.registry`. **Never run the app, connect to a live database, call a live endpoint, connect to a live broker, or evaluate a policy against real inputs** — read the definitions.
 3. **Produce the payload JSON** at the table's path, matching that kind's wire schema (fields are documented in the loaded skill).
 4. **Adopt it**:
    ```

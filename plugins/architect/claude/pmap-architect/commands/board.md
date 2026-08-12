@@ -2,14 +2,17 @@
 category: explore
 description: "Explore · Orient on a ProvenMap board and work it — explore, analyze, and make governed edits"
 argument-hint: "[board-slug]"
-allowed-tools: AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
 ---
 
 Open an architect working session on a board: orient on its structure, then follow the
-architect's lead — questions, analysis, and governed board edits. Methodology lives in the
-**board-reading** skill (orientation, navigation, analysis, the diagram tool contract) and
-**architect-core** (scope, passive review, formatting) — load both. When classification meets
-an empty board below root, load **board-init** and run its bootstrap inline.
+architect's lead — questions, analysis, and governed board edits. Methodology lives in
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md`](../knowledge/board-reading/SKILL.md) (orientation,
+navigation, analysis, the diagram tool contract) and
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md) (scope, passive
+review, formatting) — read both. When classification meets an empty board below root, read
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/board-init/SKILL.md`](../knowledge/board-init/SKILL.md) and run its bootstrap
+inline.
 
 ## Workflow
 
@@ -28,12 +31,14 @@ accordingly:
 - **Empty root** → don't orient on nothing; offer `/setup-workspace`.
 - **Empty app board** (0 nodes/edges, below root, with a code-plugin binding — or unbound with
   an app-archetype owner node) → don't orient on nothing; offer the **board bootstrap**
-  (load **board-init** and run it inline).
+  (read [`${CLAUDE_PLUGIN_ROOT}/knowledge/board-init/SKILL.md`](../knowledge/board-init/SKILL.md) and run it
+  inline).
 - **Empty plain layer** (0 nodes/edges, `isChildLayer`, no app-ness) → offer the lightweight
   board-init variant: sketch the sub-structure, or route up to the owning app board.
 - **Root / landscape** → orient as a **portfolio** (apps + health + cross-app edges), not a
-  canvas walk; landscape edits follow the **landscape-modeling** skill (app archetypes for
-  bindable slots, the app-nesting rule).
+  canvas walk; landscape edits follow
+  [`${CLAUDE_PLUGIN_ROOT}/knowledge/landscape-modeling/SKILL.md`](../knowledge/landscape-modeling/SKILL.md)
+  (app archetypes for bindable slots, the app-nesting rule).
 - **Plain layer** → orient normally, and note that facet work (intents) routes up to the
   owning app board.
 - **App board** → the full board-reading orientation sequence (`get_workboard_details`,
@@ -52,7 +57,7 @@ ownerBoardSlug: <this board>}` — the container becomes the drill-down, journal
 diagram write. Say plainly that a layer under an app board stays a plain layer permanently
 (app-nesting rule) — never pitch it as a future app slot. For a full visual pass over this
 board, hand off to /style-board — inline styling here covers only elements this session touches
-(board-styling skill).
+(read [`${CLAUDE_PLUGIN_ROOT}/knowledge/board-styling/SKILL.md`](../knowledge/board-styling/SKILL.md)).
 
 For "is this board grouped right?", "should X sit inside Y?", or after a batch that added
 several elements, run the grouping review:
@@ -71,7 +76,8 @@ justify it (a vendor cohort, a compliance boundary) stays: record why by startin
 description with `Grouping rationale:`, and the gate stops flagging it.
 
 When a write batch added or rewired elements, offer a scoped styling pass over just those
-elements (board-styling skill; the précis `styling` field shows what the rest of the board
+elements (read [`${CLAUDE_PLUGIN_ROOT}/knowledge/board-styling/SKILL.md`](../knowledge/board-styling/SKILL.md); the
+précis `styling` field shows what the rest of the board
 already has — match its conventions, never restyle untouched elements inline).
 
 **Closing move (any session that wrote):** `preview_write_session_commit` → present the plan

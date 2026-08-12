@@ -523,8 +523,9 @@ For child boards, include parent references:
 
 ### Step 8.4: Author the styling plan
 
-After writing the board JSON, style it (methodology: the **board-styling** skill — load it if
-not already loaded):
+After writing the board JSON, style it (methodology:
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/board-styling/SKILL.md`](../knowledge/board-styling/SKILL.md) — read it if not
+already read):
 
 1. `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --style-signals <board-slug>` — print
    `display` verbatim, note `signalsPath`.

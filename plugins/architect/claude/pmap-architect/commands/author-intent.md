@@ -2,7 +2,7 @@
 category: author
 description: "Author · WRITE-CAPABLE: Guided intent authoring — pull the surrounding context, grill the gaps, land a well-grounded draft intent"
 argument-hint: "[board-slug]"
-allowed-tools: AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
 ---
 
 Capture what the org wants as an intent — from prose, a file shared in this session, or a bound
@@ -10,8 +10,9 @@ document. An intent IS the spec: the why (its `narrative`), the elements it touc
 state each must reach, kept live against the model instead of frozen at hand-off. A bound document
 stays where it lives; the intent points back at it. The whole interview arc
 (routing, surround pull, the grill, done-bar, binding-gate narration) lives in
-**intents-authoring** — load it plus **architect-core**. This command is the long-form entry to
-that workflow; `/intents` is the queue view.
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/intents-authoring/SKILL.md`](../knowledge/intents-authoring/SKILL.md) — read it
+plus [`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md). This command
+is the long-form entry to that workflow; `/intents` is the queue view.
 
 ## Workflow
 

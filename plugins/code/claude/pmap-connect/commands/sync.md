@@ -44,7 +44,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-sync.js --pull --host claude --domain co
 
 ### Step 2 — Propose evidence links (judgment)
 
-Load the **grounding** skill (`knowledge/grounding/SKILL.md`) for the substantiation bar, anchor/excerpt discipline, and drift-handling rules — this step is judgment, not mechanics.
+Read [`${CLAUDE_PLUGIN_ROOT}/knowledge/grounding/SKILL.md`](../knowledge/grounding/SKILL.md) for the substantiation bar, anchor/excerpt discipline, and drift-handling rules — this step is judgment, not mechanics.
 
 Using Step 1's `context`/`evidence`, build the updated link set:
 

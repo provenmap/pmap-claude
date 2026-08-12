@@ -110,7 +110,7 @@ Print `display` verbatim — it carries the description (the why), directive, pr
 
 ### Step 4.5: Gap review (mandatory before any edit)
 
-**Never start editing without this step.** Load the `intent-gap-review` skill and follow it to compare the **architect's intent** (anchors, directive, `board_diff` suggestions, attachments) against **code reality** (what the anchor files actually contain now). Produce the gap table the skill specifies and classify the result:
+**Never start editing without this step.** Read [`${CLAUDE_PLUGIN_ROOT}/knowledge/intent-gap-review/SKILL.md`](../knowledge/intent-gap-review/SKILL.md) and follow it to compare the **architect's intent** (anchors, directive, `board_diff` suggestions, attachments) against **code reality** (what the anchor files actually contain now). Produce the gap table the skill specifies and classify the result:
 
 - **`clean`** or **`minor`** (anchors resolve, the directive is locatable, suggestions apply — nits only) → say so briefly and continue to Step 5.
 - **`blocking`** (the skill's criteria — e.g. anchor files/elements gone, intent `stale`, the directive references components that don't exist, a `board_diff` suggestion is inapplicable, an attachment contradicts the code, or most anchors are unresolved) → do NOT edit. Show the user the gap table, then ask with AskUserQuestion:

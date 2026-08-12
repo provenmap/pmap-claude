@@ -2,12 +2,13 @@
 category: author
 description: "Author · WRITE-CAPABLE: List, author, and manage board intents — the impact→attach→describe loop; drafts land for in-platform review"
 argument-hint: "[board-slug] [intent-slug]"
-allowed-tools: AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
 ---
 
 Work the intent queue of a board: list and read intents, turn anything into governed,
 well-anchored work, and manage the lifecycle. Authoring runs the **impact → attach → describe**
-loop from the **intents-authoring** skill; load it (and **architect-core**) first.
+loop from [`${CLAUDE_PLUGIN_ROOT}/knowledge/intents-authoring/SKILL.md`](../knowledge/intents-authoring/SKILL.md)
+— read it (and [`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md)) first.
 
 ## Workflow
 
@@ -28,7 +29,8 @@ loop from the **intents-authoring** skill; load it (and **architect-core**) firs
      finding or decision already prescribed the approach), run the materialization gates and
      the pre-land self-review + read-back gate, then apply with `update_intent` (anchors +
      notes land on the real intent) and release with `transition_intent`.
-   - **Author, free-form** ("here's what I want done"): classify per board-reading —
+   - **Author, free-form** ("here's what I want done"): classify per
+     [`${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md`](../knowledge/board-reading/SKILL.md) —
      _diagram-shaped_ → make the board edit (it joins the working copy; committing later generates
      the `board_diff` intent), then optional context anchors via the loop; _code-shaped_ →
      directive intent through the full loop (shape when unsettled → holistic sweep →

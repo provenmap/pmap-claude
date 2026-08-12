@@ -2,13 +2,14 @@
 category: author
 description: "Author · WRITE-CAPABLE: Review the archetype catalogue for a board kind, scan shared documents for gaps, and submit proposals for admin review"
 argument-hint: "[board-slug] [code|knowledge] [gap material or paths]"
-allowed-tools: AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
 ---
 
 Catalogue gap analysis: hold shared material up against the org's live archetype catalogue, name
 what it can't classify, and submit proposals for admin review. This is governance, not a gate —
 no lock files, and nothing here blocks `/board`, `/new-app`, or any other command; the catalogue
-widens on its own schedule. Load **architect-core** for the error vocabulary and formatting norms.
+widens on its own schedule. Read [`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md) for the
+error vocabulary and formatting norms.
 
 ## Workflow
 

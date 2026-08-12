@@ -1,15 +1,18 @@
 ---
 category: author
 description: "Author · WRITE-CAPABLE: Bootstrap an empty workspace — map the estate that exists, or found a new product line: interview, system landscape, app boards or strategic-only scaffold, binding handoff"
-allowed-tools: AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
 ---
 
 The top of the funnel: a ready-but-empty workspace and an architect who either knows the org or
 is founding something new. Fork first, interview briefly, draw the landscape on the root board,
 then — map mode — generate app boards and hand off bindings, or — found mode — stop at the
 strategic level and name the graduation path. Doctrine, archetype selection, both divergences,
-and the checklist contract live in **landscape-modeling**; load it plus **architect-core** and
-**board-reading**. Render step banners and glyphs per architect-core's formatting norms.
+and the checklist contract live in
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/landscape-modeling/SKILL.md`](../knowledge/landscape-modeling/SKILL.md) — read it
+plus [`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md) and
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md`](../knowledge/board-reading/SKILL.md). Render step banners
+and glyphs per architect-core's formatting norms.
 
 ## Workflow
 
@@ -83,7 +86,9 @@ the payload (`--validate diagram`) → containers, then ONE `create_nodes` call,
 
 ### Step 3.5 — style the landscape (board-styling skill)
 
-The landscape commits styled, not raw. Load **board-styling** and run its pipeline on the board
+The landscape commits styled, not raw. Read
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/board-styling/SKILL.md`](../knowledge/board-styling/SKILL.md) and run its pipeline
+on the board
 you just drew: `--style-signals --board <slug>` → author the plan (this is a fresh board — style
 everything; root landscape doctrine: C4-shaped, externals xs, flow/horizontal unless the signals
 argue otherwise) → `--validate styles` → the three `apply_*` calls. Everything joins the same

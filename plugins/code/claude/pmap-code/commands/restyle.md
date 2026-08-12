@@ -6,7 +6,7 @@ allowed-tools: AskUserQuestion, Read, Write, Bash(node:*)
 ---
 
 Restyle one board end-to-end: signals → plan → validate → apply. Methodology and vocabulary live
-in the **board-styling** skill — load it first.
+in [`${CLAUDE_PLUGIN_ROOT}/knowledge/board-styling/SKILL.md`](../knowledge/board-styling/SKILL.md) — read it first.
 
 ## Workflow
 

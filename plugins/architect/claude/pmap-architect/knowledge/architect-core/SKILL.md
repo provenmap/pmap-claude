@@ -109,7 +109,8 @@ sequenced plan (e.g. extend landscape → `/new-app` per system → `/adopt-adr`
 integration decisions), confirm once, then run the sequence.
 
 **Inline handoffs:** commands can't invoke each other. "Create intents now?" = AskUserQuestion
-→ on yes, load the target skill and continue in-session; on no, stop naming the standalone
+→ on yes, read the target workflow's doctrine (`${CLAUDE_PLUGIN_ROOT}/knowledge/<skill>/SKILL.md` — the
+routing table above names it) and continue in-session; on no, stop naming the standalone
 command.
 
 ## The working copy

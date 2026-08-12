@@ -2,12 +2,15 @@
 category: author
 description: "Author · WRITE-CAPABLE: Plan a new system on the existing landscape — grill, place it, sketch its target architecture, draft its founding intent"
 argument-hint: "<name or idea>"
-allowed-tools: AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
 ---
 
 Architecture-first inception of one system on a landscape that already exists. Grill first, then
-build. Load **landscape-modeling** (placement, archetypes, the L1-sketch divergence),
-**architect-core**, and **board-reading**; the founding intent uses **intents-authoring**.
+build. Read [`${CLAUDE_PLUGIN_ROOT}/knowledge/landscape-modeling/SKILL.md`](../knowledge/landscape-modeling/SKILL.md)
+(placement, archetypes, the L1-sketch divergence),
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md), and
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md`](../knowledge/board-reading/SKILL.md); the founding intent
+uses [`${CLAUDE_PLUGIN_ROOT}/knowledge/intents-authoring/SKILL.md`](../knowledge/intents-authoring/SKILL.md).
 
 ## Workflow
 
@@ -40,7 +43,8 @@ generated intents, offer `publish`.
 
 ### Step 3.5 — style the sketch (board-styling skill)
 
-Style the L1 board you just sketched before moving on — load **board-styling**, run
+Style the L1 board you just sketched before moving on — read
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/board-styling/SKILL.md`](../knowledge/board-styling/SKILL.md), run
 `--style-signals --board <slug>`, plan (fresh board: style everything; an L1 sketch usually
 reads `flow` with the app's core service as the one lg node), `--validate styles`, then the
 `apply_*` calls. Two failed validation rounds → skip, note it, continue; /style-board recovers

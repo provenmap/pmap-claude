@@ -2,11 +2,12 @@
 category: author
 description: "Author · WRITE-CAPABLE: Beautify a board — deterministic signals, a styling plan you approve, validated and applied as journaled writes"
 argument-hint: "[board-slug]"
-allowed-tools: AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
 ---
 
 Style one board end-to-end: signals → plan → validate → apply. Methodology and doctrine live in
-the **board-styling** skill — load it first. All writes are journaled (working copy), so the
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/board-styling/SKILL.md`](../knowledge/board-styling/SKILL.md) — read it first. All
+writes are journaled (working copy), so the
 architect previews and commits like any board edit.
 
 ## Workflow

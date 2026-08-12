@@ -15,7 +15,7 @@
     "./commands/update.md"
   ],
   "displayName": "ProvenMap Connect",
-  "version": "0.10.2",
+  "version": "0.10.3",
   "description": "Grounding connector for ProvenMap. Binds a document/knowledge repo to architect-authored boards: maintains node↔document evidence links, reports drift when documents change underneath the board, runs server-defined insight analysis, and implements architect-authored intents by editing the documents. Produces no boards — the architect authors them.",
   "author": {
     "name": "ProvenMap",

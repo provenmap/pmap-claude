@@ -1,11 +1,12 @@
 ---
 category: explore
 description: "Explore · The command center, attention-first — what needs the architect, then the portfolio"
-allowed-tools: Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
+allowed-tools: Read, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
 ---
 
-The morning sweep: lead with **what needs the architect**, ranked, before any inventory. Load
-**architect-core** (taxonomy, batch state reads) and the **intents-authoring** skill's
+The morning sweep: lead with **what needs the architect**, ranked, before any inventory. Read
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md) (taxonomy, batch
+state reads) and [`${CLAUDE_PLUGIN_ROOT}/knowledge/intents-authoring/SKILL.md`](../knowledge/intents-authoring/SKILL.md)'s
 staleness/verification semantics.
 
 ## Workflow
