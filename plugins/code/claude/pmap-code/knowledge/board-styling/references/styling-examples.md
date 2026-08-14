@@ -89,7 +89,7 @@ request/data flow).
 
 **Why:** ingest carries the integration Role token because its archetype is
 integration-service — one Role token per archetype, per "One Role token per archetype per
-board." transform is the sole prominence pick (6 weighted connections, the busiest node in the
+board — group first, then choose." transform is the sole prominence pick (6 weighted connections, the busiest node in the
 chain) and gets lg, the single deliberate standout per "Size is hierarchy, and a minority";
 segment, the SaaS event source, is the external cohort at subtle+xs. The board reads
 flow+horizontal+airy — a directed pipeline given room to breathe as a centrepiece diagram — and
@@ -265,7 +265,9 @@ as request/data flow).
     "nodeApplications": [
       { "nodeSlug": "api-gateway", "shapeType": "rectangle", "lucideIconName": "Waypoints", "displayStrategy": "shape_with_icon" },
       { "nodeSlug": "orders-db", "shapeType": "rectangle", "lucideIconName": "Database", "displayStrategy": "shape_with_icon" },
-      { "nodeSlug": "catalog-db", "shapeType": "rectangle", "lucideIconName": "Database", "displayStrategy": "shape_with_icon" }
+      { "nodeSlug": "catalog-db", "shapeType": "rectangle", "lucideIconName": "Database", "displayStrategy": "shape_with_icon" },
+      { "nodeSlug": "stripe", "shapeType": "square", "displayStrategy": "icon_only", "iconUrl": "other/2026-q1/simple-other/stripe/Stripe wordmark - Blurple.svg" },
+      { "nodeSlug": "auth0", "shapeType": "square", "displayStrategy": "icon_only", "lucideIconName": "Lock" }
     ]
   }
 }
@@ -278,4 +280,8 @@ services container is overridden to vertical because it genuinely reads differen
 peer services, not a left-to-right chain — following "override only containers that genuinely
 read differently." stripe and auth0 are the external cohort, both subtle+xs, and the three
 domain-group containers (edge-layer/services/data-layer) get domain_boundary tokens so
-structural grouping never competes with the gateway/application Role tokens beneath them.
+structural grouping never competes with the gateway/application Role tokens beneath them. Before
+sizes and tokens were finalized, stripe and auth0 were resolved with one batched `match_icons`
+call: stripe hits the catalog under its wordmark logo, so it gets that `iconUrl` verbatim;
+auth0 has no catalog entry, so it lands in `unmatched` and takes a Lucide fallback instead —
+exactly the split the tool exists to produce.

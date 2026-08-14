@@ -10,8 +10,14 @@ Styling is judgment guided by facts. The pipeline is always the same four moves:
 1. **Signals** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --style-signals --board <slug>`
    prints deterministic facts (hubs, external cohort, container profiles, arrangement suggestion)
    and writes a signals file (path in the JSON output). Never re-derive these facts by hand.
-2. **Plan** — you decide: tokens, sizes, composition, icons. Write ONE JSON file mirroring the
-   three apply_* payloads (shape in references/styling-vocabulary.md).
+2. **Plan** — you decide: tokens, sizes, composition, icons. **Resolve icons first**: before any
+   token or size is final, collect every node whose archetype is a brand, cloud provider or SaaS
+   integration and send all their names in ONE `match_icons` call (never one call per node). For a
+   matched name, pass its top hit's `svgPath` verbatim as `iconUrl`; choose a `lucideIconName` only
+   for the names the response lists in `unmatched`. Record per node which happened —
+   `catalog:<svgPath>` or `lucide:<Name> (no catalog match)` — so the architect can tell "no better
+   icon exists" from "nobody looked". Then write ONE JSON file mirroring the three apply_* payloads
+   (shape in references/styling-vocabulary.md).
 3. **Validate** — `--validate styles --file <plan.json> --against <signals file>`. Exit 3 = fix
    the reported issues and re-validate. Two failed rounds = stop styling, ship the structure,
    point at /style-board.
@@ -27,8 +33,16 @@ Styling is judgment guided by facts. The pipeline is always the same four moves:
 - **Size is hierarchy, and a minority.** The signals' prominence list are your lg/xl candidates
   — cap enforced at 10% of leaf nodes. If everything is large, nothing is. The external cohort
   all goes xs (label renders below the shape); shrinking many externals at once is correct.
-- **One Role token per archetype per board.** Same archetype, same role — a split legend reads
-  as an error. (The validator warns; deviate only deliberately.)
+- **One Role token per archetype per board — group first, then choose.** The rule constrains
+  containers that *share* an archetype; it does not mean every container on the board takes the
+  same token. Group containers by archetype, then pick the **most specific applicable Role token**
+  per group (an `external_integrations` container takes `integration`, not the `domain_boundary`
+  its neighbours take), defaulting to a shared token only within a group. Same archetype, same
+  role — a split legend reads as an error. (The validator warns; deviate only deliberately.)
+- **Every deviation states its reason.** When you present the plan, each size or token that
+  departs from the default (`md`, no token) carries a one-line why — "xl: the system under
+  discussion", "xs: external cohort", "integration: third-party SaaS boundary". A bare table
+  invites "why is that big?" and cannot be reviewed.
 - **Composition by board type.** C4-context root: `flow` + `horizontal`, externals xs at the
   edges. Containment-heavy structure: `hierarchy`. Peer mesh with no dominant direction:
   `network` (never give it an orientation — the validator rejects it). Set the board once,

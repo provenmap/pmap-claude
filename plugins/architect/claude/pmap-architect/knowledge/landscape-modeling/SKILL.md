@@ -120,12 +120,20 @@ verbatim if it fires.
 
 ## Completing the binding — `convert_node_to_app`
 
-A repo-backed slot completes **in-session**: `convert_node_to_app {nodeSlug, branch}` turns a
+A repo-backed slot completes **in-session**: `convert_node_to_app {nodeSlug, branch, observationType}` turns a
 root-landscape node into an app in one act — ensures its layer board, registers the
 code-plugin source, binds it GOVERNING on the branch. Rules:
 
 - The node's **archetype must be app-bindable** (an app archetype — that's what sets the repo
   scope). A generic-system node refuses; fix the archetype first.
+- **`observationType` is required** — the architect's observation, recorded on the binding:
+  `'existing_app'` when the system's code already exists (map-mode repo slots), `'new_app'` when
+  the app is net-new and still being planned (found-mode graduations, planned systems,
+  extractions — a freshly created empty repo is still `'new_app'`). Genuinely ambiguous → ask at
+  the gate: _new app still needing implementation planning_ vs _existing app now being
+  connected_. A `'new_app'` conversion routes into **build prep** next (the app-readiness
+  workflow): prep now in-session, or `/prepare-app <board>` later — the attention queue keeps
+  it listed until prepped.
 - **Pre-check eligibility** with `--classify-tree` (bind-eligibility column) before offering
   it; if the server still refuses (app-nesting rule), relay the refusal verbatim.
 - **Credentials are never issued here** — the tool deliberately returns none. The developer
@@ -175,8 +183,9 @@ Narrate the truth every time: *"this is target state — systems graduate as the
 
 **Graduation path** (the standing next step of every founding scaffold): when a system becomes
 real → `/new-app`-style pass on its node — fix the archetype to an **app archetype** (that's
-the bindability lever above) → `create_board` → `convert_node_to_app {nodeSlug, branch}` →
-L1 sketch + founding intent. Mixed estates work naturally: the fork is per-answer, not
+the bindability lever above) → `create_board` →
+`convert_node_to_app {nodeSlug, branch, observationType: 'new_app'}` → L1 sketch + founding
+intent. Mixed estates work naturally: the fork is per-answer, not
 exclusive — a real system named during a found-mode interview is drawn as in map mode, and a
 **planned** system named during a map-mode interview gets found-mode treatment: system
 archetype, no board, graduation path narrated.

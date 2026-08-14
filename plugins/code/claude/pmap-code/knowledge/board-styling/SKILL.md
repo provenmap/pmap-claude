@@ -20,9 +20,12 @@ exactly what this domain uses.
    `signalsPath`.
 2. **Plan** — author the `StylingPlan` JSON guided by the signals (prominence → `lg`/`xl`,
    external cohort → `xs`, container profiles + board suggestion → composition, one Role token
-   per archetype). Edge requests use the signals view's edge slugs (`src->tgt@type`). Code-domain
-   plans are **complete restyles** — the local view carries no existing styling, and the apply
-   endpoint replaces same-category styling (last writer wins).
+   per archetype — group containers by archetype first, then pick the
+   **most specific applicable Role token** per group, defaulting to a shared token only within
+   a group). Each size or token that departs from the default (`md`, no token) carries a
+   one-line why when you present the plan. Edge requests use the signals view's edge slugs
+   (`src->tgt@type`). Code-domain plans are **complete restyles** — the local view carries no
+   existing styling, and the apply endpoint replaces same-category styling (last writer wins).
 3. **Validate** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --validate-styles --file
    <plan.json> --against <signalsPath>`. Exit 3 → fix and re-validate, max 2 rounds, then
    continue unstyled and point at `/restyle`.

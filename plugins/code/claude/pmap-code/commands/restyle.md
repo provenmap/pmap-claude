@@ -27,8 +27,9 @@ verbatim. Note `signalsPath` from the JSON. If it fails with "No local analysis"
 ### Step 3 — plan
 
 Author the styling plan per the board-styling skill. Present it compactly: the composition line,
-sizes table (who gets lg/xl and why, the xs cohort), token groups, icon choices. Get approval
-(AskUserQuestion: apply / adjust / stop).
+sizes table (who gets lg/xl and why, the xs cohort), token groups, icon choices. Every size or
+token that deviates from the default carries a one-line reason. Get approval (AskUserQuestion:
+apply / adjust / stop).
 
 ### Step 4 — validate + save
 

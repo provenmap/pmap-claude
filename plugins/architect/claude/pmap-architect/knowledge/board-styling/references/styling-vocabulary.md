@@ -71,7 +71,40 @@ rejected at apply time. The values: `circle`, `square`, `rectangle`, `rounded-re
 `note`, `browser`, `mobile-device`, `package`.
 
 `displayStrategy`: `icon_only` (people, well-known services), `shape_only`, `shape_with_icon`
-(the default choice for systems). `lucideIconName` takes any lucide name (Server, Database,
-User, ShoppingCart, Waypoints, Radio…). For cloud-provider icons (architect plugin only — these
-MCP tools exist in the architect flow, not in the code plugin) search the catalog first:
-`search_icon_categories` → `search_icon_subcategories` → `search_icons`, then pass `iconUrl`.
+(the default choice for systems).
+
+### Real brand icons first — Lucide is the fallback, not the default
+
+For every node whose archetype is a brand, cloud provider or SaaS integration (architect plugin
+only — these MCP tools exist in the architect flow, not in the code plugin), resolve names against
+the catalog with ONE batched `match_icons` call, before the plan's tokens and sizes are final:
+
+    match_icons({ names: ["Stripe", "Cognito", "Resend", "Widgetron"] })
+      → { results: [
+            { name: "Stripe", matched: true,
+              icons: [{ displayName: "Stripe wordmark   Blurple",
+                        svgPath: "other/2026-q1/simple-other/stripe/Stripe wordmark - Blurple.svg", … }] },
+            { name: "Widgetron", matched: false, icons: [] } ],
+          unmatched: ["Widgetron"] }
+
+Query the distinctive product token (`Cognito`, `Stripe`), not a vendor-prefixed phrase (`AWS
+Cognito`) — catalog keywords are single words split from the display name, so a multi-word query
+only matches as a literal substring.
+
+It searches every provider at once, including `other` — where SaaS and dev-tool brand logos live.
+The `unmatched` list is the ONLY set that gets a `lucideIconName`; everything else takes its
+catalog hit. `lucideIconName` accepts any lucide name (Server, Database, User, ShoppingCart,
+Waypoints, Radio…).
+
+### The `iconUrl` contract — pass `svgPath` verbatim
+
+Take the matched icon's `svgPath` exactly as the catalog returned it and put that string in
+`iconUrl`. Do **not** build a URL from it, prefix a bucket or CDN host, or read infra config for a
+base URL — the server accepts the catalog-relative path and the web client resolves it at render
+time.
+
+`iconUrl` is **not** `customSVGPath`. That field carries raw SVG path *data* (an `M12 2L2 7…`
+string), not a file reference; putting a path there renders nothing, silently.
+
+    { "nodeSlug": "stripe", "shapeType": "square", "displayStrategy": "icon_only",
+      "iconUrl": "other/2026-q1/simple-other/stripe/Stripe wordmark - Blurple.svg" }

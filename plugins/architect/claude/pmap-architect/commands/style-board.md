@@ -34,8 +34,9 @@ stop. Respect the answer for the whole run; when restyling, present current → 
 
 Author the styling plan per the board-styling skill (composition, semantics, icons — the plan
 file shape is in its references/styling-vocabulary.md). Present the plan compactly: the
-composition line, sizes table (who gets lg/xl and why, the xs cohort), token groups, icon
-choices. Get approval (AskUserQuestion: apply / adjust / stop).
+composition line, sizes table (who gets lg/xl and why, the xs cohort), token groups, icon choices
+(catalog hit or Lucide fallback per node). Every size or token that deviates from the default
+carries a one-line reason. Get approval (AskUserQuestion: apply / adjust / stop).
 
 ### Step 4 — validate
 

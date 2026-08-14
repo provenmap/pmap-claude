@@ -36,6 +36,9 @@ Deterministic state first, judgment second:
      in the classify table (the attention report lists them as "Waiting for first push") →
      "`payments-app` is empty — bootstrap it? → `/board payments-app`"; a **Strategic
      landscape only** headline → "graduate the first real system → `/new-app <name>`".
+     A **"New apps awaiting build prep"** line in the attention report (also `governing ·
+     new app` in the classify table) → "spec + skills for `payments-app`? →
+     `/prepare-app payments-app`".
      (Empty plain layers have no batch signal — `/board` detects them on open.)
    - Otherwise the natural entries: `/board` (orient), `/ask-board` (ask), `/hub` (what needs
      me), `/archetypes` (catalogue gap round, if material is in hand), `/style-board` (beautify

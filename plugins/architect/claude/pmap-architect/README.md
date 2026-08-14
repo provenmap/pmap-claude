@@ -38,6 +38,7 @@ The plugin talks to the ProvenMap **MCP server** with a workspace-scoped bearer 
 | `/pmap-architect:start [ask]`                            | **Start here** — reads your real state and names the next step; routes any open-ended ask      |
 | `/pmap-architect:setup-workspace`                        | Bootstrap an empty workspace: estate interview → landscape → app boards → binding handoff      |
 | `/pmap-architect:new-app <idea>`                         | Plan a new system on the landscape: grill, place, sketch the target, draft the founding intent |
+| `/pmap-architect:prepare-app`                            | Take a new app from placed to build-ready — spec intents + skills, resumable any time         |
 | `/pmap-architect:author-intent [slug]`                   | Guided intent authoring: context pull, the grill, a well-grounded draft intent                 |
 | `/pmap-architect:adopt-adr`                              | Adopt a decision: durable record + compliance review + per-app remediation intents             |
 | `/pmap-architect:intents`                                | Turn anything into governed, well-anchored work; manage the queue                              |

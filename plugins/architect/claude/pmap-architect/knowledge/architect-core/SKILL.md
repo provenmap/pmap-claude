@@ -95,6 +95,7 @@ standalone entry to the same workflow:
 | Bootstrap/draw the org's estate; empty workspace; "founding/starting a new product line"                | `/setup-workspace` (landscape-modeling — map or found mode) |
 | "Shape/prepare/initialize this empty board", pages-first design of an intended app                      | `/board` on that board (board-init)                         |
 | A new system/app/service on an existing landscape                                                       | `/new-app` (landscape-modeling)                             |
+| "Prepare/spec the new app", "get `<app>` ready to build", skills for a planned app                      | `/prepare-app` (app-readiness)                              |
 | Requirements, a PRD/RFC/doc in hand, "what we want"                                                     | `/author-intent` (intents-authoring)                        |
 | A decision, ADR, policy, standard to adopt                                                              | `/adopt-adr` (adr-adoption)                                 |
 | "Get this changed/delivered/built" — work to hand off                                                   | `/intents` (intents-authoring)                              |
@@ -196,12 +197,24 @@ MCP results are raw JSON — you format them. Keep output stable across sessions
   slugs.
 - **Step banners:** multi-step commands mark each phase change with `**Step N/M — <name>**`.
 - **Glyphs — this fixed set, nothing else:** ✅ confirmed/done · ⏳ pending/deferred ·
-  🔗 link · ⚠️ needs attention.
+  🔗 link · ⚠️ needs attention. **Carve-out — script-rendered blocks:** anything a CLI hands you
+  ready to print verbatim (`--spine`, `--classify-tree`, `--attention`, `--status`, the styling
+  and grouping plans) carries its own marks, defined once in the plugin's `core/meters.ts`:
+  `●` critical · `⚠` warning · `✓` clear · `○` pending · `◉` you are here, plus the `█▒░` bars
+  and `├─ └─ │` connectors. Those are single-width monospace so columns line up; the emoji above
+  are double-width and would break every bar and table they sit in. The two vocabularies differ
+  in presentation on purpose — your prose writes `⚠️`, a script block writes `⚠` — so never
+  re-render a script block to "fix" its glyphs, and never carry those marks into your own prose.
 - **Kind chips:** system kinds render as plain words in tables — `repo` / `no-repo` / `SaaS`
   / `planned`.
-- **Board links:** when a write-path tool response (`commit_write_session`, `create_board`,
-  `convert_node_to_app`) carries a server-built `viewUrl`, print `🔗 View board: <url>`;
-  absent or null → skip silently (older server). Never hand-assemble platform URLs.
+- **Board links:** when a write-path tool response carries a server-built `viewUrl`, print
+  `🔗 View board: <url>`; absent or null → skip silently (older server). Never hand-assemble
+  platform URLs. Where it sits differs by tool: `create_board` and `convert_node_to_app` carry a
+  single top-level `viewUrl` for the board they just made. `commit_write_session` carries none at
+  the top level — its links are `result.intents[].viewUrl`, one per MINTED INTENT, each addressing
+  that intent's **root** board rather than the boards you edited, and absent entirely when the
+  commit mints no intent. Print one line per DISTINCT url there, named by its intent — never one
+  line per intent.
 
 ## Canonical error vocabulary — copy, don't paraphrase
 

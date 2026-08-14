@@ -11,10 +11,22 @@ strategic level and name the graduation path. Doctrine, archetype selection, bot
 and the checklist contract live in
 [`${CLAUDE_PLUGIN_ROOT}/knowledge/landscape-modeling/SKILL.md`](../knowledge/landscape-modeling/SKILL.md) — read it
 plus [`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md) and
-[`${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md`](../knowledge/board-reading/SKILL.md). Render step banners
-and glyphs per architect-core's formatting norms.
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md`](../knowledge/board-reading/SKILL.md). Glyphs elsewhere
+follow architect-core's formatting norms; step banners come from the interview spine below, not
+hand-written.
 
 ## Workflow
+
+At each step change, render the banner with:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --spine setup-workspace --step <n> [--interview-mode map|found] [--banked '<json>']
+```
+
+`<n>` is this step's number (3.5 for the styling step). Add `--interview-mode map|found` once
+Step 2's fork is answered, and `--banked` with a flat JSON object of the name/value facts
+captured so far. Print the result **verbatim** in place of the `**Step N/M — <name>**` banner —
+do not reformat, reorder, or summarise.
 
 ### Step 1 — detect the state
 
@@ -110,13 +122,19 @@ the strategic level; boards arrive at graduation (landscape-modeling's graduatio
 
 The closing move (architect-core): `preview_write_session_commit` → present the plan → ask for
 title/summary (AskUserQuestion) → `commit_write_session` → narrate what was generated, printing
-`🔗 View board: <url>` for any board whose tool response carried a server-built `viewUrl`
-(commit, `create_board`, `convert_node_to_app` — skip silently when absent). Then:
+`🔗 View board: <url>` for any board whose tool response carried a server-built `viewUrl` —
+top-level on `create_board`/`convert_node_to_app`, but `result.intents[].viewUrl` (one per minted
+intent, each pointing at that intent's root board, none when the commit mints no intent) on the
+commit itself, so print one line per distinct url, not one per intent. Skip silently when absent.
+Then:
 
 - **Map mode:** per repo-backed node, offer to complete the binding **in-session**:
-  `convert_node_to_app {nodeSlug, branch}` (landscape-modeling has the rules — eligibility
-  pre-check, archetype requirement, credentials never issued here). Repos the architect defers
-  stay on the checklist.
+  `convert_node_to_app {nodeSlug, branch, observationType}` (landscape-modeling has the rules —
+  eligibility pre-check, archetype requirement, credentials never issued here).
+  `observationType` is `'existing_app'` for repo-kind systems whose code exists (the map-mode
+  default); a planned system graduating here is `'new_app'` and routes into build prep — offer
+  prep-now inline (app-readiness skill) for a lone graduation, else name `/prepare-app <board>`.
+  Repos the architect defers stay on the checklist.
 - **Found mode:** no binding offers — the checklist carries the graduation path instead of
   repos-to-bind.
 
@@ -134,8 +152,10 @@ Map mode:
 
 1. **Developers connect each bound repo** (code plugin `/login` + `/configure`, first push) —
    the app boards fill from code; then `/author-intent` on the first app.
-2. **Add the next system later** → `/new-app` (the standing next step).
-3. **Watch the estate** → `/hub`.
+2. **Prep any `new_app` conversion for building** → `/prepare-app <board>` (spec intents +
+   skills; the attention queue lists them until prepped).
+3. **Add the next system later** → `/new-app` (the standing next step).
+4. **Watch the estate** → `/hub`.
 
 Found mode:
 

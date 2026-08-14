@@ -107,7 +107,8 @@ Whichever entry style ran, close against the same checklist:
 
 ## Skills prep
 
-`get_skill_profile` + `list_skill_library`, then propose an activation set from the interview
+`get_skill_profile` + `list_skill_library` (pass the profile's `catalogueType` — universal
+modules always match), then propose an activation set from the interview
 (stack, app archetype, what the app owns) — one conversational go-ahead, then:
 
 ```

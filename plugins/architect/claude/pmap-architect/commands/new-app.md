@@ -14,6 +14,16 @@ uses [`${CLAUDE_PLUGIN_ROOT}/knowledge/intents-authoring/SKILL.md`](../knowledge
 
 ## Workflow
 
+At each step change, render the banner with:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --spine new-app --step <n> [--banked '<json>']
+```
+
+`<n>` is this step's number (3.5 for the styling step). Pass `--banked` with a flat JSON object
+of the name/value facts captured so far. Print the result **verbatim** in place of the
+`**Step N/M — <name>**` banner — do not reformat, reorder, or summarise.
+
 ### Step 1 — grill
 
 Bounded rounds: purpose (one sentence); where it sits on the landscape (read root `get_nodes` /
@@ -55,8 +65,11 @@ later.
 Draft the founding intent in-session (full intents-authoring quality, kept in the drafts file),
 then close the gate without a portal trip:
 
-- System has a repo → offer `convert_node_to_app {nodeSlug, branch}` (landscape-modeling
-  rules; credentials never issued here — the developer's code plugin connects separately).
+- System has a repo → offer `convert_node_to_app {nodeSlug, branch, observationType}`
+  (landscape-modeling rules; credentials never issued here — the developer's code plugin
+  connects separately). `observationType` is `'new_app'` for the planned system this command
+  exists for (a freshly created empty repo is still `'new_app'`); `'existing_app'` only when
+  the grill revealed the code already exists.
 - Planning material is a document → `bind_reference_source` on the new board (enough to
   author).
 - Architect defers → the classic narration: _"Intents need a code-bound board — bind the repo,
@@ -64,6 +77,15 @@ then close the gate without a portal trip:
 
 Once authorable: `create_intent` (with `anchors[]` grounding the L1 sketch), then enrich via
 the intents-authoring describe loop.
+
+### Step 5 — build prep (new_app only)
+
+Converted with `observationType: 'new_app'` → one AskUserQuestion: **Prep the build now?**
+
+- **Now** → read [`${CLAUDE_PLUGIN_ROOT}/knowledge/app-readiness/SKILL.md`](../knowledge/app-readiness/SKILL.md)
+  and continue in-session — the grill's drafts file carries straight into the spec set, then
+  skills. (Commands can't invoke each other; this is the architect-core inline handoff.)
+- **Later** → name it: _"run `/prepare-app <board>` when ready — it resumes from live state."_
 
 ## Failure branches
 

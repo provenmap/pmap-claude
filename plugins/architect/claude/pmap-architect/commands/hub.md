@@ -22,6 +22,8 @@ staleness/verification semantics.
    for `verifiedAt` (say when you sampled); connect queue items to what you know from the
    session. The report's "Waiting for first push" boards (also `governing · never pushed` in
    the classify table) are board-init territory — the bootstrap offer is already in the line.
+   The report's "New apps awaiting build prep" boards are app-readiness territory — the
+   `/prepare-app` pointer is already in the line.
 2. **Then the portfolio** — `--classify-tree` (cached ~1h); print its table verbatim. It
    already carries class, binding flavor, and the "+N not classified" cap line.
 3. **Close with next actions ranked** — every line names a command.
