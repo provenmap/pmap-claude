@@ -65,10 +65,12 @@ drafts file — a resumed interview neither re-asks nor re-scans.
 - **Map what exists** (map mode) — the org interview: what the org does (one line — becomes the
   root board description via `apply_diagram_info`); the systems that exist today, each with an
   explicit **kind** — `repo` (own repository + scope: web, backend, mono-repo, worker…) /
-  `no-repo` (existing, no repository) / `SaaS` (third-party integration) / `planned` (decided,
-  not yet real); the infra worth showing at L0; actors/user types; real zones for grouping.
+  `new-app` (being built now, will have its own repository + scope) / `no-repo` (existing, no
+  repository) / `SaaS` (third-party integration) / `planned` (decided, nobody building it yet);
+  the infra worth showing at L0; actors/user types; real zones for grouping.
   **Nothing defaults to repo-backed** — batch ONE follow-up question for unclassified systems.
-  Never invent a system.
+  For anything not yet real, the deciding question is **"will it have its own repository?"** —
+  yes ⇒ `new-app` (binds in-session), no ⇒ `planned` (graduates later). Never invent a system.
 - **Found something new** (found mode) — the product-line interview: what's being built and for
   whom (one line — the root board description via `apply_diagram_info`); the intended systems
   and what each owns; actors/user types; external SaaS it will lean on; real zones. Stop when
@@ -89,9 +91,10 @@ budget keeps it readable), then the table (system, kind, archetype, container, r
 the payload (`--validate diagram`) → containers, then ONE `create_nodes` call, then ONE
 `create_edges` call — every write joins the working copy automatically.
 
-- Map mode: `repo` systems get **app archetypes** (that's what makes them bindable); `no-repo`
-  get system archetypes; `SaaS` gets the external-integration archetype; `planned` gets a
-  system archetype + the graduation-path narration (found-mode treatment — landscape-modeling).
+- Map mode: `repo` **and `new-app`** systems get **app archetypes** (that's what makes them
+  bindable — a repository that does not exist yet still gets one); `no-repo` get system
+  archetypes; `SaaS` gets the external-integration archetype; `planned` gets a system archetype
+  + the graduation-path narration (found-mode treatment — landscape-modeling).
 - Found mode: **system archetypes only** — a planned system is not yet bindable; the plan
   table's kind column reads `planned`. Narrate the founding truth: _"this is target state —
   systems graduate as they become real."_
@@ -111,7 +114,8 @@ If validation fails twice, skip styling (say so) and continue to Step 4; the arc
 
 ### Step 4 — generate app boards (APP BOARDS — map mode only)
 
-`create_board(ownerNodeSlug, newBoardSlug, name)` per `repo`-kind node. Born empty — **never
+`create_board(ownerNodeSlug, newBoardSlug, name)` per `repo`- and `new-app`-kind node (both are
+repo-backed; a repository that does not exist yet still gets its board). Born empty — **never
 draw inside**: content arrives from developer pushes. If the response carries a server-built
 `viewUrl`, print `🔗 View board: <url>`; absent or null → skip silently.
 
@@ -128,13 +132,15 @@ intent, each pointing at that intent's root board, none when the commit mints no
 commit itself, so print one line per distinct url, not one per intent. Skip silently when absent.
 Then:
 
-- **Map mode:** per repo-backed node, offer to complete the binding **in-session**:
+- **Map mode:** per repo-backed node — `repo` **and `new-app` alike, never only the `repo`
+  ones** — offer to complete the binding **in-session**:
   `convert_node_to_app {nodeSlug, branch, observationType}` (landscape-modeling has the rules —
   eligibility pre-check, archetype requirement, credentials never issued here).
-  `observationType` is `'existing_app'` for repo-kind systems whose code exists (the map-mode
-  default); a planned system graduating here is `'new_app'` and routes into build prep — offer
-  prep-now inline (app-readiness skill) for a lone graduation, else name `/prepare-app <board>`.
-  Repos the architect defers stay on the checklist.
+  `observationType` follows the kind, with no re-asking: `'existing_app'` for `repo`, `'new_app'`
+  for `new-app` (its branch is the one the first push will use — a repository that is empty or
+  not yet created is still `'new_app'`). Every `'new_app'` conversion routes into build prep —
+  offer prep-now inline (app-readiness skill) for a lone graduation, else name
+  `/prepare-app <board>`. Repos the architect defers stay on the checklist.
 - **Found mode:** no binding offers — the checklist carries the graduation path instead of
   repos-to-bind.
 

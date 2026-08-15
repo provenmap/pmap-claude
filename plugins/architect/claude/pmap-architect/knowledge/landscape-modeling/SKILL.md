@@ -64,12 +64,20 @@ follow-up question for systems the architect didn't classify:
 
 | Kind | Archetype | App board? |
 |---|---|---|
-| `repo` — existing, own repository | app archetype matching the repo scope | yes |
+| `repo` — existing, own repository | app archetype matching the repo scope | yes — binds `existing_app` |
+| `new-app` — being built now, will have its own repository | app archetype matching the repo scope | yes — binds `new_app` |
 | `no-repo` — existing, no repository | system archetype | no — just a node |
 | `SaaS` — third-party integration | external-integration archetype | no |
-| `planned` — decided, not yet real | system archetype + graduation-path narration | no — graduates via `/new-app` |
+| `planned` — decided, nobody building it yet | system archetype + graduation-path narration | no — graduates via `/new-app` |
 
-- **Repo-backed systems** get an app archetype matching the repo's scope: `web-app`,
+**The lever between `new-app` and `planned` is "will it have its own repository", NOT "does its
+code exist yet".** A system being built right now is `new-app`: it gets an app archetype, a
+board, and a `new_app` binding that waits on the first push — that is what routes it into build
+prep. Only a system nobody is building yet is `planned`. Ask that question directly for anything
+not yet real; the two kinds are the interview's mirror of the server's two observation types.
+
+- **Repo-backed systems** (`repo` and `new-app` alike) get an app archetype matching the repo's
+  scope: `web-app`,
   `backend-app`, `mono-repo`, `microservice-app`, `mobile-app`, `desktop-app`, `device-app`,
   `worker-app`, `gateway-app`, `integration-app`, `library-app`, `function-app`, `infra-app`,
   `data-app`, `agent-app`, `custom-app`.
@@ -126,12 +134,14 @@ code-plugin source, binds it GOVERNING on the branch. Rules:
 
 - The node's **archetype must be app-bindable** (an app archetype — that's what sets the repo
   scope). A generic-system node refuses; fix the archetype first.
-- **`observationType` is required** — the architect's observation, recorded on the binding:
-  `'existing_app'` when the system's code already exists (map-mode repo slots), `'new_app'` when
-  the app is net-new and still being planned (found-mode graduations, planned systems,
-  extractions — a freshly created empty repo is still `'new_app'`). Genuinely ambiguous → ask at
-  the gate: _new app still needing implementation planning_ vs _existing app now being
-  connected_. A `'new_app'` conversion routes into **build prep** next (the app-readiness
+- **`observationType` is required** — the architect's observation, recorded on the binding. In an
+  interview it **follows the kind, with no re-asking**: `'existing_app'` for a `repo` slot (the
+  code already exists), `'new_app'` for a `new-app` slot (net-new and still being built — a
+  freshly created empty repo, or one not created yet, is still `'new_app'`). Found-mode
+  graduations and extractions are `'new_app'` too. Only outside an interview, where no kind was
+  captured, is it genuinely ambiguous → ask at the gate: _new app still needing implementation
+  planning_ vs _existing app now being connected_. A `'new_app'` conversion routes into
+  **build prep** next (the app-readiness
   workflow): prep now in-session, or `/prepare-app <board>` later — the attention queue keeps
   it listed until prepped.
 - **Pre-check eligibility** with `--classify-tree` (bind-eligibility column) before offering
@@ -188,4 +198,6 @@ the bindability lever above) → `create_board` →
 intent. Mixed estates work naturally: the fork is per-answer, not
 exclusive — a real system named during a found-mode interview is drawn as in map mode, and a
 **planned** system named during a map-mode interview gets found-mode treatment: system
-archetype, no board, graduation path narrated.
+archetype, no board, graduation path narrated. That treatment is for `planned` only: a
+**`new-app`** system named during a map-mode interview is repo-backed and binds in-session as
+`new_app` — do not route a system someone is actively building down the graduation path.

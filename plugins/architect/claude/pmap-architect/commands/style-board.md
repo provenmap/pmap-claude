@@ -34,9 +34,11 @@ stop. Respect the answer for the whole run; when restyling, present current → 
 
 Author the styling plan per the board-styling skill (composition, semantics, icons — the plan
 file shape is in its references/styling-vocabulary.md). Present the plan compactly: the
-composition line, sizes table (who gets lg/xl and why, the xs cohort), token groups, icon choices
-(catalog hit or Lucide fallback per node). Every size or token that deviates from the default
-carries a one-line reason. Get approval (AskUserQuestion: apply / adjust / stop).
+composition line, sizes table (who is enlarged or shrunk, and why), token groups, icon choices
+(catalog hit or Lucide fallback per node). Every size carries a one-line reason, and every token
+states what it asserts that the element's archetype cannot. Say how many elements were left
+untouched because their archetype already speaks for them — that number is a quality signal, not
+an omission. Get approval (AskUserQuestion: apply / adjust / stop).
 
 ### Step 4 — validate
 

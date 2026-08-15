@@ -39,9 +39,50 @@ one entry (`elementRequests` / `nodeApplications`) — an empty one is rejected,
 | Severity | info, success, warning, error | findings / risk |
 | Role | presentation, application, domain, infrastructure, integration, gateway, cache, queue, store, security_boundary, domain_boundary, public_api, private_api | architectural responsibility |
 
-Optional `size` on node/container requests: `xs` (60×60, label below — externals/peripherals),
-`sm` (120×80), `md` (180×120, the default — omit unless a node should stand out), `lg`
-(240×160), `xl` (300×200 — the system under discussion). lg/xl show descriptions; xs shows none.
+`semanticToken` and `size` are independent — send either, or both. A request naming neither is
+rejected.
+
+### What the archetype already asserts
+
+Every archetype ships its own styles, and applying a node token **replaces them by style type**:
+each node token writes fill + stroke + text, so the question is never *does this overwrite?* (it
+always does) but *is what it says worth overwriting what was there?*
+
+The archetype catalogue answers that, and the **signals already carry it** — both domains print
+an "Archetypes on this board" section listing every archetype in use and what it asserts. Never
+fetch a catalogue during styling; the signals step did it once. Behind that section, each
+archetype carries a digest:
+
+| Field | Meaning |
+| --- | --- |
+| `assertsKind` | it paints fill/stroke/text — it is already saying what kind of thing this is |
+| `shape` | the shape it pins (`cylinder`, `hexagon`, …) |
+| `icon` | the icon it already carries — a lucide name or a catalog path |
+| `sizePreset` | set only when the archetype pins a size; normally null |
+
+`styling: null` means a **style-less** archetype: nothing to collide with, so a Role token is the
+only thing that will say what the element is — send it. A **missing** archetype (no entry at all)
+means the catalogue is unknown here; judge on the description alone.
+
+The digest is deliberately absent from the catalogue that analysis and board authoring read:
+when you are *classifying* an element — deciding which archetype it IS — what that archetype
+paints is irrelevant, and the catalogue is long.
+
+Read it before every token and every icon application. An `icon` in the digest means an icon
+application only earns its place when it says something the archetype's generic one cannot — a
+specific brand, a specific product.
+
+Never rely on remembered archetype names: admins add, edit and approve archetypes, so the
+catalogue is the only current truth.
+
+Optional `size` on node/container requests: `xs` (80×80), `sm` (120×80), `md` (180×120, the
+default — omit unless a node should stand out), `lg` (240×160), `xl` (360×240 — the system under
+discussion). lg/xl show descriptions; xs shows none.
+
+`xs` draws its label **below** the shape on one truncating line, so it fits a node recognised by
+its icon with a short name; an icon-less or long-named node takes `sm` instead. That is a
+legibility fact, not a rule about which nodes are peripheral — the token that says "peripheral"
+is `subtle`, at any size.
 
 ## Edge tokens
 

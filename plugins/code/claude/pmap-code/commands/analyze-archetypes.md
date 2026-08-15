@@ -66,11 +66,21 @@ On exit 1, print the JSON `error` field verbatim and stop (it names the pinned b
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --no-cache --kind code
 ```
 
-Parse the `archetypes[]`, `nodeArchetypes[]`, and `edgeArchetypes[]` from the JSON output. Compute a stable hash of the archetype names list — this becomes the `catalogueHash` recorded in the lock file.
+Parse the `archetypes[]`, `nodeArchetypes[]`, and `edgeArchetypes[]` from the JSON output.
+Read `catalogueHash` straight from the script's JSON — **do not compute it yourself.**
+It is the lock's drift detector and has exactly one correct value; a second
+implementation that disagrees reports `stale_catalogue` on a catalogue that never
+changed, which is indistinguishable from real drift. Record the returned value in
+the lock file verbatim.
 
 ### Step 2: Archetype-only scan
 
 Invoke the `architecture-analyzer` agent with `--archetypes-only` mode. The agent runs `/analyze` Steps 0, 3, 4, 5 (project detection → tech stack detection → component discovery + archetype classification) but stops there. It does **not** produce board JSON, edges, hierarchies, or manifest updates.
+
+**Model:** if `.provenmap/config.json` has `analysis.subagentModel`, pass it as the model
+for the dispatched agent; otherwise inherit the session model. Same rule as
+`/analyze` Step 8.7 — the setting pins every analysis subagent, and Phase 1's
+scan is one.
 
 The agent's output is a payload conforming to `ArchetypeProposalPayloadSchema`:
 
@@ -82,6 +92,18 @@ The agent's output is a payload conforming to `ArchetypeProposalPayloadSchema`:
 ```
 
 The agent applies the heuristics in [`${CLAUDE_PLUGIN_ROOT}/knowledge/archetype-analysis/SKILL.md`](../knowledge/archetype-analysis/SKILL.md) for both what to propose and what to skip.
+
+**Surface the evidence before asking.** The scan runs for minutes in the background; a
+spawn line followed by a summary gives the user nothing to judge. Before the submit
+prompt, print for each proposal:
+
+- the archetype name and the kind of gap (new archetype vs improvement)
+- the files and components that evidence it — the concrete instances found
+- which existing catalogue entries were considered and rejected, and why
+
+That is precisely the material needed to sanity-check a proposal before it consumes
+admin review time. If the agent's payload does not carry it, say so explicitly rather
+than presenting an unevidenced proposal as ready.
 
 ### Step 3: Decision branches
 
@@ -157,7 +179,7 @@ On success, print: *"N proposals submitted for admin review. The catalogue will 
 - `scannedAt` — ISO timestamp of the scan
 - `submittedAt` — ISO timestamp if proposals were POSTed, else `null`
 - `skippedAt` — ISO timestamp if the user opted to proceed with misfits, edit-first, or `--skip-submit`, else `null`. **Non-null `skippedAt` always re-prompts on the next `/analyze`** — it is intentionally not silenced.
-- `proposalIds[]` — server-returned IDs for any submitted proposals (used by `/status` to query pending state)
+- `proposalIds[]` — server-returned IDs for any submitted proposals (listed by `/status`; queried by the `/analyze` precondition to resolve pending → approved)
 
 Mapping from lock state to precondition status:
 

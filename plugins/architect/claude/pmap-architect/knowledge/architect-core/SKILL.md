@@ -205,8 +205,8 @@ MCP results are raw JSON — you format them. Keep output stable across sessions
   are double-width and would break every bar and table they sit in. The two vocabularies differ
   in presentation on purpose — your prose writes `⚠️`, a script block writes `⚠` — so never
   re-render a script block to "fix" its glyphs, and never carry those marks into your own prose.
-- **Kind chips:** system kinds render as plain words in tables — `repo` / `no-repo` / `SaaS`
-  / `planned`.
+- **Kind chips:** system kinds render as plain words in tables — `repo` / `new-app` / `no-repo`
+  / `SaaS` / `planned`.
 - **Board links:** when a write-path tool response carries a server-built `viewUrl`, print
   `🔗 View board: <url>`; absent or null → skip silently (older server). Never hand-assemble
   platform URLs. Where it sits differs by tool: `create_board` and `convert_node_to_app` carry a

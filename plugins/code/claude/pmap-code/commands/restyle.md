@@ -27,9 +27,11 @@ verbatim. Note `signalsPath` from the JSON. If it fails with "No local analysis"
 ### Step 3 — plan
 
 Author the styling plan per the board-styling skill. Present it compactly: the composition line,
-sizes table (who gets lg/xl and why, the xs cohort), token groups, icon choices. Every size or
-token that deviates from the default carries a one-line reason. Get approval (AskUserQuestion:
-apply / adjust / stop).
+sizes table (who is enlarged or shrunk, and why), token groups, icon choices. Every size carries
+a one-line reason, and every token states what it asserts that the element's archetype cannot.
+Say how many elements were left untouched because their archetype already speaks for them — that
+number is a quality signal, not an omission. Get approval (AskUserQuestion: apply / adjust /
+stop).
 
 ### Step 4 — validate + save
 

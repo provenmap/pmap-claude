@@ -58,7 +58,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js [options]
 | `--cache-file <name>` | `.provenmap/boards/archetypes-cache.json` | Cache file name |
 | `--no-cache` | - | Bypass cache, always fetch from server |
 
-**Output:** JSON with `archetypes`, `nodeArchetypes`, `edgeArchetypes`, `mappingValidation`
+**Output:** JSON with `archetypes`, `nodeArchetypes`, `edgeArchetypes`, `mappingValidation`, `catalogueHash`
 
 ### pmap-boards.js — Manage Boards
 

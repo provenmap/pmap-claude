@@ -71,7 +71,7 @@ dialog's `.provenmap/config.json` snippet matches the fields below exactly.
 
 Tell the user to open `.provenmap/config.json` in their editor and fill in:
 
-- `bindingToken` — base64url-encoded `orgId:bindingId`
+- `bindingToken` — base64url-encoded `workspaceId::bindingId`
 - `apiSecret` — format `ck_cp_live_` followed by an alphanumeric string
 - `branch` — must match the branch configured on the workboard binding (default `main`)
 - Optional: `baseUrl`, `excludePaths`, `includeTests`, `includeSourceReferences` (defaults to `true`; set `false` to omit file-path source references from synced nodes/edges) — the skeleton already has working defaults
@@ -127,7 +127,7 @@ Report configuration complete:
 If configuration already exists, ask the user whether to:
 
 - **Switch to a different board (browser)** — re-bind this project to another board without hand-editing credentials. This re-resolves the full credential triple (`bindingToken` + `apiSecret` + `boardSlug`), since a different board is a different binding with its own secret. The `--rebind` flag is what unlocks the board picker — without it, a bound project's login is authentication-only:
-  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain connect --plugin-version 0.10.4` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
+  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain connect --plugin-version 0.10.5` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
   2. After they sign in, pick the new board, and confirm, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain connect` (give the Bash call ~250s; re-run on `status: "pending"`). Print `display` verbatim.
   3. On `status: "complete"`, the config now points at the newly selected board — the `display` panel already shows it.
 - Update specific fields (have them edit `.provenmap/config.json`, then confirm + re-verify)

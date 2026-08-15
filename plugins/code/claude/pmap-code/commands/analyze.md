@@ -101,6 +101,22 @@ The loop:
 
 Prompts elsewhere become stops, never silent skips: the archetype precondition, branch mismatch, and not-connected gates each stop with their canonical sentence (Steps -2/-1 name the `--auto` behaviour). The script's stall guard and round cap are the only termination authority — do not stop early because the loop "feels" done, and never continue past a `done`/`stalled` verdict.
 
+## Progress display (every phase change)
+
+At the **first step of each phase** — Steps -2, 0, 4.5, 8, and 9 — run:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --spine analyze --step <this step's number> --with-coverage
+```
+
+Print the returned `display` **verbatim — do not reformat, reorder, or summarise.**
+It carries the phase chain, the current phase's steps, and the coverage bar. Do not
+run it at every step — once per phase is the intent; more is noise.
+
+Exit codes: `1` bad usage (fix the call), `3` the step is not registered (the pipeline
+registry has drifted from these headings — report it and continue; the spine is
+display, never a gate).
+
 ## Analysis Workflow
 
 ### Step -2: Preflight — binding, branch, local state
@@ -322,7 +338,17 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --group-plan --scope-path <pa
   --skeleton .provenmap/skeletons/<board-slug>.json --against .provenmap/boards/<board-slug>.json
 ```
 
-Print its `display` **verbatim — do not reformat, reorder, or summarise**, then work from these fields:
+For the **L0 board**, run `--group-plan --layer 0`: it rolls the file-granular clusters
+up to workspace / top-level-directory granularity, which is the granularity the L0 board
+actually uses (Step 5 targets 10–30 nodes). Without it the plan proposes dozens of
+candidate groups you would only re-aggregate by hand. It rolls up candidate *groups*
+only — root-level elements stay file-granular, so their count is not reduced by
+`--layer 0` (the display's row cap keeps them readable regardless).
+
+Print its `display` **verbatim — do not reformat, reorder, or summarise**. The `display` is
+capped (default 25 rows per section) and names how many rows it dropped; the complete plan
+is written to `.provenmap/group-plan.json`. Read that file only if a capped section is the
+one you need — never print it. Then work from these fields:
 
 - `clusters[]` — candidate groups with `cohesion` (how much of their coupling stays inside),
   `density` (how interconnected their members are), `folderAgreement` (how much the group
@@ -365,8 +391,23 @@ A container whose child board has taken over ALL of its claims may set `coveredF
 **Grouping comes from Step 4.6's plan, not from node count or folder names.** Each
 `domain_group` you create should trace to a cluster with `verdict: "container"`, each
 nested container to a `parents[]` entry, and each top-level node either to a `root-level`
-role or to a stated reason of your own. Node count is not a grouping criterion — a board of
-20 uncoupled nodes needs no containers, and a board of 6 tightly-coupled ones may need two.
+role or to a stated reason of your own. Node count does not tell you *how* to group — a board of 20 uncoupled nodes may need
+only two containers, and a board of 6 tightly-coupled ones may need two as well; the
+clusters come from coupling, not from a count. But node count is a hard **floor**: a
+board with more than 8 nodes must have at least one `domain_group` with at least one
+node nested under it, or `--board-report`, `--validate` and `/sync` all fail it
+(exit 3). Group by coupling; just never leave a board over 8 nodes flat.
+
+**`canContain` is advisory, not enforced.** Every archetype carries a `canContain` list,
+and the server accepts a push whose nesting contradicts it — verified against a board
+where vendor archetypes sat under a `domain_group` that excludes them and all 18 nodes
+pushed with `verify.ok: true`. Treat it as a rendering hint: a nesting it disallows may
+look odd on the canvas, but it will not be rejected. So do **not** retype a node to
+satisfy it, and do not place a node at board root to avoid violating it — pick the
+archetype that describes the component and the parent that describes the boundary. This
+is unrelated to the node-count floor above: that rule is enforced (grouping structure),
+`canContain` is not (archetype nesting) — the floor still applies regardless of any
+archetype's `canContain` list.
 
 **Incremental:** Only read and analyze the changed/added files from Step 1.5. Keep existing nodes from unchanged files as-is. For deleted files, mark their nodes for removal.
 
@@ -521,6 +562,27 @@ For child boards, include parent references:
 }
 ```
 
+### Step 8.3: Board report + gate (immediately after the JSON is written)
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --board-report <board-slug>
+```
+
+Run this the moment Step 8 writes the board JSON — **before** styling, coverage or
+any user-facing offer. Branch on the result:
+
+- `gate.valid: true` → continue to Step 8.4. This display is not what gets printed —
+  the ledger is still stale here (Step 8.5 hasn't run yet); the Output Format re-runs
+  this same command after coverage refreshes and prints that display instead.
+- `gate.valid: false` (exit 3) → **stop the pipeline for this board.** Print the
+  `errors[]` verbatim, fix the board JSON, and re-run this step until it passes.
+  Never style, coverage-refresh, write the manifest, or offer next steps for a board
+  that has not passed its gate — that work is discarded when the gate finally runs.
+
+For a fanned-out drill-down this step is the agent's own (Step 8.7 already requires
+each agent to report its board's gate status); the orchestrator runs it here for the
+board it writes directly.
+
 ### Step 8.4: Author the styling plan
 
 After writing the board JSON, style it (methodology:
@@ -638,17 +700,24 @@ Otherwise, run L0 overview analysis with incremental mode (or full if no board d
 
 The report is **script-rendered — never hand-assemble counts into prose.** After Step 9, for each board written this run:
 
+Re-run the board report now, after Step 8.5 has refreshed the coverage ledger:
+
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --board-report <board-slug>
 ```
 
-Print its `display` **verbatim** (nodes-by-archetype bars, edges by type, per-board file accounting, isolated nodes, drill-down candidates, board file path).
+Print the returned `display` **verbatim** (nodes-by-archetype bars, edges by type,
+per-board file accounting, isolated nodes, drill-down candidates, board file path). This
+re-run is a **pure re-render for display** — its only purpose is to pick up the ledger
+Step 8.5 just refreshed, so the per-board file-accounting line shows real numbers
+instead of the "ledger not refreshed" line the Step 8.3 display would still be carrying.
+The gate itself was already evaluated and passed at Step 8.3 and is **not** re-evaluated
+here: a non-zero exit at this point is a reporting problem (fix and retry), never treat
+it as a gate failure.
 
-**Gate errors block.** If the report's `gate.valid` is `false` (the script exits 3), the
-board JSON failed a hard integrity gate — the `display` names each offending edge or node
-and the fix. Apply the fix to `.provenmap/boards/<board-slug>.json` and re-run the report;
-do **not** continue to Step 8.6 or offer `/sync` until it passes. `gate.warnings` do not
-block — print them and continue.
+**Gate errors block — already handled at Step 8.3.** Step 8.3 stopped the pipeline for
+any board whose `gate.valid` was `false`; a board only reaches this section after its gate
+passed. `gate.warnings` do not block — print them and continue.
 
 Then add ONLY what the script cannot know:
 
@@ -657,4 +726,7 @@ Then add ONLY what the script cannot know:
 - The **final** Step 8.5 coverage dashboard, verbatim (if Step 8.6 looped, one dashboard — the last — not one per pass)
 - Which next-area choices the user made, if any passes looped
 
-Never restate numbers the board report or coverage dashboard already shows.
+Never restate numbers **in your own prose** that the board report or coverage dashboard
+already shows. This scopes your commentary only — it never licenses replacing or
+referencing a block the list above requires verbatim. The board report and the final
+coverage dashboard (bar included) are printed in full, every run.

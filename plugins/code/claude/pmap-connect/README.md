@@ -37,7 +37,7 @@ Two ways to connect this document repo to a board — both write the same `.prov
 
 | Field | Required | Notes |
 |---|---|---|
-| `bindingToken` | yes | Base64url `orgId:bindingId` from the portal. Sent as `X-CodePlugin-Token`. |
+| `bindingToken` | yes | Base64url `workspaceId::bindingId` from the portal. Sent as `X-CodePlugin-Token`. |
 | `apiSecret` | yes | Must start with `ck_cp_live_`. Sent as `X-CodePlugin-Secret`. |
 | `boardSlug` | yes | Target knowledge board. `/configure` can discover and write it for you. |
 | `branch` | yes | For git-tracked docs, must match the binding (or `/sync` returns `400 Branch Mismatch`). |

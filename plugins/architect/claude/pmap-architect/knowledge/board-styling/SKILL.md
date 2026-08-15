@@ -10,7 +10,10 @@ Styling is judgment guided by facts. The pipeline is always the same four moves:
 1. **Signals** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --style-signals --board <slug>`
    prints deterministic facts (hubs, external cohort, container profiles, arrangement suggestion)
    and writes a signals file (path in the JSON output). Never re-derive these facts by hand.
-2. **Plan** — you decide: tokens, sizes, composition, icons. **Resolve icons first**: before any
+2. **Plan** — you decide: tokens, sizes, composition, icons. The signals' **"Archetypes on this
+   board"** section already tells you what each archetype asserts — every token decision below is
+   judged against it, so do **not** call `get_archetypes` here; step 1 fetched the catalogue
+   once. **Resolve icons first**: before any
    token or size is final, collect every node whose archetype is a brand, cloud provider or SaaS
    integration and send all their names in ONE `match_icons` call (never one call per node). For a
    matched name, pass its top hit's `svgPath` verbatim as `iconUrl`; choose a `lucideIconName` only
@@ -30,20 +33,37 @@ Styling is judgment guided by facts. The pipeline is always the same four moves:
 
 - **Semantics first, decoration never.** Every token must state a fact about the architecture
   (role, state, flow, severity). If you can't say what a token asserts, don't apply it.
-- **Size is hierarchy, and a minority.** The signals' prominence list are your lg/xl candidates
-  — cap enforced at 10% of leaf nodes. If everything is large, nothing is. The external cohort
-  all goes xs (label renders below the shape); shrinking many externals at once is correct.
-- **One Role token per archetype per board — group first, then choose.** The rule constrains
-  containers that *share* an archetype; it does not mean every container on the board takes the
-  same token. Group containers by archetype, then pick the **most specific applicable Role token**
-  per group (an `external_integrations` container takes `integration`, not the `domain_boundary`
-  its neighbours take), defaulting to a shared token only within a group. Same archetype, same
-  role — a split legend reads as an error. (The validator warns; deviate only deliberately.)
+- **A token must assert what the archetype cannot.** Styling starts on top of styling the
+  archetype already applied, and a node token replaces fill + stroke + text — so a token that
+  merely restates the archetype trades its palette for a duplicate. Per element, in order:
+  1. **Does it warrant a token at all?** Does the *requirement* demand this element be told
+     apart from its neighbours? Most elements on a good board carry none.
+  2. **Find its archetype in the signals' "Archetypes on this board" list.** *Asserts kind*
+     means it already says what kind of thing this is — don't spend a Role token repeating it.
+     *Style-less* means a Role token is the only thing that will say what the element is, so
+     send it.
+  3. **Only then pick the category.** Reserve **Role** for style-less archetypes. **State** and
+     **Severity** carry instance facts no archetype can (`legacy`, `degraded`, `failing`,
+     `error`) — the same token on half the board asserts nothing, so use them where elements
+     genuinely differ. **Emphasis** is attention, never identity; `neutral` asserts nothing at
+     all — omit the element instead.
+- **Size is the instrument, and a minority.** Size is its own style type: it never overwrites
+  archetype identity, so it is where you have free rein to make the diagram explain itself —
+  key components larger, incidental ones smaller, and a size needs no accompanying token. Keep
+  lg/xl a minority anyway: if everything is large, nothing is (the validator warns, it does not
+  block). `xs` is a legibility choice — the label renders below the shape on one truncating
+  line, so it suits icon-backed short names; an icon-less or long-named node takes `sm`.
+- **One Role token per archetype per board — group first, then choose.** Among the archetypes
+  that earn a Role token at all, the rule constrains containers that *share* an archetype; it
+  does not mean every container on the board takes the same token. Group containers by
+  archetype, then pick the **most specific applicable Role token** per group, defaulting to a
+  shared token only within a group. Same archetype, same role — a split legend reads as an
+  error. (The validator warns; deviate only deliberately.)
 - **Every deviation states its reason.** When you present the plan, each size or token that
   departs from the default (`md`, no token) carries a one-line why — "xl: the system under
-  discussion", "xs: external cohort", "integration: third-party SaaS boundary". A bare table
-  invites "why is that big?" and cannot be reviewed.
-- **Composition by board type.** C4-context root: `flow` + `horizontal`, externals xs at the
+  discussion", "xs: peripheral, icon-backed", "integration: style-less archetype, nothing else
+  states its role". A bare table invites "why is that big?" and cannot be reviewed.
+- **Composition by board type.** C4-context root: `flow` + `horizontal`, externals small at the
   edges. Containment-heavy structure: `hierarchy`. Peer mesh with no dominant direction:
   `network` (never give it an orientation — the validator rejects it). Set the board once,
   override only containers that genuinely read differently. Density: `tight` for dense
