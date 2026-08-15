@@ -256,6 +256,7 @@ When creating child board drill-down candidates:
     "techStacks": ["fastapi", "react"],
     "boardSlug": "my-project-overview",
     "layer": 0,
+    "analyzedBy": { "mode": "agent", "model": "<the model named in your dispatch prompt, or 'session-inherit'>" },
     "waivedFiles": ["scripts/dev-seed.ts"],
     "archetypeGaps": [{ "name": "agent_command", "exampleNodeSlugs": ["docs-analyse"], "usedInstead": "module" }],
     "description": "Brief board summary — what this board covers (max 500 chars)",
