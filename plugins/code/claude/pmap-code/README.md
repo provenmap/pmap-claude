@@ -52,16 +52,13 @@ Run `/configure` to validate the config, test the connection, and add `.provenma
 
 ## Quick start
 
-The plugin uses a **two-phase workflow**: first settle the archetype vocabulary, then describe the system.
-
 1. `/login` (browser) or `/configure` (manual) — connect to the portal (one-time per repo)
-2. `/analyze-archetypes` — **Phase 1**: scan for component categories, surface gaps in the server archetype catalogue, submit proposals for admin review
-3. `/analyze` — **Phase 2**: full architecture analysis (incremental — only changed files re-analyzed)
-4. `/sync` — push the analysis to your board
-5. `/insights` — run server-defined analyses (security, performance, etc.) against the board
-6. `/status` — see what's analyzed, the archetype precondition state, and what's synced
+2. `/analyze` — full architecture analysis (incremental — only changed files re-analyzed)
+3. `/sync` — push the analysis to your board
+4. `/insights` — run server-defined analyses (security, performance, etc.) against the board
+5. `/status` — see what's analyzed and what's synced
 
-If `/analyze` is invoked before `/analyze-archetypes` has run for the current codebase + catalogue state, it prompts you to run Phase 1 first.
+`/analyze-archetypes` is **optional** — see [Archetypes](#archetypes-server-defined-settlement-optional).
 
 ## Supported languages
 
@@ -85,11 +82,7 @@ Polyglot projects produce a unified board with cross-language relationships (HTT
 |---|---|
 | `/login` | Browser sign-in: pick a workspace + bound board, writes config automatically |
 | `/configure` | Set up portal credentials manually, or switch to a different board |
-| `/analyze-archetypes` | Phase 1 — scan for archetype gaps, submit proposals if needed |
-| `/analyze-archetypes --dry-run` | Validate scan locally + ask server to dry-run, don't persist or POST |
-| `/analyze-archetypes --skip-submit` | Write the proposals file for manual review; don't POST |
-| `/analyze-archetypes --replace` | When submitting, send `mode='replace'` to overwrite pending payload |
-| `/analyze [path]` | Phase 2 — analyze codebase architecture (incremental; re-analyzes only changed files) |
+| `/analyze [path]` | Analyze codebase architecture (incremental; re-analyzes only changed files) |
 | `/analyze --clean` | Full re-analysis from scratch, ignoring existing board data |
 | `/analyze --drill <board>/<node>` | Drill into a node to produce a child layer board |
 | `/analyze --all` | Re-analyze every layer board in the manifest |
@@ -105,9 +98,13 @@ Polyglot projects produce a unified board with cross-language relationships (HTT
 | `/demo-insights [count] [--board <slug>]` | Seed a board with a few demonstrative, path-rich insights to showcase the insights feature |
 | `/adopt [--aspect <kind> \| --db \| --api]` | Extract a code aspect (database schema, API surface, frontend pages, event catalog) onto the bound board |
 | `/monitor` · `/monitor setup` | Correlate monitoring signals (errors, logs, cloud costs) with the board and push findings as a draft insight; `setup` configures sources + a recurring run |
-| `/status` | Show the lifecycle dial, config state, archetype precondition, analysis summary, and per-board sync status |
+| `/status` | Show the lifecycle dial, config state, analysis summary, and per-board sync status |
 | `/help` | List commands grouped by lifecycle stage, with the plugin version |
 | `/update` | Update this plugin to the latest published version for your host |
+| `/analyze-archetypes` | _Advanced_ — customize the archetype vocabulary: scan for gaps, submit proposals for admin review |
+| `/analyze-archetypes --dry-run` | Validate scan locally + ask server to dry-run, don't persist or POST |
+| `/analyze-archetypes --skip-submit` | Write the proposals file for manual review; don't POST |
+| `/analyze-archetypes --replace` | When submitting, send `mode='replace'` to overwrite pending payload |
 
 ## Layered boards
 
@@ -126,15 +123,25 @@ Board hierarchy and per-board sync state live in `.provenmap/boards/`:
 - `<board-slug>.json` — analysis output (nodes + edges) for that board
 - `stores/<board-slug>.store.json` — sync state, content hashes, last push
 
-## Archetypes (server-defined, precondition-driven)
+## Archetypes (server-defined, settlement optional)
 
 Components are classified using archetypes defined on your ProvenMap server, **not** a fixed list shipped with the plugin. `/analyze` fetches the current catalogue via `/code-plugin/archetypes` and the architecture-analyzer agent assigns each discovered node a valid archetype name.
 
-If your codebase has patterns that don't fit any existing archetype well, `/analyze-archetypes` surfaces them **before** any board is produced and submits proposals (new archetypes or improvements to existing ones) for human review. The catalogue gets settled first so every component on the board gets a fit archetype — no misfits, no post-hoc retyping.
+Where your codebase has a pattern the catalogue has no good name for, `/analyze` types it with the closest available archetype, records the gap in the board's `metadata.archetypeGaps`, and names it once at the end of the run. Nothing blocks — the board is complete either way.
 
-The two-phase split (`/analyze-archetypes` then `/analyze`) is the supported workflow. `/analyze` will detect a stale or missing precondition and prompt to run Phase 1 first.
+Acting on that is optional. `/analyze-archetypes` scans for the same gaps and submits proposals (new archetypes, or improvements to existing ones) for admin review; once approved, `/analyze --clean` retypes the affected components.
 
-Open the ProvenMap UI to see the current archetype catalogue — the plugin fetches it automatically during `/analyze-archetypes` and `/analyze`.
+### Advanced: making settlement a precondition
+
+Set this in `.provenmap/config.json` to restore the old two-phase workflow, where `/analyze` stops and prompts whenever the archetype lock is missing, stale, or was skipped:
+
+```json
+{ "analysis": { "archetypeGate": "strict" } }
+```
+
+Remove the key to go back to the optional default.
+
+Open the ProvenMap UI to see the current archetype catalogue — the plugin fetches it automatically during `/analyze`.
 
 ## Output format
 

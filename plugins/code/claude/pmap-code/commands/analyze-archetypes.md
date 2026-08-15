@@ -1,19 +1,30 @@
 ---
-category: map
-description: "Map · Analyse the codebase for archetype gaps and submit proposals before running full /analyze"
+category: advanced
+description: Customize the archetype vocabulary — scan for gaps in the catalogue and propose the missing archetypes
 argument-hint: [--dry-run | --skip-submit | --force | --replace]
 allowed-tools: Read, Glob, Grep, Write, Bash(node:*, git:*), AskUserQuestion
 ---
 
-Phase 1 of the two-phase workflow: settle the **vocabulary** before describing the system. Scans the codebase for component categories, compares them against the server's archetype catalogue, and either confirms the catalogue is complete or proposes the missing archetypes for human approval.
+Customize the **vocabulary** your architecture is described in. Scans the codebase for component categories, compares them against the server's archetype catalogue, and either confirms the catalogue is complete or proposes the missing archetypes for human approval.
 
-After this command finishes (and any submitted proposals are approved), `/analyze` runs against a complete catalogue — no misfit archetypes, no post-hoc retyping.
+**This is optional.** `/analyze` never requires it — it types every component with the closest available archetype and names any gaps it hit once the board is built. Run this when you want the catalogue to carry a category it currently lacks, so those components get a precise archetype instead of a loose fit.
 
 ## When to run
 
-- Before `/analyze` on a fresh project.
-- After any significant codebase change that introduces new component categories (e.g., adding CDK stacks to a previously codebase-only repo).
-- After admin approves proposals you previously submitted — re-running confirms the catalogue is now complete and updates the lock file.
+- After `/analyze` reported archetype gaps — it names the categories your codebase has that the catalogue doesn't.
+- When you want to curate the vocabulary up front on a fresh project, before any board exists.
+- After a codebase change that introduces a genuinely new component category (e.g. adding CDK stacks to a previously codebase-only repo).
+- After admin approves proposals you previously submitted — re-running confirms the catalogue is now complete and updates the lock file. Then `/analyze --clean` retypes the affected components.
+
+## Making it a hard precondition (advanced)
+
+To require settlement before every `/analyze` — the old two-phase workflow — set this in `.provenmap/config.json`:
+
+```json
+{ "analysis": { "archetypeGate": "strict" } }
+```
+
+`/analyze` then stops and prompts whenever the lock is missing, stale, or was skipped. Remove the key to go back to the default, where settlement is optional and gaps are reported after the fact.
 
 ## Flags
 
@@ -140,14 +151,14 @@ If `proposed[]` and `improvements[]` are both empty:
 
 2. If `--dry-run`: skip the prompt. Validate the payload via [scripts/pmap-propose-archetypes.js](../scripts/pmap-propose-archetypes.js) with `--dry-run` (which POSTs `?dryRun=true` to the server). Print result, do **not** write the lock. Exit 0.
 
-3. If `--skip-submit`: write `.provenmap/proposed-archetypes.json`. Write the lock with `skippedAt: <ts>` (scan completed but submission was opted out — Phase 1 is *not* settled). Print: *"Proposals written for manual review. Edit the file and re-run /analyze-archetypes when ready. /analyze will re-prompt until Phase 1 finishes."* Exit 0.
+3. If `--skip-submit`: write `.provenmap/proposed-archetypes.json`. Write the lock with `skippedAt: <ts>` (scan completed but submission was opted out — the catalogue is *not* settled). Print: *"Proposals written for manual review. Edit the file and re-run /analyze-archetypes when ready. /analyze runs either way — the affected components carry the closest available archetype until these land."* Exit 0.
 
 4. Otherwise (interactive default): use AskUserQuestion with three options:
    - **Submit for review** (recommended) — proceed to Step 4.
-   - **Edit first** — write `.provenmap/proposed-archetypes.json`. Write the lock with `skippedAt: <ts>` (same rationale as `--skip-submit` — Phase 1 is mid-flight). Print: *"Edit the file then re-run /analyze-archetypes to submit."* Exit 0.
-   - **Skip and proceed** — write the lock with `skippedAt: <ts>`. Print: *"Skip is one-shot: every subsequent /analyze will re-prompt until you run /analyze-archetypes and submit (or confirm no gaps). Running /analyze now will type affected components with misfit archetypes. Re-run /analyze-archetypes then /analyze --clean after the missing archetypes land in the catalogue."* Exit 0.
+   - **Edit first** — write `.provenmap/proposed-archetypes.json`. Write the lock with `skippedAt: <ts>` (same rationale as `--skip-submit` — the scan is mid-flight). Print: *"Edit the file then re-run /analyze-archetypes to submit."* Exit 0.
+   - **Skip and proceed** — write the lock with `skippedAt: <ts>`. Print: *"Skipped. /analyze will run and type the affected components with the closest available archetype. Re-run /analyze-archetypes then /analyze --clean if you later want the missing archetypes in the catalogue."* Exit 0.
 
-> **Lock-shape note:** in all three branches the lock must include `commitHash` and `catalogueHash` (from Step 1) so [pmap-precondition.js](../scripts/pmap-precondition.js) can detect when subsequent /analyze runs are still aligned with this scan. `skippedAt` is always non-null in these branches — that field is what makes the precondition re-prompt.
+> **Lock-shape note:** in all three branches the lock must include `commitHash` and `catalogueHash` (from Step 1) so [pmap-precondition.js](../scripts/pmap-precondition.js) can detect when subsequent /analyze runs are still aligned with this scan. `skippedAt` is always non-null in these branches — under the opt-in `archetypeGate: "strict"` that field is what makes the precondition re-prompt; by default nothing reads it.
 
 ### Step 4: Submit
 
@@ -168,7 +179,7 @@ Parse the JSON output:
 - `success: false` + `serverResult.notAvailable: true`: server endpoint not deployed yet — leave the proposals file on disk; tell the user to retry after deployment. Do not write the lock.
 - `errorCode: 3` (validation): surface `validated.errors[]`; let the user edit `.provenmap/proposed-archetypes.json` and re-run.
 
-On success, print: *"N proposals submitted for admin review. The catalogue will be updated once an admin approves them in the ProvenMap UI. Re-run `/analyze-archetypes` after approval, then proceed with `/analyze`."*
+On success, print: *"N proposals submitted for admin review. The catalogue will be updated once an admin approves them in the ProvenMap UI. Re-run `/analyze-archetypes` after approval, then `/analyze --clean` to retype the affected components."*
 
 ### Step 5: Persist lock
 
@@ -178,12 +189,12 @@ On success, print: *"N proposals submitted for admin review. The catalogue will 
 - `catalogueHash` — hash of archetype-name list at scan time
 - `scannedAt` — ISO timestamp of the scan
 - `submittedAt` — ISO timestamp if proposals were POSTed, else `null`
-- `skippedAt` — ISO timestamp if the user opted to proceed with misfits, edit-first, or `--skip-submit`, else `null`. **Non-null `skippedAt` always re-prompts on the next `/analyze`** — it is intentionally not silenced.
+- `skippedAt` — ISO timestamp if the user opted to proceed, edit-first, or `--skip-submit`, else `null`. Under `archetypeGate: "strict"` a non-null `skippedAt` always re-prompts on the next `/analyze` — it is intentionally not silenced.
 - `proposalIds[]` — server-returned IDs for any submitted proposals (listed by `/status`; queried by the `/analyze` precondition to resolve pending → approved)
 
-Mapping from lock state to precondition status:
+Mapping from lock state to precondition status. **The whole table applies only under `archetypeGate: "strict"`** — by default the precondition returns `gate_off` without reading the lock or the catalogue at all, and `/analyze` proceeds silently:
 
-| Lock state | Precondition status | /analyze behaviour |
+| Lock state | Precondition status | /analyze behaviour (strict mode only) |
 | ---------- | ------------------- | ------------------ |
 | missing or hashes mismatch | `missing` / `stale_commit` / `stale_catalogue` | re-prompts |
 | `skippedAt` set | `skipped` | re-prompts (one-shot semantics) |

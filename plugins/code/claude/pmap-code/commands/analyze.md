@@ -138,9 +138,11 @@ Print the JSON's `display` field **verbatim** — do not reformat, reorder, or s
 | 2    | Binding could not be verified          | Print `error` verbatim and stop. Name `/status` for the full local picture.                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | 11   | Branch mismatch                        | Print `display` verbatim, then ask via AskUserQuestion (in `--auto` mode: stop after printing — the `display` already carries the `git switch` recovery). Header: `Branch`. Question: `"This project is bound to a different branch. How do you want to proceed?"` Options: **Re-bind to this branch (`/login`)** — run the `/login` workflow inline, then re-run this step; **Stop — I'll switch branches myself** — stop, having already printed the `git switch` line. Never run `git switch` yourself: the working tree may be dirty. |
 
-### Step -1: Archetype precondition check
+### Step -1: Branch guard + optional archetype gate
 
-`/analyze` operates as Phase 2 of the two-phase workflow. Phase 1 (`/analyze-archetypes`) settles the archetype catalogue first so every node gets a fit archetype rather than a misfit. The precondition is **enforced by a script, not by prose** — you must run it and react to its exit code; do not decide on your own whether Phase 1 has been satisfied.
+Archetype settlement is **optional**. By default `/analyze` runs straight through — it reports the archetype gaps it actually hits at Step 9, once the board exists and the gaps are real rather than inferred from a hash comparison. A user who wants to curate the vocabulary *before* any board is produced opts in with `"analysis": { "archetypeGate": "strict" }` in `.provenmap/config.json`.
+
+Which mode is active is **decided by the script, not by prose** — run it and react to its exit code; never decide on your own that the gate does or doesn't apply.
 
 1. Run the precondition script:
 
@@ -152,6 +154,7 @@ Print the JSON's `display` field **verbatim** — do not reformat, reorder, or s
 
    | status            | exit | requiresPrompt | action                                                                                                 |
    | ----------------- | ---- | -------------- | ------------------------------------------------------------------------------------------------------ |
+   | `gate_off`        | 0    | false          | The default. Proceed **silently** to Step 0 — say nothing about archetypes here.                        |
    | `ok`              | 0    | false          | Proceed silently to Step 0.                                                                            |
    | `pending`         | 0    | false          | Print the `reason` from the JSON as a warning, then proceed.                                           |
    | `missing`         | 10   | true           | Lock file does not exist. Prompt the user (see step 3).                                                |
@@ -159,9 +162,11 @@ Print the JSON's `display` field **verbatim** — do not reformat, reorder, or s
    | `stale_catalogue` | 10   | true           | Server catalogue has changed since the last scan. Prompt (see step 3).                                 |
    | `skipped`         | 10   | true           | Last run was skipped — **skip is one-shot, this re-prompts on every `/analyze`**. Prompt (see step 3). |
 
+   Exit 10 is reachable **only under `archetypeGate: "strict"`** — the user asked for the gate, so honour it.
+
    On exit code `1` (not connected — `status: not_connected`) or `2` (API error): print the script's `error` field verbatim and stop. Step -2 has already offered to connect, so a `1` here means the user declined or the credentials are still rejected.
 
-3. When `requiresPrompt` is true, ask via AskUserQuestion. In `--auto` mode do not ask and do not skip: stop with the script's `reason` verbatim plus _"Archetype check needs a decision — run `/analyze-archetypes` first, or run `/analyze` without `--auto` to decide interactively."_ Header: `Archetype check`. Question: include the script's `reason` verbatim, then `"How do you want to proceed?"`. Provide exactly these two options:
+3. When `requiresPrompt` is true, ask via AskUserQuestion. In `--auto` mode do not ask and do not skip: stop with the script's `reason` verbatim plus _"Archetype check needs a decision — run `/analyze-archetypes` first, run `/analyze` without `--auto` to decide interactively, or remove `analysis.archetypeGate` from `.provenmap/config.json` to make settlement optional again."_ Header: `Archetype check`. Question: include the script's `reason` verbatim, then `"How do you want to proceed?"`. Provide exactly these two options:
    - **Run /analyze-archetypes now (recommended)** — Invoke the `/analyze-archetypes` flow now.
      - If the user submits proposals there → **exit `/analyze`** with: _"Proposals submitted. Re-run `/analyze` after admin approval."_
      - If `/analyze-archetypes` reports the catalogue is complete (no gaps) → re-run `pmap-precondition.js` to confirm `status: ok`, then continue.
@@ -179,9 +184,9 @@ Print the JSON's `display` field **verbatim** — do not reformat, reorder, or s
      ```
      This is intentionally not silenced — every subsequent `/analyze` will re-prompt until Phase 1 is properly run. That is by design.
 
-4. **Do not bypass.** Do not write the lock file or skip the prompt for any reason other than the user's explicit selection in step 3. If a session reminder says "work without stopping for clarifying questions," the **Run `/analyze-archetypes` now** option is the reasonable call — not silent skip.
+4. **Do not bypass.** In strict mode, do not write the lock file or skip the prompt for any reason other than the user's explicit selection in step 3. If a session reminder says "work without stopping for clarifying questions," the **Run `/analyze-archetypes` now** option is the reasonable call — not silent skip. Equally, never *invent* the gate: on `gate_off` say nothing and move on, and never suggest the user turn the gate on.
 
-5. The archetype catalogue fetched here is cached on disk (`.provenmap/boards/archetypes-cache.json`, 1hr TTL). Step 0 reuses the cache automatically — no duplicate fetch.
+5. In strict mode the archetype catalogue fetched here is cached on disk (`.provenmap/boards/archetypes-cache.json`, 1hr TTL) and Step 0 reuses the cache automatically — no duplicate fetch. On `gate_off` no catalogue is fetched here at all; Step 0 does the only fetch.
 
 ### Step -0.5: Coverage baseline (all modes)
 
@@ -224,7 +229,7 @@ If ProvenMap configuration exists:
 
 2. Parse the JSON output to get:
    - `rootBoard`: The root board (where `isChildBoard === false`)
-   - `childBoards`: All child boards with their `parentBoardSlug` and `parentNodeSlug`
+   - `childBoards`: Child boards below the bound board, with their `parentBoardSlug` and `parentNodeSlug` (the bound board itself is never listed here, even when the server marks it a child of an architect landscape)
    - `boards`: Full list for building the server board map
 
 3. Store the board list for use in Step 1 and Step 7 — the server board map tells us which boards already exist and what slugs to use.
@@ -239,7 +244,12 @@ If ProvenMap configuration exists:
    - If config has no `boardSlug`, make the **connect-now offer** — ask with **AskUserQuestion** "Connect to ProvenMap now?" (**Connect now** / **Not now**):
      - **Connect now** → run the browser login here, printing each JSON `display` verbatim **in your reply** (the Bash output panel is collapsed for the user): `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --analyze-cmd analyze` (generous Bash timeout, e.g. 250s). On `status: "complete"`, continue; anything else — stop, the display explains.
      - **Not now** → stop: "ProvenMap not configured — run `/login` (browser) or `/configure` (manual) first"
-   - Use the config `boardSlug` as the L0 board slug (this is the root board on the server)
+   - Use the config `boardSlug` as the L0 board slug. **Local layering is binding-relative:** the
+     bound board is ALWAYS this repo's L0 (`metadata.layer: 0`), even when the server board tree
+     reports it as a child of an architect landscape board (`isChildBoard: true` with a
+     `parentBoardSlug`/`parentNodeSlug` pointing above the binding). Preserve those two server
+     placement fields verbatim in the metadata if a mirror carried them, but never let them change
+     the layer, and never treat the bound board as a drill-down of a board outside this binding.
 3. If drilling down, validate that:
    - The parent board exists in the manifest
    - The target node exists in the parent's analysis data
@@ -393,10 +403,23 @@ A container whose child board has taken over ALL of its claims may set `coveredF
 nested container to a `parents[]` entry, and each top-level node either to a `root-level`
 role or to a stated reason of your own. Node count does not tell you *how* to group — a board of 20 uncoupled nodes may need
 only two containers, and a board of 6 tightly-coupled ones may need two as well; the
-clusters come from coupling, not from a count. But node count is a hard **floor**: a
-board with more than 8 nodes must have at least one `domain_group` with at least one
-node nested under it, or `--board-report`, `--validate` and `/sync` all fail it
-(exit 3). Group by coupling; just never leave a board over 8 nodes flat.
+clusters come from coupling, not from a count. But node count is a hard **floor and
+ceiling** pair, and drill-down nodes (`layerBoardSlug` set) are exempt from both counts —
+their detail lives on a child board:
+
+- **Floor:** a board with more than 8 non-drill-down nodes must have at least one
+  `domain_group` with at least one node nested under it. A flat L0 landscape of pure
+  drill-down systems is a legal shape.
+- **Ceiling (A-CONTAINER-CEILING, L0/L1 only):** a container with more than 8 inline
+  (non-drill-down) children is one layer's detail drawn on this board. Default to making
+  it an opaque drill-down node (set `layerBoardSlug`, move the children to the child
+  board) or splitting it; keeping it inline is allowed only with a
+  `Drill-down rationale: …` line in its description — the board report lists every
+  recorded override so the user sees the judgment call before `/sync`.
+
+`--board-report`, `--validate` and `/sync` all enforce both (exit 3). Group by coupling;
+never leave a board over 8 non-drill-down nodes flat, and never let one container hold a
+whole layer inline without saying why.
 
 **`canContain` is advisory, not enforced.** Every archetype carries a `canContain` list,
 and the server accepts a push whose nesting contradicts it — verified against a board
@@ -414,7 +437,7 @@ archetype's `canContain` list.
 Apply these rules (start from the skeleton's `nodes[]` — file discovery and exclusion are already done):
 
 - **Exclude non-architectural files**: already applied in the skeleton (`*.d.ts`, types/dto, tests, barrels). Only re-check files you discover outside the skeleton (e.g. non-JS/TS).
-- **Agent-native artifacts are components, not docs**: skeleton nodes with `artifact.kind` (skills/commands/agents) are first-class architecture — group them like any other component family (e.g. a commands group, a knowledge/skills group, per plugin or domain), seed their `description` from `artifact.description`, and classify them with a fitting server archetype. If the catalogue has no fit for prompt-ware kinds, that is an archetype **gap** — Phase 1 (`/analyze-archetypes`) should have proposed archetypes such as `agent_command`/`agent_skill`; fall back to the closest existing archetype meanwhile and never silently waive artifacts.
+- **Agent-native artifacts are components, not docs**: skeleton nodes with `artifact.kind` (skills/commands/agents) are first-class architecture — group them like any other component family (e.g. a commands group, a knowledge/skills group, per plugin or domain), seed their `description` from `artifact.description`, and classify them with a fitting server archetype. If the catalogue has no fit for prompt-ware kinds, that is an archetype **gap** (e.g. a missing `agent_command`/`agent_skill`): use the closest existing archetype, record the gap in `metadata.archetypeGaps` so the closing report can name it, and never silently waive artifacts.
 - **Group database files**: into a single `database-layer` container node at L0/L1 — the skeleton lists these as individual files, so you group them.
 - **Apply the grouping plan**: Step 4.6's clusters, parents and root-level roles are the containment proposal — name the groups, override with a stated reason, do not re-derive boundaries from folder names
 - **Classify by archetype**: using server archetype names — the skeleton does NOT classify, this is your job
@@ -684,7 +707,7 @@ Update `.provenmap/boards/manifest.json` with the new/updated board entry. The m
 }
 ```
 
-When rewriting a board JSON, never carry forward `metadata.origin`, `metadata.mirroredAt`, `metadata.mirroredFromBinding`, or a node's `metadata.mirrored` — those mark un-analysed server mirrors, and the prepass/sync gates refuse them.
+When rewriting a board JSON, never carry forward `metadata.origin`, `metadata.mirroredAt`, `metadata.mirroredFromBinding`, or a node's `metadata.mirrored` — those mark un-analysed server mirrors, and the prepass/sync gates refuse them. A mirror's `layer` is never carried forward either: the bound board is re-stamped `layer: 0` (layering is binding-relative — Step 1), and only genuine drill-down child boards of this binding carry `layer` ≥ 1.
 
 **CRITICAL:** The board display name field is `name` (NOT `boardName`). The `--ensure-boards` CLI reads `name` to create missing child boards on the server — using `boardName` will cause board creation to fail with an empty name.
 
@@ -723,6 +746,16 @@ Then add ONLY what the script cannot know:
 
 - Analysis mode (incremental or full); if incremental, the changed/added/deleted files analysed
 - Judgment calls worth flagging — max 5 bullets (rule deviations, split/merge decisions, why isolated nodes are genuinely isolated vs missed edges)
+- The **archetype gap note**, if and only if any board written this run has a non-empty `metadata.archetypeGaps` (Step 5 records it). One block, at most three named gaps, then stop:
+
+  ```
+  ⚑ <N> component(s) had no fit archetype — typed with the closest available:
+    <name> → used `<usedInstead>` (<count> node(s): <slug>, <slug>)
+    Run /analyze-archetypes to propose the missing archetypes. Optional — the board is complete as it stands.
+  ```
+
+  Print **nothing at all** when the array is empty or absent, which is the common case. Never turn this into a prompt, never offer to run `/analyze-archetypes` for the user here, and never present the board as incomplete because of it — the whole point of the note is that it costs the user nothing to ignore.
+
 - The **final** Step 8.5 coverage dashboard, verbatim (if Step 8.6 looped, one dashboard — the last — not one per pass)
 - Which next-area choices the user made, if any passes looped
 

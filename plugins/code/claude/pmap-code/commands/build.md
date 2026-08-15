@@ -55,7 +55,7 @@ Report the sync result (mention protected `localEdits[]` if any), then re-run `p
 ### Step 2: Branch on the pack's `nextAction`
 
 - **`none`** → nothing to build from. Tell the user: "Compile skills for this app on the ProvenMap portal (or author a board design / intents), then re-run `/build`." Stop.
-- **`map`** → this repo has source but no platform spec. Tell the user to map it first: `/analyze-archetypes`, then `/analyze` and `/sync`. Stop.
+- **`map`** → this repo has source but no platform spec. Tell the user to map it first: `/analyze` and `/sync`. Stop.
 - **`intents`** → the spec is built; only intent work remains. Point the user at `/intents`. Stop.
 - **`build`** → continue.
 
@@ -82,7 +82,7 @@ Work plan unit by plan unit:
 
 ### Step 5: Close the loop
 
-Tell the user to run `/analyze-archetypes`, then `/analyze`, then `/sync`. For a skills-driven build this is what **creates** the board — the freshly built app becomes a mapped, living board; for a design-led build the designed elements gain source mappings and stop appearing as unbuilt. Intent-backed work gets verified by the server when the sync matches. Then `/build` is idempotent: re-running reports the spec as built and points at `/intents`.
+Tell the user to run `/analyze`, then `/sync`. For a skills-driven build this is what **creates** the board — the freshly built app becomes a mapped, living board; for a design-led build the designed elements gain source mappings and stop appearing as unbuilt. Intent-backed work gets verified by the server when the sync matches. Then `/build` is idempotent: re-running reports the spec as built and points at `/intents`.
 
 ## Error Handling
 

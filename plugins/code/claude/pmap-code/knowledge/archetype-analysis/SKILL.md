@@ -1,6 +1,6 @@
 ---
 name: archetype-analysis
-description: Heuristics for identifying when a codebase needs a NEW archetype on the server, or when an EXISTING archetype is being stretched/misapplied/duplicated. Used by /analyze-archetypes as the Phase 1 precondition before /analyze. Defines what makes a good proposal, what to avoid, and how to phrase rationales.
+description: Heuristics for identifying when a codebase needs a NEW archetype on the server, or when an EXISTING archetype is being stretched/misapplied/duplicated. Used by /analyze-archetypes, and by /analyze when recording the archetype gaps it hit. Defines what makes a good proposal, what to avoid, and how to phrase rationales.
 user-invokable: false
 metadata:
   author: ProvenMap
@@ -11,7 +11,7 @@ metadata:
 
 When `/analyze-archetypes` runs, the architecture-analyzer agent invokes this skill in `--archetypes-only` mode to decide what proposals (if any) the codebase warrants. Archetypes are server-managed and approved by humans — a noisy proposal queue burns admin attention, so be selective.
 
-These heuristics run **before** any `/analyze` board is produced. The point of Phase 1 is to settle the vocabulary so Phase 2 (`/analyze`) can assign a fit archetype to every component without misfits.
+Settling the vocabulary is **optional** — `/analyze` types every component with the closest available archetype and runs to completion regardless. These heuristics decide what is worth proposing: the same bar applies whether `/analyze-archetypes` is scanning for proposals up front, or `/analyze` is recording the gaps it hit in `metadata.archetypeGaps` so the user can act on them afterwards.
 
 ## What makes a good NEW archetype
 

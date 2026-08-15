@@ -209,6 +209,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --group-plan [--scope-path <d
      - **DO:** Domain groups based on natural boundaries (e.g., "Backend Services", "Frontend", "External Integrations") on the board, with components nested inside via `parentSlug`.
    - **DON'T:** Make a node both a container (`parentSlug` references from other nodes) AND a drill-down target (`layerBoardSlug` set) — this duplicates children across layers.
    - **DO:** If a node drills down → opaque (no children on this board). If a node groups children on this board → no `layerBoardSlug`.
+   - **Budget (enforced, L0/L1):** a container may hold at most 8 inline (non-drill-down) children — past that, A-CONTAINER-CEILING fails the board (exit 3). Make it an opaque drill-down node, split it, or keep it inline deliberately with a `Drill-down rationale: …` line in its description.
    - **Domain is the primary axis at every layer.** Technology (language, framework) is node metadata, never a containment level — unless the unit also deploys independently, in which case it is a deployable component that happens to have a framework.
    - Deployable units (services, apps, workers) sit at board root or inside their domain group; a monorepo workspace is a container only when the workspace is itself the deployable unit.
    - **Maximum 3 levels deep** (since the board is the implicit root) — collapse redundant intermediate levels:
@@ -220,6 +221,13 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --group-plan [--scope-path <d
    - Include `language` and `framework` fields in node `metadata`
    - Set `description` (top-level): brief one-line summary, max 500 chars
    - Set `detailedDescription` (top-level): rich Markdown including purpose, responsibilities, technology, and paths
+   - Record `metadata.archetypeGaps` — the classification gaps Step 3 already hit. You applied "use the closest existing fit" whenever the catalogue had nothing right for a component family; this is where you say so, so `/analyze` can name the gaps afterwards instead of the user being asked to settle the vocabulary before the board exists. Apply the same bar as [`knowledge/archetype-analysis/SKILL.md`](../knowledge/archetype-analysis/SKILL.md) uses for proposals — a gap covering **≥2 components** with an observable detection pattern and no close existing fit. One entry per missing archetype, not per node:
+     ```json
+     "archetypeGaps": [
+       { "name": "agent_command", "exampleNodeSlugs": ["docs-analyse", "docs-publish"], "usedInstead": "module" }
+     ]
+     ```
+     Omit the key (or leave it `[]`) when every component found a fit archetype — which is the normal outcome, and what an empty list must keep meaning. Do not pad it with near-misses, single-component one-offs, or vendor names; a gap listed here becomes a recommendation the user reads.
 
 **Layer-Aware Analysis:**
 
@@ -249,6 +257,7 @@ When creating child board drill-down candidates:
     "boardSlug": "my-project-overview",
     "layer": 0,
     "waivedFiles": ["scripts/dev-seed.ts"],
+    "archetypeGaps": [{ "name": "agent_command", "exampleNodeSlugs": ["docs-analyse"], "usedInstead": "module" }],
     "description": "Brief board summary — what this board covers (max 500 chars)",
     "detailedDescription": "## My Project\n\nRich markdown overview of what this board represents.\n\n### Tech Stack\n- FastAPI backend\n- React frontend\n- PostgreSQL database"
   },

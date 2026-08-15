@@ -61,7 +61,7 @@ user's default browser. A project already bound to a board re-authenticates to
 that same board; `--rebind` (the `switch` path) unlocks the full picker:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --host claude --domain code --plugin-version 0.10.5   # add --rebind only for /login switch
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --host claude --domain code --plugin-version 0.10.6   # add --rebind only for /login switch
 # add --base-url <url> when $ARGUMENTS contains an http(s) URL
 ```
 
@@ -106,7 +106,7 @@ Print the JSON `display` field verbatim. Then, by `status`:
 
 ## After connecting — state the next step
 
-Once login completes (`status: "complete"`), run the offline status report and relay **only its `Lifecycle:` line** so the user knows the single next command (e.g. `/analyze-archetypes` for an existing codebase, or `/build` for an empty repo with compiled skills):
+Once login completes (`status: "complete"`), run the offline status report and relay **only its `Lifecycle:` line** so the user knows the single next command (e.g. `/analyze` for an existing codebase, or `/build` for an empty repo with compiled skills):
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --domain code

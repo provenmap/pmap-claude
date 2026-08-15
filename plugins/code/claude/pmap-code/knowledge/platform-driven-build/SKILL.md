@@ -54,4 +54,4 @@ From `.provenmap/build/aspects.json` (fields mirror the platform's aspect rows; 
 
 ## Closing the loop
 
-A build is only *done* when the board reflects it: `/analyze-archetypes` → `/analyze` → `/sync`. Skills-driven builds populate the board for the first time; design-led builds turn designed elements into mapped ones (they leave `design.unbuilt` on the next pack). Intent-backed units get server-verified when the sync matches the proposed change. This is what makes `/build` idempotent and the board a truthful map, not an aspiration.
+A build is only *done* when the board reflects it: `/analyze` → `/sync`. Skills-driven builds populate the board for the first time; design-led builds turn designed elements into mapped ones (they leave `design.unbuilt` on the next pack). Intent-backed units get server-verified when the sync matches the proposed change. This is what makes `/build` idempotent and the board a truthful map, not an aspiration.
