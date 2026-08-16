@@ -163,9 +163,23 @@ Coverage is the pipeline's honesty mechanism — every emitted node carries it:
   board metadata's **`waivedFiles`** (explicitly judged non-architectural —
   exact paths, never globs), or is deliberately left unclaimed to surface as
   *pending* in the coverage dashboard. Never drop a file silently.
-- **Mapped vs analysed**: a node with `layerBoardSlug` (or an oversized claim)
+- **The broad-claim limit is 30 files.** An analysed node may claim at most 29;
+  at 30 or more the dashboard flags it as a broad claim. A node with
+  `layerBoardSlug` is **exempt — a drill-down node has no file limit**, which
+  makes drill-down (not splitting) the normal answer for a large area.
+- **Mapped vs analysed**: a node with `layerBoardSlug` (or a broad claim)
   counts its files as *mapped, not analysed* until the child board analyses
   them — the dashboard excludes them from the analysed percentage.
+- **Check the partition with a script, never by hand**:
+  `pmap-prepass.js --claim-check <board.json>` reports unclaimed files, files
+  claimed twice, and nodes over the limit — before the board is written, and
+  against a draft anywhere on disk. Exit 3 means the one real defect: a file
+  claimed by two nodes. Broad claims and unclaimed files report as debt.
+  Add `--changed-since auto` for the incremental merge decision (which nodes to
+  re-analyse, which to remove, which changed files nothing claims) and
+  `--list-all` when the unclaimed list is your worklist rather than a display.
+  **Never glob-match board claims against a file diff by hand** — that is this
+  script's job, and doing it in-head is how a run ends up writing its own.
 - The deterministic **coverage ledger** (`pmap-prepass.js --coverage` →
   `.provenmap/coverage.json`) computes all of this; never hand-compute coverage
   numbers.

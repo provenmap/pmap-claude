@@ -40,9 +40,19 @@ All board data lives in `.provenmap/boards/`:
 3. If the worklist is empty, report "Board is up to date — nothing changed since last analysis" and skip
 4. If changes found:
    a. Load existing board data (nodes + edges)
-   b. Re-analyze ONLY the changed/added files (Steps 3-6 scoped to those files)
-   c. Merge results: replace nodes whose `coveredFiles` contain a changed file, add new nodes
-   d. Remove nodes all of whose `coveredFiles` (or whose `path`) match deleted files
+   b. **Get the merge decision from the script — do not glob-match it by hand:**
+      ```bash
+      node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --claim-check .provenmap/boards/<board-slug>.json --changed-since auto
+      ```
+      The `impact` field answers all three questions: `replace[]` (nodes claiming a changed
+      file, with the files that hit them), `remove[]` (nodes whose every claimed file is gone),
+      and `unclaimedChanged[]` (changed files no node claims — new architecture needing new
+      nodes). `auto` diffs against the board's own `analyzedAtCommit`; pass an explicit commit
+      instead if you need a different base.
+   c. Re-analyze ONLY the files behind `impact.replace` plus `impact.unclaimedChanged`
+      (Steps 3-6 scoped to those files), then replace those nodes and add nodes for the
+      unclaimed changed files
+   d. Remove the nodes in `impact.remove`
    e. Remove edges where source or target node was removed
    f. Re-run relationship detection for changed nodes (Step 6)
    g. Write merged result to board JSON with updated `analyzedAt` and `analyzedAtCommit`
@@ -129,6 +139,11 @@ project is fine.
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js
 ```
 
+**With a whole-tree `--clean`, add `--no-repair`.** Repair mirrors the server's board into local
+state; `--clean` then deletes exactly what it just fetched — a wasted round-trip that also makes
+the run report "deleting existing board data" for data that never existed locally. Keep repair on
+for `--drill … --clean` (only one child board is being rebuilt; the siblings still want rehydrating).
+
 Print the JSON's `display` field **verbatim** — do not reformat, reorder, or summarise it.
 
 | exit | meaning                                | action                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
@@ -209,9 +224,10 @@ If ProvenMap configuration exists (`.provenmap/config.json` with `bindingToken`)
    ```
 
 2. Parse the JSON output to get:
+   - `display`: the catalogue itself — every archetype grouped by primitive, one line each. **This is what you classify from; read it, don't re-request it.** The raw `archetypes[]` array is deliberately not emitted (a few hundred archetypes of JSON is the single largest read in this command); pass `--full` only if you truly need every field.
    - `nodeArchetypes`: Available archetype names for nodes
    - `edgeArchetypes`: Available archetype names for edges
-   - `archetypes`: Full archetype list with `name`, `visualPrimitiveType`, and `description`
+   - `cacheFile`: where the full catalogue sits on disk — read it **only** for a specific archetype you are genuinely torn about, never wholesale
 
 3. If the CLI fails or returns no archetypes, warn the user but continue analysis using conventional archetype names (service, database, api, library, queue, external, domain_group, infrastructure, external_system). The sync CLI will need archetypes configured on the server before types can be validated.
 
@@ -281,9 +297,19 @@ Read settings from `.provenmap/config.json` if it exists to get portal configura
 
 Both are computed deterministically by the Step 4.5 prepass and arrive in its
 `digest.stacks`: `monorepo` (boolean), `workspaces[]` (each with `path`, `name`,
-`kind`, and its own `techStacks[]`), `techStacks[]` (the union), and
+`kind`, its own `techStacks[]` and its own `dependencies[]`), `techStacks[]` (the
+union), `dependencies[]` (the union of declared runtime dependencies), and
 `manifestLanguages[]`. Do **not** re-read `package.json`/`go.mod`/`pyproject.toml`
 to rediscover them.
+
+**`dependencies[]` is your external-system evidence.** A vendor SDK there (payments,
+auth, email, observability, search, feature flags) is a third party this codebase
+talks to, and that is what an `external_system` node is for. Read the list and decide;
+do **not** guess vendor names and grep the tree for each one — anything you failed to
+guess stays invisible, and the list already names them all. Grep only to find *where*
+a dependency you selected is used, once you have chosen it. Caveat: the list is
+parsed from `package.json` `dependencies` only — for a non-JS workspace, or for a
+service reached over plain HTTP with no SDK, you still read code to find it.
 
 Your job here is judgment on top of those facts: decide which workspaces deserve
 parent nodes, and name any stack the scan reports as unknown (it reports only
@@ -331,7 +357,16 @@ Add `--skeleton .provenmap/skeletons/<board-slug>.json` to either mode to digest
 - Treat the digest's directory rollup (plus any `--detail` slices) as the ground-truth file inventory — do NOT re-glob or re-apply exclusion rules (already applied), and do NOT read the skeleton JSON whole.
 - Treat the skeleton's edges as the authoritative `imports` edges for **every supported language** (JS/TS, Python, Go, Java, Ruby, Rust, C#) — do NOT re-parse imports by hand in any of them. The digest's `stats.importEdgesByLanguage` shows what each stack contributed; a language with files but no edges there is the only case worth a manual look.
 - The skeleton is **file-granular** (the digest rolls it up for you). At **L2/L3** its nodes map ~1:1 to board nodes — slice with `--detail` to name them. At **L0/L1**, **aggregate** directories into coarse domain/component nodes (each node's `coveredFiles` claims its files); edge rollup is Step 6's script (`--rollup`) — do not map `imports` edges by hand.
-- **Persist the mapping — coverage provenance.** The tempId→node-slug file aggregation you just made IS the coverage relation; record it on every node as `coveredFiles` (repo-relative paths, or directory globs like `src/billing/**` when a node owns a whole subtree — prefer globs for large subtrees). Every skeleton file must end up in exactly one node's `coveredFiles`, OR in the board metadata's `waivedFiles` (files you judge non-architectural — never silently drop them), OR deliberately unclaimed (it will surface as _pending_ in coverage reports). **Hard rules the coverage dashboard enforces/surfaces:** never claim the same file from two nodes (double claims are flagged as defects); a node claiming a **large share of the board's files** must either set `layerBoardSlug` (drill-down candidate — its files count as _mapped, not analysed_ until the child board analyses them) or be split into finer nodes; the dashboard flags oversized claims as broad claims and **excludes their files from the analysed percentage**; waive **exact paths only, never globs** — waiving shrinks the denominator and the dashboard lists what was waived.
+- **Persist the mapping — coverage provenance.** The tempId→node-slug file aggregation you just made IS the coverage relation; record it on every node as `coveredFiles`.
+
+  **Claim by directory, not by file — that is what makes the partition automatic.** The digest's
+  directories are disjoint by construction, so a board whose nodes each claim whole directory
+  globs (`src/billing/**`) is exactly-once *by construction*: there is no per-file bookkeeping to
+  get right, and no reason to enumerate 600 paths. Drop to individual file paths **only** where a
+  single directory genuinely splits across two nodes, and then claim the minority files explicitly
+  and leave the rest to the directory glob. If you find yourself listing files one by one, or
+  wanting to generate the list programmatically, that is the signal to move the claim up to
+  directory granularity instead. Every skeleton file must end up in exactly one node's `coveredFiles`, OR in the board metadata's `waivedFiles` (files you judge non-architectural — never silently drop them), OR deliberately unclaimed (it will surface as _pending_ in coverage reports). **Hard rules the coverage dashboard enforces/surfaces:** never claim the same file from two nodes (double claims are flagged as defects); **an analysed node may claim at most 29 files — 30 or more is a broad claim** (the dashboard reports it and **excludes its files from the analysed percentage**), and the fix is one of two moves: set `layerBoardSlug` (a drill-down node has **no** file limit — its files count as _mapped, not analysed_ until the child board analyses them) or split it into nodes under the limit; waive **exact paths only, never globs** — waiving shrinks the denominator and the dashboard lists what was waived. **Don't hand-verify the partition — Step 5.5's `--claim-check` does it.**
 - The prepass does NOT classify archetypes, group the database layer, write descriptions, or detect non-import edges — those remain your job in Steps 5–6.
 
 Run this on every analysis (full and incremental); it is deterministic and fast, and always reflects current HEAD.
@@ -383,7 +418,15 @@ keep a low-cohesion container, write the reason into its description starting wi
 
 **CRITICAL — No root wrapper nodes.** The board itself is the implicit root container. Do NOT create a single `domain_group` or wrapper node that contains all other nodes. Top-level nodes (workspaces, services, data stores, external integrations) must have **no `parentSlug`** — they sit directly on the board. Use `metadata.description` for project-level context instead of a wrapper node.
 
-**For L0 (Overview):** Identify high-level domains, services, and major components. Keep to 10-30 nodes. Mark nodes that are good candidates for drill-down by setting `layerBoardSlug` to a proposed slug.
+**For L0 (Overview):** Identify high-level domains, services, and major components. Keep to 10-30 nodes.
+
+**Drill-down is the default at L0, not a garnish.** The two rules combine into one arithmetic
+fact: an analysed node may claim at most 29 files, and L0 is capped at 10-30 nodes — so a repo
+of any size cannot be covered by analysed L0 nodes alone. Any node that would claim **30 or more
+files gets `layerBoardSlug`** (a proposed child-board slug); a drill-down node has no file limit
+and defers its detail to that board. Splitting a 200-file domain into seven 29-file L0 nodes is
+the wrong repair — it blows the node budget and creates the edge hairball Step 4.6 warns about.
+Reach for splitting only when a node is modestly over and genuinely holds two concerns.
 
 **L0 targets significance, not exhaustiveness.** Coverage is satisfied when every file
 is claimed by _some_ node — and a container may claim its whole subtree via
@@ -410,12 +453,15 @@ their detail lives on a child board:
 - **Floor:** a board with more than 8 non-drill-down nodes must have at least one
   `domain_group` with at least one node nested under it. A flat L0 landscape of pure
   drill-down systems is a legal shape.
-- **Ceiling (A-CONTAINER-CEILING, L0/L1 only):** a container with more than 8 inline
-  (non-drill-down) children is one layer's detail drawn on this board. Default to making
-  it an opaque drill-down node (set `layerBoardSlug`, move the children to the child
-  board) or splitting it; keeping it inline is allowed only with a
-  `Drill-down rationale: …` line in its description — the board report lists every
-  recorded override so the user sees the judgment call before `/sync`.
+- **Ceiling (A-CONTAINER-CEILING, L0/L1 only, advisory):** a container with more than 8
+  inline (non-drill-down) children is one layer's detail drawn on this board. Default to
+  making it an opaque drill-down node (set `layerBoardSlug`, move the children to the child
+  board) or splitting it; keeping it inline is allowed with a `Drill-down rationale: …`
+  line in its description — the board report lists every recorded override so the user
+  sees the judgment call before `/sync`. This **warns, it does not fail the board**: at L0
+  the ceiling, the >8-node grouping floor and the 30-file broad-claim limit all press at
+  once, and drill-down is the single move that satisfies all three — so reach for it first
+  rather than carving nodes to fit.
 
 `--board-report`, `--validate` and `/sync` all enforce both (exit 3). Group by coupling;
 never leave a board over 8 non-drill-down nodes flat, and never let one container hold a
@@ -446,6 +492,29 @@ Apply these rules (start from the skeleton's `nodes[]` — file discovery and ex
 **Finish Step 5 by writing the board JSON now** — `.provenmap/boards/<board-slug>.json`
 with the metadata, the nodes (each with `coveredFiles`), and `"edges": []`. Step 6's
 rollup script reads this file; edges come next.
+
+### Step 5.5: Claim check (script-owned)
+
+Verify the `coveredFiles` partition before going further. **Never hand-audit it, and never
+write a throwaway script to do it** — this is that script:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --claim-check .provenmap/boards/<board-slug>.json
+```
+
+Add `--skeleton .provenmap/skeletons/<board-slug>.json` for an L1+ board (the default is the
+repo skeleton). It takes any path, so a draft written elsewhere can be checked before it lands.
+
+Print the `display` field **verbatim**. Then:
+
+| exit | meaning                                                | action                                                                                                                                                                     |
+| ---- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0    | No file is claimed twice                               | Continue to Step 6. The display may still list broad claims (30+ files) and unclaimed files — both are **debt, not failure**. Fix them when your judgment says so: a broad claim wants `layerBoardSlug` (no file limit) or a split; an unclaimed file wants a claim, a waiver, or a deliberate decision to leave it pending. |
+| 3    | A file is claimed by two nodes                         | Fix it and re-run this step. Decide which node owns the file and narrow the other's globs. This is the one hard defect: `coveredFiles` is a partition, and nothing downstream can repair an overlap. |
+| 1    | Board JSON or skeleton missing                         | Print `error` verbatim; re-run Step 4.5 for the skeleton, or Step 5 for the board.                                                                                          |
+
+`emptyClaimNodes` in the output names nodes whose `coveredFiles` matched nothing — a typo or an
+out-of-scope path. Fix those even at exit 0: the node looks analysed while its files sit pending.
 
 ### Step 6: Relationship Detection
 
@@ -649,8 +718,8 @@ The Step 8.5 JSON also carries `recommendations` — the deterministic next-step
 4. If the user picks a single recommendation, run another incremental pass scoped to it, then **return to Step 8.5** (refresh, dashboard, ask again — the loop ends when the user syncs or nothing is left). If the user selected **multiple** areas, go to Step 8.7 instead — it owns the batch and returns to Step 8.5 itself. Per-kind mechanics:
    - `stale-board` → re-analyze that board's `staleNodes[].changedFiles` (Steps 5–8 scoped to those files)
    - `drill-down` → build (or re-run) the child board: the `--drill <boardSlug>/<nodeSlug>` flow for the recommendation's node — this is what converts _mapped_ files into _analysed_ ones
-   - `pending-area` → analyze the pending files under its `path` (take them from the ledger's `pendingFiles`; if `pendingTotal` exceeds the listed files, derive the remainder from `.provenmap/skeletons/repo.json` minus covered/waived) and place the resulting nodes on the board that owns that scope (L0, or the matching drill-down board)
-   - `broad-claim` → re-analyze that node's subtree, splitting it into finer nodes with their own `coveredFiles` — or set `layerBoardSlug` on it to defer honestly to a drill-down
+   - `pending-area` → analyze the pending files under its `path` (take them from the ledger's `pendingFiles`; if `pendingTotal` exceeds the listed files, get the complete list from `pmap-prepass.js --claim-check <board.json> --list-all` — **never** hand-derive it from `.provenmap/skeletons/repo.json`, which you must not read whole) and place the resulting nodes on the board that owns that scope (L0, or the matching drill-down board)
+   - `broad-claim` → the node claims 30+ files with no drill-down. Prefer setting `layerBoardSlug` on it (no file limit, defers the detail honestly); split it into nodes under 30 files only when it genuinely holds two concerns
    - `edge-gap` → relationships the import graph justifies are missing from that board: re-run Step 6's rollup for it and **merge the emitted edges** (the usual cause is a run where the rollup output was never merged), then reclassify types as Step 6 describes
    - `regroup` → that board's containment has drifted from its edges: re-run Step 4.6's `--group-plan` for it with `--against .provenmap/boards/<slug>.json`, walk the proposed moves, and re-parent only what the plan justifies and you agree with. Re-parenting is a real change on the wire — never apply the moves wholesale, and leave anything whose grouping is deliberate (say so in its description with `Grouping rationale:`)
    - `unknown-board` → re-run that board with the `--clean` behaviour (delete its JSON + store, full re-analysis)

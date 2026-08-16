@@ -57,8 +57,12 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js [options]
 | `--config <path>` | `.provenmap/config.json` | Config file path |
 | `--cache-file <name>` | `.provenmap/boards/archetypes-cache.json` | Cache file name |
 | `--no-cache` | - | Bypass cache, always fetch from server |
+| `--kind <kind>` | `code` | Catalogue kind to fetch (`code`\|`knowledge`) |
+| `--full` | - | Also emit the raw `archetypes[]` array (large — only `/analyze-archetypes` needs it) |
 
-**Output:** JSON with `archetypes`, `nodeArchetypes`, `edgeArchetypes`, `mappingValidation`, `catalogueHash`
+**Output:** JSON with `display` (the compact catalogue you classify from — printed instead of the
+raw array), `nodeArchetypes`, `edgeArchetypes`, `cacheFile`, `catalogueHash`. `--full` adds
+`archetypes[]`.
 
 ### pmap-boards.js — Manage Boards
 

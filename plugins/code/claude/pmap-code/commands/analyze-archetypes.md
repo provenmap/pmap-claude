@@ -74,10 +74,13 @@ On exit 1, print the JSON `error` field verbatim and stop (it names the pinned b
 ### Step 1: Pull fresh archetype catalogue
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --no-cache --kind code
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --no-cache --kind code --full
 ```
 
 Parse the `archetypes[]`, `nodeArchetypes[]`, and `edgeArchetypes[]` from the JSON output.
+(`--full` emits the raw `archetypes[]` array. This command is the one place that earns it —
+judging whether the catalogue has a *gap* needs each archetype's full description. Every other
+command reads the compact `display` instead.)
 Read `catalogueHash` straight from the script's JSON — **do not compute it yourself.**
 It is the lock's drift detector and has exactly one correct value; a second
 implementation that disagrees reports `stale_catalogue` on a catalogue that never
