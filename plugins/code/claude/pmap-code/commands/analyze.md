@@ -10,14 +10,15 @@ Perform progressive architecture analysis with layered board support.
 
 ## Board Layer Strategy
 
-Analysis produces layered boards for managing large codebases:
+Analysis produces layered boards for managing large codebases. **The ladder is C4-aligned** —
+each layer answers the question C4 gives it, and that is what decides what belongs on it:
 
-| Layer | Name      | Scope                       | Target Nodes |
-| ----- | --------- | --------------------------- | ------------ |
-| L0    | Overview  | Entire project              | 10-30        |
-| L1    | Domain    | Domain/workspace drill-down | 10-40 each   |
-| L2    | Component | Service/module drill-down   | 5-20 each    |
-| L3    | Detail    | Deep internals (opt-in)     | 5-15 each    |
+| Layer | Name (C4)      | Scope                                                            | Target Nodes |
+| ----- | -------------- | ---------------------------------------------------------------- | ------------ |
+| L0    | System Context | This system's deployables + the outside systems they talk to      | 10-30        |
+| L1    | Containers     | Inside one deployable: its apps, services, stores, workers        | 10-40 each   |
+| L2    | Components     | Inside one container: modules, handlers, classes                  | 5-20 each    |
+| L3    | Detail         | Deep internals of one component (opt-in)                          | 5-15 each    |
 
 All board data lives in `.provenmap/boards/`:
 
@@ -340,7 +341,8 @@ The `digest` field contains:
 - `edges[]` — the top directory→directory import flows with summed `weight`: cross-area structure at a glance. The per-file edges stay in the skeleton for the rollup script.
 - `stacks` — workspaces, monorepo flag, and frameworks from the manifests: this **is** Steps 3–4's output.
 - `infra` — infrastructure-as-code and schema files by kind (`container`, `ci`, `terraform`, `kubernetes`, `migration`, `serverless`). These are real architecture: claim them from a node (an "Infrastructure" or "Deployment" component is usually right) rather than leaving them unclaimed. They sit outside the analysed-percentage denominator, so they never inflate or deflate coverage.
-- `stats`, `zeroInDegreeSamples`, `skippedExtensions` — honesty signals. A large `importsUnresolved` means some edges were missed and may need filling from file reads; `zeroInDegree` lists dead-file candidates (entry points legitimately appear there); `skippedExtensions` names stacks outside the denominator (`(none)` counts extensionless files).
+- `stats`, `zeroInDegreeSamples`, `skippedExtensions` — honesty signals. `importsUnresolved` counts imports that point **inside** this repo but did not resolve (edges genuinely missed — worth filling from file reads); `externalImports` counts imports that leave it (third-party packages — not a gap, and the evidence behind external-system nodes). The two are kept apart deliberately: an unresolved internal import is never laundered into "external". `zeroInDegree` lists dead-file candidates (entry points legitimately appear there); `skippedExtensions` names stacks outside the denominator (`(none)` counts extensionless files).
+- `stats.parsePartialFiles` / `parseFailedFiles` / `unreadableFiles` — **parse health** (name lists, capped at 20 each). A partial file's facts come from the healthy regions only; a failed or unreadable file contributed none. **Read those files with suspicion** — if one of them lands in an area you are classifying, open it yourself rather than trusting its (missing) imports, and treat a node built on them as unconfirmed until you have. `/status` renders the full funnel over these; the board report names the ones **this board claims**.
 
 **Pull detail only for the area you're actively deciding on** — never the whole skeleton:
 
@@ -348,7 +350,13 @@ The `digest` field contains:
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --detail <dir-or-glob>
 ```
 
-It returns the skeleton's full `nodes[]` for that area plus every edge touching them. Each node has a repo-relative `path`, a `tempId` (= `path`), a suggested `slug`/`name`, and `language`. Nodes with an **`artifact`** field are **agent-native markdown artifacts** — prompt-ware components (`artifact.kind`: `skill` | `command` | `agent`) detected deterministically from YAML frontmatter; `artifact.description` carries the frontmatter description as seed context. Edges are `{ fromTempId, toTempId, type, count }`: `type: "imports"` is the resolved graph for **JS/TS files only** (tsconfig path aliases and barrel re-exports already resolved, type-only imports dropped, duplicates collapsed, popular-helper hubs suppressed); `type: "references"` is deterministic artifact wiring — an artifact's body names another skeleton file by path (a command running a bundled script, a skill pointing at a doc).
+It returns the skeleton's full `nodes[]` for that area plus every edge touching them. Each node has a repo-relative `path`, a `tempId` (= `path`), a suggested `slug`/`name`, `language`, and — only when the parse was shaky — `parseHealth` (`partial` | `failed`; omitted on a clean parse). Nodes with an **`artifact`** field are **agent-native markdown artifacts** — prompt-ware components (`artifact.kind`: `skill` | `command` | `agent`) detected deterministically from YAML frontmatter; `artifact.description` carries the frontmatter description as seed context. Edges are `{ fromTempId, toTempId, type, count, kinds?, hubTarget? }`:
+
+- `type: "imports"` — the resolved import graph for **every supported language** (JS/TS, Python, Go, Java, Ruby, Rust, C#): tsconfig path aliases, workspace package names and barrel re-exports resolved for JS/TS, each other language resolved by its own module→path convention. Duplicates are collapsed into `count`, and `kinds` breaks that count down by import kind (`static`, `type`, `reexport`, `export-star`, `dynamic`, `side-effect`). **Type-only imports are kept, tagged `type`** — they are real coupling; weigh them lower if your reading says so, never assume they are absent.
+- `hubTarget: true` marks an edge into a popular-helper hub. Those edges are **kept, not deleted** — display and rollup budgets curate them out, but the fact is there, so a hub is never "a node with no imports".
+- `type: "references"` — deterministic artifact wiring: an artifact's body names another skeleton file by path (a command running a bundled script, a skill pointing at a doc).
+
+A slice is capped (500 nodes; hub-tagged edges capped per slice) and says so via `truncated` / `truncatedHubEdges` — narrow the pattern rather than assuming you saw everything.
 
 Add `--skeleton .provenmap/skeletons/<board-slug>.json` to either mode to digest or slice a drill-down board's own skeleton instead of the repo-wide one.
 
@@ -356,7 +364,7 @@ Add `--skeleton .provenmap/skeletons/<board-slug>.json` to either mode to digest
 
 - Treat the digest's directory rollup (plus any `--detail` slices) as the ground-truth file inventory — do NOT re-glob or re-apply exclusion rules (already applied), and do NOT read the skeleton JSON whole.
 - Treat the skeleton's edges as the authoritative `imports` edges for **every supported language** (JS/TS, Python, Go, Java, Ruby, Rust, C#) — do NOT re-parse imports by hand in any of them. The digest's `stats.importEdgesByLanguage` shows what each stack contributed; a language with files but no edges there is the only case worth a manual look.
-- The skeleton is **file-granular** (the digest rolls it up for you). At **L2/L3** its nodes map ~1:1 to board nodes — slice with `--detail` to name them. At **L0/L1**, **aggregate** directories into coarse domain/component nodes (each node's `coveredFiles` claims its files); edge rollup is Step 6's script (`--rollup`) — do not map `imports` edges by hand.
+- The skeleton is **file-granular** (the digest rolls it up for you). At **L2/L3** its nodes map ~1:1 to board nodes — slice with `--detail` to name them. At **L0/L1**, **aggregate** directories into coarse domain/component nodes (each node's `coveredFiles` claims its files); edge rollup is Step 6's script (`--rollup … --apply`) — do not map `imports` edges by hand.
 - **Persist the mapping — coverage provenance.** The tempId→node-slug file aggregation you just made IS the coverage relation; record it on every node as `coveredFiles`.
 
   **Claim by directory, not by file — that is what makes the partition automatic.** The digest's
@@ -385,7 +393,9 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --group-plan --scope-path <pa
 
 For the **L0 board**, run `--group-plan --layer 0`: it rolls the file-granular clusters
 up to workspace / top-level-directory granularity, which is the granularity the L0 board
-actually uses (Step 5 targets 10–30 nodes). Without it the plan proposes dozens of
+actually uses (Step 5 targets 10–30 nodes). A monorepo rolls up to its declared
+workspaces; a single-package repo rolls up to its **top-level directories** instead (the
+plan names the grain it used). Without it the plan proposes dozens of
 candidate groups you would only re-aggregate by hand. It rolls up candidate *groups*
 only — root-level elements stay file-granular, so their count is not reduced by
 `--layer 0` (the display's row cap keeps them readable regardless).
@@ -393,7 +403,38 @@ only — root-level elements stay file-granular, so their count is not reduced b
 Print its `display` **verbatim — do not reformat, reorder, or summarise**. The `display` is
 capped (default 25 rows per section) and names how many rows it dropped; the complete plan
 is written to `.provenmap/group-plan.json`. Read that file only if a capped section is the
-one you need — never print it. Then work from these fields:
+one you need — never print it.
+
+**Branch on `evidence` before you use anything else in the plan** — it is the JSON's
+`evidence` field and the display's first content line, and it says what produced these
+groups:
+
+- **`"coupling"`** (the normal case) — the clusters came from the import graph. Work them
+  as proposals: refine, rename, override with a stated reason. The fields below apply.
+- **`"directory-fallback"`** — resolved-edge density was below the sparse-evidence floor,
+  so **edge evidence was sparse and this partition is structural, not coupling-derived**.
+  Say so to the user in one line, then: verify each proposed group against an actual
+  reading of the code, and **do not invent coupling** — never write a `Grouping rationale:`
+  or an edge that claims a relationship the topology never showed you. `cohesion`/`density`
+  come back `null` here (`—` in the display) because nothing measured them, and every group
+  comes back `verdict: "container"` regardless of size — this path has no size demotion — so
+  **judge drill-down yourself for an oversized bucket**: a directory holding dozens of files
+  is a child board, not one flat container.
+
+**Stamp what you used.** When you write the board (Step 5), copy this plan's `evidence`
+value verbatim into the board's `metadata.groupingEvidence` (`"coupling"` or
+`"directory-fallback"` — those two values only). It is local-only, never pushed, and the
+board report reads it so the user can see what the containment rests on.
+
+**An evidence FLIP on a board that already synced is a decision, not a detail.** If this
+board's previous `metadata.groupingEvidence` differs from the plan's (coupling ↔
+directory-fallback), regrouping will churn slugs and containment — real changes on the
+wire, not a re-render. Say which way it flipped and ask via **AskUserQuestion** before
+applying the new plan (header: `Regroup`; options: **Apply the new grouping** /
+**Keep the current grouping**). Never auto-apply a flip. In `--auto` mode, keep the
+current grouping and note the flip in the round's status line.
+
+Then work from these fields:
 
 - `clusters[]` — candidate groups with `cohesion` (how much of their coupling stays inside),
   `density` (how interconnected their members are), `folderAgreement` (how much the group
@@ -418,7 +459,24 @@ keep a low-cohesion container, write the reason into its description starting wi
 
 **CRITICAL — No root wrapper nodes.** The board itself is the implicit root container. Do NOT create a single `domain_group` or wrapper node that contains all other nodes. Top-level nodes (workspaces, services, data stores, external integrations) must have **no `parentSlug`** — they sit directly on the board. Use `metadata.description` for project-level context instead of a wrapper node.
 
-**For L0 (Overview):** Identify high-level domains, services, and major components. Keep to 10-30 nodes.
+**For L0 — build a C4 System Context, not an inventory.** The board answers one question:
+_what is this system, and what does it talk to?_ Keep to 10-30 nodes, in two rings:
+
+- **Center — this system's own deployables.** The apps, services and workers this repo
+  ships, at the grain Step 4.6's `--layer 0` plan used (declared workspaces, or top-level
+  directories in a single-package repo). One node per thing that ships and can fail on its
+  own — not one per folder.
+- **Around them — externally-evidenced systems.** Databases, third-party APIs/SaaS, queues,
+  auth/payment/email/observability providers. The evidence is deterministic and already in
+  front of you: the digest's `stacks.dependencies[]` (a vendor SDK there is a third party
+  this codebase talks to — Steps 3–4), the `infra` classification (a `migration`,
+  `terraform`, `kubernetes` or `serverless` file names the datastore or platform it
+  provisions), and the skeleton's `externalImports` accounting. Add a system only where
+  there is evidence for it; never populate this ring from guesswork about a typical stack.
+- **Lean and flat.** Every internal node with internals worth seeing is an **opaque
+  drill-down** (`layerBoardSlug`) into its L1 container board — not a container with
+  children here. A flat L0 of drill-down systems plus their external neighbours is the
+  intended shape, and drill-down nodes are exempt from the grouping floor below.
 
 **Drill-down is the default at L0, not a garnish.** The two rules combine into one arithmetic
 fact: an analysed node may claim at most 29 files, and L0 is capped at 10-30 nodes — so a repo
@@ -437,7 +495,7 @@ means more rolled-up L0 edges — breadth here is what creates hairballs.
 
 A container whose child board has taken over ALL of its claims may set `coveredFiles: []` explicitly — never invent a placeholder claim just to satisfy the field.
 
-**For L1+ (Drill-down):** Scope analysis to the files/directories covered by the parent node. Go deeper into that domain's internal components.
+**For L1+ (Drill-down):** Scope analysis to the files/directories covered by the parent node. L1 shows that deployable's **containers** (its apps, services, stores, workers); L2 the **components** inside one container; L3 the internals of one component.
 
 **Container vs. drill-down (all layers):** Nodes with `layerBoardSlug` must NOT be `domain_group` containers with visible children. Their internals belong on the child board. Use `domain_group` containers only for grouping nodes that won't drill down.
 
@@ -482,7 +540,7 @@ archetype's `canContain` list.
 
 Apply these rules (start from the skeleton's `nodes[]` — file discovery and exclusion are already done):
 
-- **Exclude non-architectural files**: already applied in the skeleton (`*.d.ts`, types/dto, tests, barrels). Only re-check files you discover outside the skeleton (e.g. non-JS/TS).
+- **Exclude non-architectural files**: already applied in the skeleton (`*.d.ts`, types/dto, tests, mocks) — and the barrel and `config`/`constants`/`enums` calls are made **by content, not by filename**, so trust them rather than second-guessing a name: an `index.*` barrel is excluded only when it genuinely re-exports and declares nothing of its own (a barrel that also declares real code IS a node), and `config.ts`/`constants.ts`/`enums.ts` are excluded only when they declare no functions or classes (a provider-registering `config.ts` IS a node). Only re-check files you discover outside the skeleton.
 - **Agent-native artifacts are components, not docs**: skeleton nodes with `artifact.kind` (skills/commands/agents) are first-class architecture — group them like any other component family (e.g. a commands group, a knowledge/skills group, per plugin or domain), seed their `description` from `artifact.description`, and classify them with a fitting server archetype. If the catalogue has no fit for prompt-ware kinds, that is an archetype **gap** (e.g. a missing `agent_command`/`agent_skill`): use the closest existing archetype, record the gap in `metadata.archetypeGaps` so the closing report can name it, and never silently waive artifacts.
 - **Group database files**: into a single `database-layer` container node at L0/L1 — the skeleton lists these as individual files, so you group them.
 - **Apply the grouping plan**: Step 4.6's clusters, parents and root-level roles are the containment proposal — name the groups, override with a stated reason, do not re-derive boundaries from folder names
@@ -490,8 +548,9 @@ Apply these rules (start from the skeleton's `nodes[]` — file discovery and ex
 - **Generate slugs**: use the skeleton's suggested `slug` as a starting point; refine from the primary class/export name
 
 **Finish Step 5 by writing the board JSON now** — `.provenmap/boards/<board-slug>.json`
-with the metadata, the nodes (each with `coveredFiles`), and `"edges": []`. Step 6's
-rollup script reads this file; edges come next.
+with the metadata (including `metadata.groupingEvidence`, copied from Step 4.6's plan),
+the nodes (each with `coveredFiles`), and `"edges": []`. Step 6's rollup script reads and
+rewrites this file; edges come next.
 
 ### Step 5.5: Claim check (script-owned)
 
@@ -518,31 +577,58 @@ out-of-scope path. Fix those even at exit 0: the node looks analysed while its f
 
 ### Step 6: Relationship Detection
 
-- **Rolled-up edges (script-owned):** run the deterministic rollup — it maps the
-  skeleton's file-level `imports` and `references` edges onto your Step 5 nodes,
-  drops self-loops and containment pairs, dedupes with an import-count weight, and
-  suppresses platform hubs:
+- **Rolled-up edges (script-owned, script-merged):** run the deterministic rollup
+  with `--apply` — it maps the skeleton's file-level `imports` and `references`
+  edges onto your Step 5 nodes, drops self-loops and containment pairs, dedupes
+  with an import-count weight, leaves platform-hub edges out of the board, **and
+  writes the result into the board JSON itself**:
 
   ```bash
-  node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --rollup <board-slug>
+  node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --rollup <board-slug> --apply
   ```
 
   For a drill-down (scoped) board, pass `--skeleton .provenmap/skeletons/<board-slug>.json`
   so the rollup uses the scoped skeleton Step 4.5 wrote for this board, not the
   repo-wide one; L0 uses the default repo skeleton (no flag needed).
 
-  Print the returned `display` **verbatim — do not reformat, reorder, or summarise.**
-  Merge the emitted `edges[]` from the written
-  `.provenmap/skeletons/<board-slug>.edges.json` into the board's `edges`. For each
-  `report.suppressedHubs` entry, stamp that node with
-  `metadata.hubInDegree = distinctSources` — the fact survives without N identical
-  edges. Do NOT hand-map skeleton edges yourself; the script owns those rules, and
-  it resolves imports for every supported language — never re-parse them by hand.
+  **You never hand-merge edges.** The script replaces the board's rollup-owned edges
+  wholesale, preserves your model-owned ones untouched, and re-runs the board
+  integrity gates before writing — so it is safe to re-run at any time and running
+  it twice is a no-op. Print the returned `display` **verbatim — do not reformat,
+  reorder, or summarise** (it ends with the merge summary: edges replaced, model-owned
+  edges preserved, fresh edges deduped, hub targets left suppressed). Branch on the exit:
 
-- **Reclassify where you know better:** the rollup can only ever say `uses`. Where
-  reading the involved files shows the real relation, change the edge's `type`
-  (`db_read`, `api_call`, `publishes`, …) and **keep its `metadata.weight`** — the
-  rollup output is a starting point, not the final edge set.
+  | exit | meaning | action |
+  | ---- | ------- | ------ |
+  | 0 | Merged and written | Continue. `.provenmap/skeletons/<board-slug>.edges.json` is a diagnostic copy — do not merge it by hand. |
+  | 3 | The merged board would fail an integrity gate — **nothing was written** | Print `error` verbatim, fix the board named by `boardPath` (the `gate.errors[]` say what), and re-run this step. |
+  | 1 | Board JSON or skeleton missing | Print `error` verbatim; re-run Step 5 for the board, or Step 4.5 for the skeleton. |
+
+  **The script rewrote the board file** — re-read `.provenmap/boards/<board-slug>.json`
+  before any further edit, and never write back a copy you were holding from before the
+  apply (that silently drops every edge it just merged).
+
+  For each `report.suppressedHubs` entry, stamp that node with
+  `metadata.hubInDegree = distinctSources` — the fact survives without N identical
+  edges (nodes are yours; `--apply` only ever touches `edges`). Do NOT hand-map skeleton
+  edges yourself; the script owns those rules, and it resolves imports for every supported
+  language — never re-parse them by hand.
+
+- **Reclassify where you know better — and take ownership when you do:** the rollup can
+  only ever say `uses`. Where reading the involved files shows the real relation, change
+  the edge's `type` (`db_read`, `api_call`, `publishes`, …) **and delete its
+  `metadata.weight`**. That is not optional bookkeeping: a weighted edge is rollup-owned,
+  so the next `--apply` would replace it and silently revert your type. Dropping the weight
+  makes the edge model-owned, and model-owned edges are preserved forever.
+
+  **Expect the structural twin, and leave it alone.** Because the import fact is still
+  true, the next `--apply` re-derives that pair as a fresh weighted `uses` edge alongside
+  your `db_read`. Two edges between the same pair, different types, is legitimate and
+  intended: the weighted `uses` is the structural fact ("A imports B", regenerated every
+  run), your typed edge is the semantic claim about what the code does with it. Do not
+  delete the structural edge (it comes back), do not re-type it again (that just forks
+  another semantic edge), and never keep two edges of the **same** type between one pair —
+  that is a duplicate the gates reject.
 - **Semantic edges (read the relevant files):** the skeleton does not detect these — derive them by reading the files of the nodes involved:
   - `db_read`/`db_write`: Repository/ORM operations
   - `api_call`: HTTP client usage (external or cross-service)
@@ -557,10 +643,11 @@ out-of-scope path. Fix those even at exit 0: the node looks analysed while its f
   `coveredFiles`, the full board node list (so it can name targets outside its
   group), and the edge archetype names. The agents are **read-only** — they
   return candidate edges as JSON in their reply and write nothing, so there is
-  no file-boundary risk. You merge: drop duplicates of rollup edges (same
-  source+target), keep `metadata.weight` where one exists, apply the
-  board-scope rule, and record off-board relations in
-  `metadata.deferredEdges[]` rather than dropping them.
+  no file-boundary risk. You merge: add each candidate as a **model-owned** edge
+  (no `metadata.weight` — never copy a weight onto one), drop a candidate only when
+  an edge of the **same** source+target+type already exists, leave the rollup's
+  weighted `uses` edge for that pair in place, apply the board-scope rule, and
+  record off-board relations in `metadata.deferredEdges[]` rather than dropping them.
 
 - **Cross-board relations:** when a real dependency's other end lives on a
   different board, append it to the board metadata's `deferredEdges[]`
@@ -574,11 +661,14 @@ out-of-scope path. Fix those even at exit 0: the node looks analysed while its f
 
 Scope all edges to this board's nodes only.
 
-**Incremental (edge provenance):** edges carrying `metadata.weight` are
-**rollup-owned** — delete them all and re-run the rollup (it is deterministic and
-cheap); re-apply any reclassified `type`s you noted from the old edge set when
-merging. Edges _without_ `metadata.weight` are **model-owned** (semantic) — keep
-them unless an endpoint node was removed.
+**Incremental (edge provenance — the frozen rule both you and the script obey):**
+edges carrying `metadata.weight` are **rollup-owned**; edges without one are
+**model-owned**. On an incremental pass just re-run `--rollup <board-slug> --apply`:
+it discards every rollup-owned edge and regenerates them from the current skeleton,
+and preserves the model-owned ones byte-for-byte. Nothing to delete by hand, and
+nothing to re-apply — your reclassified types survive precisely because you dropped
+their weights when you made them. Drop a model-owned edge yourself only when an
+endpoint node was removed.
 
 ### Step 7: Identify Drill-Down Candidates
 
@@ -598,9 +688,9 @@ This tells the user which nodes can be expanded into child boards.
 
 Write analysis results to `.provenmap/boards/<board-slug>.json`.
 
-**Incremental:** Merge new/changed nodes into existing board data. Replace nodes whose `coveredFiles` contain a changed file. Remove nodes whose covered files were all deleted. Remove edges referencing removed nodes (rollup-owned edges — those with `metadata.weight` — are already regenerated by Step 6's provenance rule).
+**Incremental:** Merge new/changed nodes into existing board data. Replace nodes whose `coveredFiles` contain a changed file. Remove nodes whose covered files were all deleted. Remove edges referencing removed nodes (rollup-owned edges — those with `metadata.weight` — were already regenerated by Step 6's `--rollup --apply`).
 
-Always record the current git commit hash via `git rev-parse HEAD` as `analyzedAtCommit`. Stamp `analyzedBy` truthfully: `{ "mode": "orchestrator-inline" }` when you write the board yourself in this conversation; dispatched agents stamp `{ "mode": "agent", "model": "…" }` per their prompt (Step 8.7). Never carry a previous run's `analyzedBy` forward. Every node carries `coveredFiles` and the metadata carries `waivedFiles` (from Step 4.5):
+Always record the current git commit hash via `git rev-parse HEAD` as `analyzedAtCommit`, and carry the `groupingEvidence` you stamped in Step 5. Stamp `analyzedBy` truthfully: `{ "mode": "orchestrator-inline" }` when you write the board yourself in this conversation; dispatched agents stamp `{ "mode": "agent", "model": "…" }` per their prompt (Step 8.7). Never carry a previous run's `analyzedBy` forward. Every node carries `coveredFiles` and the metadata carries `waivedFiles` (from Step 4.5):
 
 ```json
 {
@@ -613,6 +703,7 @@ Always record the current git commit hash via `git rev-parse HEAD` as `analyzedA
     "boardSlug": "my-project-overview",
     "layer": 0,
     "analyzedBy": { "mode": "orchestrator-inline" },
+    "groupingEvidence": "coupling",
     "waivedFiles": ["scripts/dev-seed.ts"]
   },
   "nodes": [
@@ -720,8 +811,8 @@ The Step 8.5 JSON also carries `recommendations` — the deterministic next-step
    - `drill-down` → build (or re-run) the child board: the `--drill <boardSlug>/<nodeSlug>` flow for the recommendation's node — this is what converts _mapped_ files into _analysed_ ones
    - `pending-area` → analyze the pending files under its `path` (take them from the ledger's `pendingFiles`; if `pendingTotal` exceeds the listed files, get the complete list from `pmap-prepass.js --claim-check <board.json> --list-all` — **never** hand-derive it from `.provenmap/skeletons/repo.json`, which you must not read whole) and place the resulting nodes on the board that owns that scope (L0, or the matching drill-down board)
    - `broad-claim` → the node claims 30+ files with no drill-down. Prefer setting `layerBoardSlug` on it (no file limit, defers the detail honestly); split it into nodes under 30 files only when it genuinely holds two concerns
-   - `edge-gap` → relationships the import graph justifies are missing from that board: re-run Step 6's rollup for it and **merge the emitted edges** (the usual cause is a run where the rollup output was never merged), then reclassify types as Step 6 describes
-   - `regroup` → that board's containment has drifted from its edges: re-run Step 4.6's `--group-plan` for it with `--against .provenmap/boards/<slug>.json`, walk the proposed moves, and re-parent only what the plan justifies and you agree with. Re-parenting is a real change on the wire — never apply the moves wholesale, and leave anything whose grouping is deliberate (say so in its description with `Grouping rationale:`)
+   - `edge-gap` → relationships the import graph justifies are missing from that board: re-run Step 6's `--rollup <slug> --apply` for it (the script does the merge; the usual cause is an older run whose rollup output was never merged), then reclassify types as Step 6 describes
+   - `regroup` → that board's containment has drifted from its edges: re-run Step 4.6's `--group-plan` for it with `--against .provenmap/boards/<slug>.json`, walk the proposed moves, and re-parent only what the plan justifies and you agree with. Re-parenting is a real change on the wire — never apply the moves wholesale, and leave anything whose grouping is deliberate (say so in its description with `Grouping rationale:`). If the plan's `evidence` differs from the board's `metadata.groupingEvidence`, this is Step 4.6's flip case — ask first, and re-stamp the field if the user applies it
    - `unknown-board` → re-run that board with the `--clean` behaviour (delete its JSON + store, full re-analysis)
 5. If the user picks **Sync what I have**: proceed to Step 9 and end the final report with: `Run /sync to push the boards and this coverage snapshot.` If it was selected alongside other areas, build those areas first, then end the loop with the same sentence.
 
@@ -801,7 +892,10 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --board-report <board-slug>
 ```
 
 Print the returned `display` **verbatim** (nodes-by-archetype bars, edges by type,
-per-board file accounting, isolated nodes, drill-down candidates, board file path). This
+per-board file accounting with the analysed percentage, the parse-health line naming this
+board's claimed files that parsed partially or not at all, the grouping-evidence line when
+the containment came from the directory fallback, hub nodes, isolated nodes, drill-down
+candidates, board file path). This
 re-run is a **pure re-render for display** — its only purpose is to pick up the ledger
 Step 8.5 just refreshed, so the per-board file-accounting line shows real numbers
 instead of the "ledger not refreshed" line the Step 8.3 display would still be carrying.
@@ -816,7 +910,7 @@ passed. `gate.warnings` do not block — print them and continue.
 Then add ONLY what the script cannot know:
 
 - Analysis mode (incremental or full); if incremental, the changed/added/deleted files analysed
-- Judgment calls worth flagging — max 5 bullets (rule deviations, split/merge decisions, why isolated nodes are genuinely isolated vs missed edges)
+- Judgment calls worth flagging — max 5 bullets (rule deviations, split/merge decisions, why isolated nodes are genuinely isolated vs missed edges). The board report already **names** the shaky-parse files and the directory-fallback grouping — don't restate them; say only what you did about them (which one you read yourself, which node's typing is unconfirmed, which grouping you verified against the code)
 - The **archetype gap note**, if and only if any board written this run has a non-empty `metadata.archetypeGaps` (Step 5 records it). One block, at most three named gaps, then stop:
 
   ```

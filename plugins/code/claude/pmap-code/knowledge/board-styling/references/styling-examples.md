@@ -1,9 +1,9 @@
 # Styling worked examples
 
 Six exemplar boards, end to end: what the signals reported, the plan that followed, and why.
-Each dataset is a test fixture (`packages/shared/src/__tests__/fixtures/board-styling/`) — the
-plan validates with zero errors and zero warnings, and the signals below are pinned by
-`board-styling-fixtures.test.ts`, so this prose cannot drift from the code.
+Each dataset is a test fixture in the plugin's source repo — the plan validates with zero errors
+and zero warnings, and every signal and plan below is pinned by tests there, so this prose cannot
+drift from the code.
 
 Read them for the **omissions** as much as the entries. Every board here leaves most elements
 untouched, because their archetypes already say what they are. The archetype names and digests

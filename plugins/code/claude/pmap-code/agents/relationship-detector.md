@@ -55,7 +55,7 @@ You are a relationship detection specialist focused on identifying connections b
 
 **`imports` edges come from the prepass skeleton.**
 
-When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`repo.json`, or `<board-slug>.json` for a drill-down) already contains the resolved JS/TS `imports` graph (`edges[]` — tsconfig aliases and barrels resolved, type-only dropped, deduped, hubs suppressed) plus deterministic `references` edges from agent-native markdown artifacts (a command naming the script it runs, a skill naming a doc — emit these as `uses`). Use those edges directly; do NOT re-parse JS/TS imports. Your job is the **semantic** edge types that require reading code — `db_read`/`db_write`, `api_call`, `uses`, `publishes`/`subscribes`, `grpc_call`, and cross-language calls — plus imports for any **non-JS/TS** files. The import-pattern table below is the fallback for standalone invocation (no skeleton) and for non-JS/TS languages.
+When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`repo.json`, or `<board-slug>.json` for a drill-down) already contains the resolved `imports` graph for **every supported language** (JS/TS via tsconfig aliases, workspace package names and barrel follow; Python/Go/Java/Ruby/Rust/C# via each one's module→path convention). Duplicates are collapsed into `count`, with `kinds` breaking that down by import kind (`static`, `type`, `reexport`, `export-star`, `dynamic`, `side-effect`): **type-only imports are kept and tagged, not dropped**, and edges into popular hubs are **kept and tagged `hubTarget: true`**, never deleted. The skeleton also carries deterministic `references` edges from agent-native markdown artifacts (a command naming the script it runs, a skill naming a doc — emit these as `uses`). Use those edges directly; do **NOT** re-parse imports in any language. Your job is the **semantic** edge types that require reading code — `db_read`/`db_write`, `api_call`, `uses`, `publishes`/`subscribes`, `grpc_call`, and cross-language calls. The import-pattern table below is the fallback for standalone invocation only, when no skeleton exists.
 
 **Relationship Detection by Language:**
 
@@ -111,6 +111,8 @@ When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`re
 
 **CRITICAL: Apply these filters BEFORE creating edges. They reduce visual noise and ensure the architecture diagram shows meaningful relationships, not implementation details.**
 
+**They govern the fallback path only** — `imports` edges you derive yourself when there is no skeleton. When a skeleton is present, its `imports` edges already carry the prepass's own resolution, dedupe and hub tagging: take them as they are and do not re-filter them.
+
 1. **Skip type-only imports**: TypeScript `import type { X } from '...'`, Python `from typing import`, Java type-only imports — these have no runtime effect and must not produce edges
 2. **Skip barrel/re-export files**: If the target is an `index.ts`/`index.js` that only re-exports, resolve through to the actual source module and create the edge there instead
 3. **Deduplicate**: If component A imports from component B in multiple places, create ONE edge (`A → B`, type: `imports`), not multiple. One edge per unique source-target-type combination
@@ -122,8 +124,8 @@ When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`re
 **Detection Process:**
 
 1. **Import Analysis**
-   - **JS/TS:** take `imports` edges from the skeleton's `edges[]` (already resolved, filtered, deduped) — map `fromTempId`/`toTempId` file paths to board-node slugs; do not re-parse. Skip to step 2 for JS/TS.
-   - **Non-JS/TS (or no skeleton):** identify file language from extension, apply language-specific import regex patterns, resolve import paths to node IDs, apply the edge filtering rules above, and create `imports` edges only between actual architectural nodes.
+   - **With a skeleton (every supported language):** take `imports` edges from the skeleton's `edges[]` (already resolved, deduped, kind-tagged) — map `fromTempId`/`toTempId` file paths to board-node slugs; do not re-parse in any language. Skip to step 2.
+   - **No skeleton (standalone invocation only):** identify file language from extension, apply language-specific import regex patterns, resolve import paths to node IDs, apply the edge filtering rules above, and create `imports` edges only between actual architectural nodes.
 
 2. **Database Operation Detection**
    - Scan for ORM/database library imports

@@ -8,7 +8,7 @@
  * stops the attempt before a process even runs.
  *
  * The evidence contract (shape, 30-minute freshness, filename sanitization)
- * mirrors packages/shared/src/core/intent-manager.ts — keep them in sync.
+ * mirrors the intents CLI's evidence contract — keep them in sync.
  *
  * Fail-open on anything unparseable: exit 0 with no output. Plain node,
  * no dependencies, no build tokens (copied untokenized by build-plugins.js).

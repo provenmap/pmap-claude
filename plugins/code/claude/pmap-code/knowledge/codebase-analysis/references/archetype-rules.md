@@ -198,7 +198,7 @@ Allow metadata-based overrides:
 
 ## File Exclusion and Grouping Rules
 
-**CRITICAL: Apply these rules BEFORE creating any nodes. These rules override the classification patterns above.**
+**CRITICAL: Apply these rules before creating any nodes — these rules override the classification patterns above. When a prepass skeleton is present, it has already applied the content-gated calls below (barrel/constants/enums/config) by content, not by filename; trust its exclusions instead of re-deriving them by hand.**
 
 ### Files to EXCLUDE from Node Creation
 
@@ -208,9 +208,9 @@ The following files must NOT produce individual nodes. They should still be read
 |---------|-----------|--------|
 | `*.d.ts`, `*.types.ts`, `*.type.ts` | TypeScript | Type definitions — no runtime behavior |
 | `*.dto.ts`, `*.dto.py`, `*DTO.java`, `*Dto.cs` | All | Data transfer objects — structural only |
-| `constants.ts`, `enums.ts`, `config.ts` | TypeScript | Static values — no architectural role |
-| `constants.py`, `enums.py`, `config.py` | Python | Static values — no architectural role |
-| `Constants.java`, `Enums.java`, `Config.java` | Java | Static values — no architectural role |
+| `constants.ts`, `enums.ts`, `config.ts` (only when they declare no functions or classes) | TypeScript | Static values — no architectural role; a provider-registering `config.ts` IS a node |
+| `constants.py`, `enums.py`, `config.py` (only when they declare no functions or classes) | Python | Static values — no architectural role; a provider-registering `config.py` IS a node |
+| `Constants.java`, `Enums.java`, `Config.java` (only when they declare no functions or classes) | Java | Static values — no architectural role; a provider-registering `Config.java` IS a node |
 | `*.test.ts`, `*.spec.ts`, `*_test.go`, `*_test.py`, `*Test.java`, `*_spec.rb` | All | Test files |
 | `*.mock.ts`, `*.stub.ts`, `__mocks__/**` | All | Test support files |
 | `index.ts`, `index.js` (barrel files that only re-export) | JS/TS | Re-export barrels — no logic |

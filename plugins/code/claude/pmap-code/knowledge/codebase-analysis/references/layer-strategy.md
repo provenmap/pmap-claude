@@ -51,11 +51,11 @@ justify by starting the container's description with `Grouping rationale:`.
 
 ## Layer Definitions
 
-### L0 — Project Overview
+### L0 — System Context
 
-- **Scope**: Entire project/monorepo
+- **Scope**: This system's own deployables, plus the externally-evidenced systems they talk to (C4 System Context)
 - **Target**: 10-30 nodes
-- **Node types**: Major systems (as opaque drill-down nodes), shared infrastructure, external dependencies. Use domain_group containers only for small clusters that won't drill down.
+- **Node types**: This repo's deployables (as opaque drill-down nodes) at the center, externally-evidenced systems (databases, third-party APIs/SaaS, providers) around them. Use domain_group containers only for small clusters that won't drill down.
 - **When**: Default analysis, first run
 
 ### L1 — Domain Drill-down

@@ -199,7 +199,7 @@ MCP results are raw JSON — you format them. Keep output stable across sessions
 - **Glyphs — this fixed set, nothing else:** ✅ confirmed/done · ⏳ pending/deferred ·
   🔗 link · ⚠️ needs attention. **Carve-out — script-rendered blocks:** anything a CLI hands you
   ready to print verbatim (`--spine`, `--classify-tree`, `--attention`, `--status`, the styling
-  and grouping plans) carries its own marks, defined once in the plugin's `core/meters.ts`:
+  and grouping plans) carries its own marks, defined once by the plugin's script renderers:
   `●` critical · `⚠` warning · `✓` clear · `○` pending · `◉` you are here, plus the `█▒░` bars
   and `├─ └─ │` connectors. Those are single-width monospace so columns line up; the emoji above
   are double-width and would break every bar and table they sit in. The two vocabularies differ

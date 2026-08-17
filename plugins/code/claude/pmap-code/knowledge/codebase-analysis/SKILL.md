@@ -100,8 +100,11 @@ by reading the involved files:
 | `grpc_call`  | gRPC client calls               | model  |
 
 Edges carrying `metadata.weight` are rollup-owned and regenerated every run;
-edges without it are model-owned and persist. Keep `metadata.weight` when
-reclassifying a rollup edge's `type`.
+edges without it are model-owned and persist. **Reclassifying a rollup edge's
+`type` means deleting its `metadata.weight`** — otherwise the next
+`--rollup --apply` replaces the edge and reverts your type. The pair then also
+carries a regenerated weighted `uses` edge: that structural twin is expected
+and legitimate — the weighted edge states the import, yours states the meaning.
 
 ## Monorepo Support
 
@@ -133,7 +136,7 @@ re-glob or re-apply exclusion rules; start from the skeleton's `nodes[]`.
 
 1. Parse manifest files for dependencies
 2. Match against framework indicators
-3. Create parent nodes per tech stack
+3. Carry the stack on each node as `metadata.framework`/`metadata.language` — never create a parent node for a language or framework. A container is warranted only when the unit is also a **deployment boundary** (it ships, runs, and can fail on its own)
 
 ### Step 3: Component Discovery
 
@@ -143,8 +146,8 @@ re-glob or re-apply exclusion rules; start from the skeleton's `nodes[]`.
 
 ### Step 4: Relationship Mapping
 
-1. Merge the rollup's deterministic `imports` edges (script-owned)
-2. Reclassify edge types where file reads show the real relation
+1. Run `--rollup <board-slug> --apply` — the script merges its deterministic `imports` edges into the board (never hand-merge them)
+2. Reclassify edge types where file reads show the real relation, deleting `metadata.weight` as you do
 3. Add semantic edges the rollup cannot see (db/api/queue)
 
 ### Step 5: Cross-Language Relationships

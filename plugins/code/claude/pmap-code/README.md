@@ -112,7 +112,7 @@ For non-trivial codebases, `/analyze` produces a hierarchy of boards so you can 
 
 | Layer | Name | Scope | Target node count |
 |---|---|---|---|
-| **L0** | Overview | Entire project | 10–30 |
+| **L0** | System Context | This system's deployables + the outside systems they talk to | 10–30 |
 | **L1** | Domain | Domain or workspace drill-down | 10–40 per board |
 | **L2** | Component | Service or module drill-down | 5–20 per board |
 | **L3** | Detail | Deep internals (opt-in) | 5–15 per board |
