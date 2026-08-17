@@ -196,8 +196,12 @@ For each synced board, report:
 
 - `sent: true` → print the response's `display` field **verbatim — do not reformat,
   reorder, or summarise** (it carries the coverage bar, the percent, and the pending /
-  stale counts). If `pending > 0`, `mappedOnly > 0`, or
-  `staleNodes > 0`, add: `Close the gap with /analyze (incremental).`
+  stale counts). If `pending > 0` or `staleNodes > 0`, add:
+  `Close the gap with /analyze (incremental).` `mappedOnly > 0` is **planned depth,
+  not a gap, where a drill-down owns those files** — when it is the only non-zero count, say
+  `Planned depth remains — build the drill-down with /analyze.` instead. A broad
+  claim (a node claiming 30+ files with no drill-down) sits in that same count and is real
+  debt, never planned depth — `/status`'s broad-claim line names them.
 - `reason: "no_ledger"` → `No coverage ledger yet — run /analyze (it computes coverage) so the platform can track analysis coverage.`
 - `reason: "feature_unavailable"` → "This ProvenMap server doesn't expose analysis coverage yet — ask your admin to upgrade"
 - `reason: "branch_mismatch"` → note the snapshot was skipped because the ledger was computed on the wrong branch; `/status` explains the recovery.

@@ -20,6 +20,10 @@ each layer answers the question C4 gives it, and that is what decides what belon
 | L2    | Components     | Inside one container: modules, handlers, classes                  | 5-20 each    |
 | L3    | Detail         | Deep internals of one component (opt-in)                          | 5-15 each    |
 
+The ladder is the **vocabulary**, and the node targets are **budgets** — which shape a given
+board actually takes (container-grade or terminal) is decided by that board's own grouping
+plan, never by its depth number. Step 5 states the rule; Step 4.6 produces the evidence.
+
 All board data lives in `.provenmap/boards/`:
 
 - `manifest.json` — tracks all boards and their relationships
@@ -106,7 +110,7 @@ The loop:
 1. **Start** (after the Step -2/-1 gates, replacing Step -0.5): `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --auto-plan --reset`. Print its `display` **verbatim — do not reformat, reorder, or summarise** (bar, counts, trend, and this round's plan).
 2. **Branch on the JSON** — the script owns the verdict:
    - `mode: "bootstrap"` — no boards yet (fresh analysis): run the full L0 analysis (Steps 0–9), then go to 3.
-   - `mode: "round"` — execute the plan exactly: `parallel[]` as one Step 8.7 batch (one subagent per drill-down), then `sequential[]` one at a time (Step 8.6 step-4 mechanics). Act on nothing the plan doesn't list; never waive files. As each board finishes, print one status line — board slug, node/edge counts, gate pass/fail — so progress stays visible mid-round. Then go to 3.
+   - `mode: "round"` — execute the plan exactly: `parallel[]` as one Step 8.7 batch (one subagent per drill-down), then `sequential[]` one at a time (Step 8.6 step-4 mechanics). Act on nothing the plan doesn't list; never waive files. As each board finishes, print one status line — board slug, node/edge counts, gate pass/fail, advisories resolved or overridden — so progress stays visible mid-round. Then go to 3.
    - `mode: "done"` or `"stalled"` — the run is over. Print `display` verbatim (it ends with the full coverage dashboard and the deferred judgment calls — broad claims and pending waiver decisions). On `stalled`, relay `stallReason`. Close the final report with `Run /sync to push the boards and this coverage snapshot.`
 3. **Re-plan:** run `--auto-plan` again (no `--reset`) — it refreshes the ledger itself, so Step 8.5 is skipped entirely in auto mode. Print `display` verbatim and return to 2.
 
@@ -358,6 +362,12 @@ It returns the skeleton's full `nodes[]` for that area plus every edge touching 
 
 A slice is capped (500 nodes; hub-tagged edges capped per slice) and says so via `truncated` / `truncatedHubEdges` — narrow the pattern rather than assuming you saw everything.
 
+**Plan first, then slice.** Request a `--detail` slice ONLY for a cluster you are **inlining
+on this board**. A cluster Step 4.6's plan marks `drill-down` — or that you decide to drill
+down — stays **opaque**: no detail slice, no per-file reading at this layer. Seed that node's
+name and description from the plan's cluster evidence and member list; the child board reads
+those files once, at the layer where they are the subject.
+
 Add `--skeleton .provenmap/skeletons/<board-slug>.json` to either mode to digest or slice a drill-down board's own skeleton instead of the repo-wide one.
 
 **Use the skeleton in Steps 5–6:**
@@ -386,8 +396,8 @@ candidate groups computed from the **coupling graph**, with the evidence for eac
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --group-plan
-# drill-down board — scope it, and seed from the board that already exists:
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --group-plan --scope-path <parent-node-path> \
+# drill-down board — scope it, budget it for its own layer, and seed from the board that already exists:
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --group-plan --scope-path <parent-node-path> --layer <this board's layer> \
   --skeleton .provenmap/skeletons/<board-slug>.json --against .provenmap/boards/<board-slug>.json
 ```
 
@@ -399,6 +409,19 @@ plan names the grain it used). Without it the plan proposes dozens of
 candidate groups you would only re-aggregate by hand. It rolls up candidate *groups*
 only — root-level elements stay file-granular, so their count is not reduced by
 `--layer 0` (the display's row cap keeps them readable regardless).
+
+**Always pass `--layer <this board's layer>`** — it is what makes the plan plan against a
+budget instead of merely clustering. From `--layer 1` up, the plan carries
+`predictedNodeCount` (clustered candidates **plus** board-root candidates), `layerBand` (that
+layer's node band) and `budgetVerdict` (`fits` | `over-band` | `under-band`), and the display
+leads with
+`Budget: <clustered> clustered + <root> board-root = <total> node(s) predicted vs band <lo>–<hi> — <verdict>`.
+**Read the verdict BEFORE you author a node:** `over-band` means drill-downs are planned now,
+not discovered after the board is written, and it is where this board's grain is decided
+(Step 5). `predictedNodeCount` is a candidate count, not a promise — you may still fold or
+omit root-level files while authoring. `--layer 0` is the re-grain described above and
+deliberately reports **no** band (`layerBand: null`, `budgetVerdict: null`): the L0 budget is
+Step 5's 10-30 target, judged by you.
 
 Print its `display` **verbatim — do not reformat, reorder, or summarise**. The `display` is
 capped (default 25 rows per section) and names how many rows it dropped; the complete plan
@@ -442,6 +465,16 @@ Then work from these fields:
   - **container** — group them under one `domain_group`.
   - **drill-down** — too interconnected to read flat: set `layerBoardSlug` and let a child board carry it. Proposing a plain container here would fail the density gate anyway.
   - **dissolve** — the members lean outward more than they cohere: place them individually rather than boxing them.
+
+  A cluster may also carry **`subClusters`** — the sub-groups a recursive pass found inside an
+  oversized or band-escalated cluster, ready-made groups for its child board — and its
+  `evidence` names the moment the band forced the call:
+  `escalated: plan would hold <N> nodes vs band high <H>`. **An escalated cluster with no
+  `subClusters` is your judgment call, not a defect:** the recursion re-seeds from directories
+  and cannot see the internal boundaries of a folder-hostile blob. Split it into nameable
+  drill-downs from its member list and the digest (paths, names, types — no file reads, per
+  Step 4.5's plan-first rule), or keep it as ONE opaque drill-down. Never inline its members
+  flat.
 - `parents[]` — sibling groups that share an ancestor and belong inside one outer container: this is the **container-within-container** case. `verdict: "nest"` means nest them; `"drill-down"` means the outer one should be a child board instead.
 - `roles[]` — per node. `member` proposes a group; `root-level` means it belongs directly on the board, with the reason:
   - `cross-cutting` — serves several groups; nesting it under any one misfiles it.
@@ -458,6 +491,32 @@ keep a low-cohesion container, write the reason into its description starting wi
 ### Step 5: Component Discovery
 
 **CRITICAL — No root wrapper nodes.** The board itself is the implicit root container. Do NOT create a single `domain_group` or wrapper node that contains all other nodes. Top-level nodes (workspaces, services, data stores, external integrations) must have **no `parentSlug`** — they sit directly on the board. Use `metadata.description` for project-level context instead of a wrapper node.
+
+**First, state this board's grain — from its own plan, not from its depth number.** The
+C4 ladder above is the vocabulary; Step 4.6's plan is the decision. **This rule covers
+banded layer plans only (`budgetVerdict` non-null, layer ≥ 1).** A `budgetVerdict: null`
+plan — the `--layer 0` re-grain, or a plan run without `--layer` — is **not** terminal and
+is outside this rule: L0's grain is fixed by the C4 System Context rule below, and on any
+other board you re-run the plan with `--layer <this board's layer>` before deciding.
+
+- **Container-grade** — the plan proposes drill-downs (any `drill-down` verdict or an
+  `escalated:` evidence line) or `budgetVerdict` is `over-band`. Author containers,
+  deployable-internal modules and **opaque drill-down nodes**. Component-grade archetypes
+  (`service_component`, `controller_component`, `repository_component`, `ui_component`,
+  `page_component`, `layout_component`, …) are the smell here: if they would be **more than
+  half** this board's nodes, you are authoring the layer below the one you were asked for —
+  go back to the plan's `subClusters`/escalations and plan drill-downs instead.
+- **Terminal** — the plan proposes no drill-downs and `budgetVerdict` is `fits` (or
+  `under-band`). Component-grade nodes are correct here **at any depth**: a small subtree's
+  L1 legitimately reads like a component diagram, and forcing container grain onto it invents
+  empty pass-through layers.
+
+Append the choice to the board's `metadata.description` in one sentence — container-grade
+with N drill-downs, or terminal. This field ships to the platform as the board's
+user-visible description — append to it, don't replace the project context already
+there. Methodology:
+[`${CLAUDE_PLUGIN_ROOT}/knowledge/codebase-analysis/references/layer-strategy.md`](../knowledge/codebase-analysis/references/layer-strategy.md)
+→ "Board Grain".
 
 **For L0 — build a C4 System Context, not an inventory.** The board answers one question:
 _what is this system, and what does it talk to?_ Keep to 10-30 nodes, in two rings:
@@ -524,6 +583,13 @@ their detail lives on a child board:
 `--board-report`, `--validate` and `/sync` all enforce both (exit 3). Group by coupling;
 never leave a board over 8 non-drill-down nodes flat, and never let one container hold a
 whole layer inline without saying why.
+
+**Root hygiene (L1+).** A loose leaf sitting at board root joins a container, becomes a
+drill-down, or the board's description gains an appended note (never a replacement — this
+field is user-visible on the platform) saying why it is a genuine singleton —
+bootstrap/app-module wiring is the legitimate class, so name it as that. Board-root
+candidates count toward the plan's `predictedNodeCount`, so a board that hoards them reads
+over-band for a reason.
 
 **`canContain` is advisory, not enforced.** Every archetype carries a `canContain` list,
 and the server accepts a push whose nesting contradicts it — verified against a board
@@ -763,9 +829,27 @@ any user-facing offer. Branch on the result:
   Never style, coverage-refresh, write the manifest, or offer next steps for a board
   that has not passed its gate — that work is discarded when the gate finally runs.
 
+**Then react to the advisories in the same JSON.** `advisories[]` (each
+`{ gate, target, message, remedy }`) and `unresolvedAdvisories` structure the SOFT warnings
+that have a react-or-override mechanic. They never fail the gate — which is exactly why
+they get ignored — so: **a board with `unresolvedAdvisories > 0` is not done.** Print each
+advisory's `message` **verbatim**, then settle every one of them, either:
+
+- **Restructure** — convert the cluster or container the advisory names (`target`) into a
+  `layerBoardSlug` drill-down, or split it, and re-run this step; or
+- **Override** — record the reason on the board and re-run this step: append
+  `{ "gate": "<gate>", "rationale": "<why this board is right as it stands>" }` to
+  `metadata.gateOverrides` for the board-wide advisory (`A-BUDGET`), or add a
+  `Drill-down rationale: …` line to the named container's description for the
+  inline-children one (`A-CONTAINER-CEILING`). The report then lists the recorded
+  override and the count drops. `A-CONTAINER-DENSITY` (a container whose children form
+  a dense internal subgraph) has **no** override — the marker does nothing for it; a
+  `layerBoardSlug` drill-down is the only fix. `gateOverrides` is local-only — it is
+  never pushed.
+
 For a fanned-out drill-down this step is the agent's own (Step 8.7 already requires
-each agent to report its board's gate status); the orchestrator runs it here for the
-board it writes directly.
+each agent to report its board's gate status and unresolved-advisory count); the
+orchestrator runs it here for the board it writes directly.
 
 ### Step 8.4: Author the styling plan
 
@@ -829,13 +913,13 @@ In `--auto` mode you do not make this split yourself — `pmap-prepass.js --auto
 **Before fan-out — the orchestrator owns all shared state; subagents never touch it:**
 
 1. For each selected drill-down, resolve the child board slug (Step 7 rules: server board map first, else `<parent-slug>--<node-slug>`) and, if the parent node doesn't carry it yet, stamp `layerBoardSlug` on the parent node in the parent board JSON **now** — every parent-board edit happens here, before any agent starts.
-2. Launch one `architecture-analyzer` agent (Task tool) per selected board, **all in a single message** so they run concurrently. Each dispatch prompt must be self-contained (agents share nothing). For a drill-down, state that it is **layer-board mode** and pass the child board slug + display name, target layer, `parentBoardSlug`/`parentNodeSlug`, the parent node's scope path and `coveredFiles`, the Step 0 node/edge archetype name lists, and whether the child board already exists on the server (Step 0.5 map). For a board refresh, state that it is **incremental-refresh mode** and pass the board slug plus its ledger worklist (`staleNodes[].changedFiles`, in-scope `pendingFiles[]`, `orphanedFiles[]`) and the same archetype lists. Either way the agent runs its own prepass, rollup, and board report — do not pre-run them.
+2. Launch one `architecture-analyzer` agent (Task tool) per selected board, **all in a single message** so they run concurrently. Each dispatch prompt must be self-contained (agents share nothing). For a drill-down, state that it is **layer-board mode** and pass the child board slug + display name, target layer, `parentBoardSlug`/`parentNodeSlug`, the parent node's scope path and `coveredFiles`, the Step 0 node/edge archetype name lists, and whether the child board already exists on the server (Step 0.5 map). For a board refresh, state that it is **incremental-refresh mode** and pass the board slug plus its ledger worklist (`staleNodes[].changedFiles`, in-scope `pendingFiles[]`, `orphanedFiles[]`) and the same archetype lists. Either way the agent runs its own prepass, group plan (`--group-plan --layer <target layer>`), rollup, and board report — do not pre-run them. Every dispatch prompt states both react moments: read `budgetVerdict` **before** authoring and state the board's grain (Step 5), and drive `unresolvedAdvisories` to zero **after** authoring by restructuring or recording a rationale (Step 8.3).
 3. **Model per agent:** if `.provenmap/config.json` has `analysis.subagentModel`, pass it as the model for every dispatched agent; otherwise dispatch L1 boards with the session model (inherit) and, where the host supports a per-agent model override, L2/L3 boards with a faster model. If the host supports neither model overrides nor parallel agent launch, dispatch the same prompts sequentially with defaults — the flow is otherwise identical.
 4. **Builder stamp:** every dispatch prompt must tell the agent to stamp `metadata.analyzedBy: { "mode": "agent", "model": "<the model you passed, or 'session-inherit'>" }` in the board JSON it writes. This is how `/status` and the board report answer "was a subagent used, with what model" — the deterministic dispatch log (a PostToolUse hook) records the dispatch itself, and the stamp attributes it per board.
 
 **Join — after ALL agents return:**
 
-1. Each agent reports its board's gate status (from its own `--board-report`). For a board whose gate failed or whose agent died, tell the user which board and why, and offer to re-run just that board — the other boards' results stand.
+1. Each agent reports its board's grain (container-grade with N drill-downs, or terminal), gate status, and unresolved-advisory count (all from its own `--board-report`). For a board whose gate failed, whose advisories are still unresolved, or whose agent died, tell the user which board and why, and offer to re-run just that board — the other boards' results stand.
 2. Run the sequential selections now, if any.
 3. Update the manifest (Step 9) with an entry for **every** board written this batch — the orchestrator is the only writer of `manifest.json`.
 4. Run Step 8.5 **once** — a single coverage refresh whose ▲/▼ delta shows the combined effect of the whole batch — then continue the Step 8.6 loop.
@@ -909,6 +993,16 @@ passed. `gate.warnings` do not block — print them and continue.
 
 Then add ONLY what the script cannot know:
 
+- **Structure health, first among your own additions — before you say anything about a
+  percentage.** (The script-rendered blocks above are still printed verbatim, unmodified and
+  unreordered — this governs your own narration around them, never the blocks themselves.)
+  One line per board written this run: its grain (container-grade with N drill-downs
+  planned, or terminal), whether the group
+  plan's `budgetVerdict` was met, and that every advisory is resolved or overridden — naming
+  the rationale where you recorded one. Files mapped behind a **planned** drill-down are
+  planned depth, not debt: a board that plans its drill-downs reads lower on analysed-% than
+  one that inlines everything flat, and it is the better board. The analysed percentage
+  belongs in the dashboard below, never as this run's headline achievement.
 - Analysis mode (incremental or full); if incremental, the changed/added/deleted files analysed
 - Judgment calls worth flagging — max 5 bullets (rule deviations, split/merge decisions, why isolated nodes are genuinely isolated vs missed edges). The board report already **names** the shaky-parse files and the directory-fallback grouping — don't restate them; say only what you did about them (which one you read yourself, which node's typing is unconfirmed, which grouping you verified against the code)
 - The **archetype gap note**, if and only if any board written this run has a non-empty `metadata.archetypeGaps` (Step 5 records it). One block, at most three named gaps, then stop:

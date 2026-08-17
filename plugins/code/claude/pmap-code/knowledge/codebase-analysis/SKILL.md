@@ -141,8 +141,9 @@ re-glob or re-apply exclusion rules; start from the skeleton's `nodes[]`.
 ### Step 3: Component Discovery
 
 1. Take the file inventory from the skeleton's `nodes[]` (exclusions already applied); glob only for files outside the skeleton
-2. Apply language-specific archetype rules
-3. Build hierarchical node structure
+2. Read the group plan's budget (`predictedNodeCount`, `layerBand`, `budgetVerdict`) and state this board's grain — container-grade or terminal — **from the plan, never from the depth number**. See `references/layer-strategy.md` → "Board Grain"
+3. Apply language-specific archetype rules
+4. Build hierarchical node structure
 
 ### Step 4: Relationship Mapping
 
@@ -172,7 +173,12 @@ Coverage is the pipeline's honesty mechanism — every emitted node carries it:
   makes drill-down (not splitting) the normal answer for a large area.
 - **Mapped vs analysed**: a node with `layerBoardSlug` (or a broad claim)
   counts its files as *mapped, not analysed* until the child board analyses
-  them — the dashboard excludes them from the analysed percentage.
+  them — the dashboard excludes them from the analysed percentage. Files
+  mapped behind a **planned** drill-down are planned depth, not debt: a board
+  that plans its drill-downs reads lower on analysed-% than one that inlines
+  everything flat, and it is the better board. The percentage measures how
+  much of the tree has been visited — never whether a board has the right
+  shape.
 - **Check the partition with a script, never by hand**:
   `pmap-prepass.js --claim-check <board.json>` reports unclaimed files, files
   claimed twice, and nodes over the limit — before the board is written, and

@@ -45,11 +45,64 @@ sparse enough between them to stay readable). `roles[]` says which nodes belong 
 and why — `cross-cutting` (serves several groups), `boundary` (an adapter facing out of scope),
 or `isolated`/`no-group` (no evidence; your judgment).
 
+Asked for a layer (`--layer <n>`), the plan also plans against that layer's node band and
+reports `predictedNodeCount` (clustered candidates **plus** board-root candidates), `layerBand`,
+and `budgetVerdict` (`fits` | `over-band` | `under-band`). An over-band plan escalates the
+largest eligible cluster to `drill-down` and says so in that cluster's evidence —
+`escalated: plan would hold <N> nodes vs band high <H>` — and where a recursive pass finds real
+sub-structure inside it, those sub-groups arrive as `subClusters` (ready-made groups for the
+child board).
+
 A board of 20 uncoupled nodes needs no containers; a board of 6 tightly-coupled ones may need
 two. The plan proposes, you name and may override — record an override the topology cannot
 justify by starting the container's description with `Grouping rationale:`.
 
+## Board Grain — decided per board, not from the depth number
+
+The ladder below is the **vocabulary** (what each layer answers and how many nodes it is
+budgeted for). What a *given* board looks like is decided by that board's own group plan.
+
+**Scope: banded layer plans only** (`budgetVerdict` non-null, layer ≥ 1). A plan whose
+`budgetVerdict` is `null` — the `--layer 0` re-grain, or a plan run without `--layer` — is
+**not** terminal and is outside this rule entirely: L0's grain is fixed by the L0 — System
+Context definition below, and any other board should be re-planned with its own `--layer`
+before its grain is decided.
+
+- **Container-grade** — the plan proposes drill-downs (any `drill-down` verdict, or a cluster
+  whose evidence carries `escalated: plan would hold <N> nodes vs band high <H>`) **or**
+  `budgetVerdict` is `over-band`. Its nodes are containers, deployable-internal modules and
+  **opaque drill-downs**. Component-grade types (`service_component`, `controller_component`,
+  `repository_component`, `ui_component`, `page_component`, `layout_component`, …) are the
+  smell: when they would be more than half such a board's nodes, the layer being authored is
+  the one below the one that was asked for — consume `subClusters`/escalations and plan
+  drill-downs instead.
+- **Terminal** — the plan proposes no drill-downs and `budgetVerdict` is `fits` (or
+  `under-band`). Component-grade nodes are correct here **at any depth**: a small subtree's L1
+  legitimately reads like a component diagram, and forcing container grain onto it invents
+  empty pass-through layers.
+- **An escalated cluster carrying no `subClusters`** is a domain-boundary judgment call, not a
+  defect — the recursive pass re-seeds from directories and cannot see the internal boundaries
+  of a folder-hostile blob. Split it into nameable drill-downs/containers from its member list
+  and the skeleton digest (paths, names, types — no file reads), or keep it as ONE opaque
+  drill-down. Never inline its members flat.
+- `predictedNodeCount` is a **candidate** count, not a promise: folding or omitting root-level
+  files while authoring is legitimate, and the verdict is still the signal to plan against.
+
+The board's description records the chosen nature in one sentence — container-grade with N
+drill-downs, or terminal.
+
+### Root hygiene (L1+)
+
+A loose leaf at board root joins a container, becomes a drill-down, or the board's description
+records why it is a genuine singleton — bootstrap/app-module wiring is the legitimate class.
+Board-root candidates count toward `predictedNodeCount`, so a board that hoards them reads
+over-band for a reason.
+
 ## Layer Definitions
+
+The node targets below are **budgets, not grain mandates** — they say how many nodes a layer
+can carry, while the board's own group plan says whether it is container-grade or terminal
+(see "Board Grain" above).
 
 ### L0 — System Context
 
@@ -96,7 +149,9 @@ justify by starting the container's description with `Grouping rationale:`.
 
 ## Drill-Down Candidates
 
-A node is a good drill-down candidate when:
+The group plan is the primary trigger: a cluster with `verdict: "drill-down"`, or one the
+layer band escalated (`escalated: …` in its evidence). The heuristics below cover what the
+plan cannot see:
 
 1. It represents a domain/service with 5+ internal source files
 2. It contains sub-domains or distinct internal modules
