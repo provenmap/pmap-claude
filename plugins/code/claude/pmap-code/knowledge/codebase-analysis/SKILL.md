@@ -124,7 +124,7 @@ and legitimate — the weighted edge states the import, yours states the meaning
 
 When invoked by `/analyze`, the deterministic prepass has already produced the
 skeleton — the ground-truth file inventory and resolved imports graph. Do not
-re-glob or re-apply exclusion rules; start from the skeleton's `nodes[]`.
+re-glob or re-apply exclusion rules; start from the skeleton's `nodes[]`. The index also carries each file's role claims (read them through `--detail`): hints to weigh, with a script-owned `verify` flag saying which files to read before typing.
 
 ### Step 1: Project Scanning
 

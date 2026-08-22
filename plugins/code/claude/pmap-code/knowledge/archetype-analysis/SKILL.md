@@ -53,6 +53,25 @@ These all fail review:
 - **Layered/board concepts** dressed up as archetypes. Boards have their own hierarchy; don't propose archetypes like `l0_overview` or `subsystem`.
 - **Status/lifecycle** masquerading as archetypes: `deprecated_service`, `legacy_db`. Use tags for status; archetypes describe what a thing *is*, not its lifecycle stage.
 
+## The role map (roles → archetypes)
+
+`.provenmap/role-archetype-map.json` is the compiled bridge between the index's script-owned
+role claims and the server archetype catalogue. `/analyze` Step 0 compiles it once per
+catalogue hash: for every unmapped headline role (`controller`, `service`, `repository`,
+`model`, `middleware`, `client`, `worker`, `module`, `migration`, `component`, `utility`) it
+chooses one archetype name from the fetched catalogue, writes a draft, and runs
+`pmap-prepass.js --role-map <draft>` to validate and save it. Once compiled, `--detail` rows
+carry `archetype` directly — no more per-file guessing.
+
+**An unmapped role is a legitimate outcome, not an error.** If no catalogue archetype
+honestly fits a role, leave it in `unmappedRoles` — the projection shows the bare role and
+those files get typed by hand. Don't force a bad fit just to close out the list.
+
+**To re-pin a choice** (so it survives the next catalogue-hash recompile): write a draft with
+`"pinned": true` on the entries you want to keep, then run
+`pmap-prepass.js --role-map <draft>` again. Pinned entries are carried forward unchanged on
+every future recompile; only unpinned entries get recomputed when the hash drifts.
+
 ## Examples
 
 ### Good — new archetype proposal

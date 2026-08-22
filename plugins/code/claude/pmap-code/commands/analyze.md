@@ -216,7 +216,7 @@ Coverage is the run's frame of reference — refresh it BEFORE any analysis so t
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --coverage
 ```
 
-Tell the user the starting point in one line from the JSON: `Coverage baseline: <percent>% analysed · <mappedOnly> mapped · <pending> pending · <staleNodes> stale.` If there are no boards yet: `No coverage yet — starting from zero.` If the script fails, say so and continue — coverage is reporting, never a gate. Step 1.5 takes its worklist from this ledger, and each Step 8.5 refresh shows the ▲/▼ delta since the previous refresh (this baseline on the first pass; the prior pass once Step 8.6 loops).
+Print the returned `summary` line **verbatim**. It tells you whether the index was reused or rebuilt and why (`index.state`/`index.reason`), how many files carry role claims, the coverage baseline, and whether the role map has unmapped roles (Step 0 compiles them). **You never rebuild the index yourself.** Exit 2 means the index could not be built: stop and print the `error` verbatim (it names `pmap-prepass.js --engine-check`). If the JSON carries `ledgerError`, the ledger on disk is the PREVIOUS run's, not this run's: say so in one line, continue, and in Step 1.5 use its raw-`git diff` fallback instead of the ledger — never treat that ledger as fresh. Step 1.5 takes its worklist from this ledger, and each Step 8.5 refresh shows the ▲/▼ delta since the previous refresh.
 
 ### Step 0: Fetch Available Archetypes (ProvenMap only)
 
@@ -233,10 +233,19 @@ If ProvenMap configuration exists (`.provenmap/config.json` with `bindingToken`)
    - `nodeArchetypes`: Available archetype names for nodes
    - `edgeArchetypes`: Available archetype names for edges
    - `cacheFile`: where the full catalogue sits on disk — read it **only** for a specific archetype you are genuinely torn about, never wholesale
+   - `catalogueHash`: the hash of the catalogue — item 5 compares it with the role map's
 
 3. If the CLI fails or returns no archetypes, warn the user but continue analysis using conventional archetype names (service, database, api, library, queue, external, domain_group, infrastructure, external_system). The sync CLI will need archetypes configured on the server before types can be validated.
 
 4. Store the available archetype names for use in Step 5 (Component Discovery) — the analysis agent must assign these server archetype names to each node/edge `type` field
+
+5. **Compile the role map (once per catalogue).** Step -0.5's `roleMap` block says whether `.provenmap/role-archetype-map.json` is `present`, its `catalogueHash`, and `unmappedRoles[]` — the index's headline roles (`controller`, `service`, `repository`, `model`, `middleware`, `client`, `worker`, `module`, `migration`, `component`, `utility`) that have no archetype yet. If it is present, its `catalogueHash` equals this step's `catalogueHash`, and `unmappedRoles` is empty, there is nothing to do. Otherwise, from the catalogue `display` you just read, choose **one** archetype name per unmapped role (a role with no honest fit stays unmapped — the projection then shows the bare role and you type those files by hand), write `.provenmap/role-archetype-map.draft.json` as `{ "entries": [{ "role": "<role>", "archetypeName": "<catalogue name>", "rationale": "<one line>" }], "unmappedRoles": ["<role with no fit>"] }`, and run:
+
+   ```bash
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --role-map .provenmap/role-archetype-map.draft.json
+   ```
+
+   Print its `display` verbatim (`Role map: 11 roles mapped · 0 unmapped · 0 pinned`). Exit 3 names an archetype the catalogue does not have — fix the draft and re-run; exit 1 means the catalogue is not cached (re-run item 1) or the draft is malformed. From here on `--detail` rows carry `archetype`, and every lookup is the script's. When the catalogue hash has drifted, pinned entries survive and you recompile only what changed; to pin a choice of your own, put `"pinned": true` on that entry (see the archetype-analysis skill).
 
 ### Step 0.5: Fetch Server Boards
 
@@ -283,7 +292,7 @@ If ProvenMap configuration exists:
 
 If board data exists AND `--clean` was NOT passed AND `analyzedAtCommit` is present in metadata:
 
-1. Use the Step -0.5 ledger — it is fresh this run; do NOT re-run the coverage script. Read `.provenmap/coverage.json` and take this board's entry. The worklist is:
+1. Unless Step -0.5 reported `ledgerError` (then go straight to item 5's fallback), use the Step -0.5 ledger — it is fresh this run; do NOT re-run the coverage script. Read `.provenmap/coverage.json` and take this board's entry. The worklist is:
    - `boards[].staleNodes[]` — nodes whose covered files changed since analysis → re-analyze these nodes from their listed `changedFiles`
    - `pendingFiles[]` — files no node covers yet → new components to place
    - `boards[].orphanedFiles[]` — covered files that no longer exist → remove/shrink their nodes
@@ -337,11 +346,12 @@ For an L1+ drill-down board, scope the emitted nodes to the parent node's subtre
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --scope-path <parent-node-path> --out .provenmap/skeletons/<board-slug>.json --digest
 ```
 
-The full skeleton is written to the `--out` path (all skeletons live in `.provenmap/skeletons/`) — **that file is the scripts' input, not yours: never read it whole.** `--digest` prints the compact view you work from plus a `display` you print **verbatim — do not reformat, reorder, or summarise.** A full-repo run reuses the cached skeleton when HEAD, the dirty set, and the walk config are unchanged (`cached: true` in the JSON); `--no-cache` forces a fresh walk.
+The full skeleton is written to the `--out` path (all skeletons live in `.provenmap/skeletons/`) — **that file is the scripts' input, not yours: never read it whole.** `--digest` prints the compact view you work from plus a `display` you print **verbatim — do not reformat, reorder, or summarise.** The repo index was ensured at Step -0.5; a `--scope-path` run **slices** it into the board's view (`cached: true` is the normal case) — it is never a second walk. Reading modes (`--digest`, `--detail`) read the existing index and never walk — only Step -0.5's `--coverage` (and `--auto-plan`) rebuild it.
 
 The `digest` field contains:
 
 - `directories[]` — the file inventory rolled up per directory: `path`, `files`, `artifacts`, `languages` (counts), `topFiles` (most-imported basenames). This is the file inventory — the **grouping** worksheet is Step 4.6's, not this one.
+- `directories[].roles` — the headline-role histogram per directory (`controller 3, service 4 …`) and `directories[].unclaimed` — files the index could not type. Plan by what an area **is**, not by its folder name.
 - `edges[]` — the top directory→directory import flows with summed `weight`: cross-area structure at a glance. The per-file edges stay in the skeleton for the rollup script.
 - `stacks` — workspaces, monorepo flag, and frameworks from the manifests: this **is** Steps 3–4's output.
 - `infra` — infrastructure-as-code and schema files by kind (`container`, `ci`, `terraform`, `kubernetes`, `migration`, `serverless`). These are real architecture: claim them from a node (an "Infrastructure" or "Deployment" component is usually right) rather than leaving them unclaimed. They sit outside the analysed-percentage denominator, so they never inflate or deflate coverage.
@@ -354,13 +364,11 @@ The `digest` field contains:
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --detail <dir-or-glob>
 ```
 
-It returns the skeleton's full `nodes[]` for that area plus every edge touching them. Each node has a repo-relative `path`, a `tempId` (= `path`), a suggested `slug`/`name`, `language`, and — only when the parse was shaky — `parseHealth` (`partial` | `failed`; omitted on a clean parse). Nodes with an **`artifact`** field are **agent-native markdown artifacts** — prompt-ware components (`artifact.kind`: `skill` | `command` | `agent`) detected deterministically from YAML frontmatter; `artifact.description` carries the frontmatter description as seed context. Edges are `{ fromTempId, toTempId, type, count, kinds?, hubTarget? }`:
+It returns the area's **index rows** — `nodes[]`, each with `path`, `slug`, `name`, `language`, `claims` (best-evidenced first), `headlineRole`, `archetype` (when the role map resolves it — Step 0) and `verify` (`single-basis` | `conflict` | `unclaimed`; absent when the evidence is strong) — plus `edgeSummary[]` per node (`in`, `out`, `topTargets`, `hubTargets`). **There is no raw edge list**: `--rollup` reads the index itself and you never hand-map edges. The `display` groups rows by directory with the `verify` rows first — those are the files that need a read.
 
-- `type: "imports"` — the resolved import graph for **every supported language** (JS/TS, Python, Go, Java, Ruby, Rust, C#): tsconfig path aliases, workspace package names and barrel re-exports resolved for JS/TS, each other language resolved by its own module→path convention. Duplicates are collapsed into `count`, and `kinds` breaks that count down by import kind (`static`, `type`, `reexport`, `export-star`, `dynamic`, `side-effect`). **Type-only imports are kept, tagged `type`** — they are real coupling; weigh them lower if your reading says so, never assume they are absent.
-- `hubTarget: true` marks an edge into a popular-helper hub. Those edges are **kept, not deleted** — display and rollup budgets curate them out, but the fact is there, so a hub is never "a node with no imports".
-- `type: "references"` — deterministic artifact wiring: an artifact's body names another skeleton file by path (a command running a bundled script, a skill pointing at a doc).
+**Claims are hints, not facts** (0.76–0.85 precise by basis on the labelled corpus), and the script says which to verify: no `verify` → adopt the headline role / archetype as the default typing and read the file only for what you'd read it for anyway (description, semantic edges); `single-basis` → at component/detail grain (node ≈ file) read the file head before typing, at system/context grain the container's type is yours and no per-file read is owed; `conflict` → read and decide, and say which claim lost in the node's rationale; `unclaimed` → read — this is where your judgment is the job.
 
-A slice is capped (500 nodes; hub-tagged edges capped per slice) and says so via `truncated` / `truncatedHubEdges` — narrow the pattern rather than assuming you saw everything.
+A slice is capped at 500 files and says so via `truncated` — narrow the pattern rather than assuming you saw everything.
 
 **Plan first, then slice.** Request a `--detail` slice ONLY for a cluster you are **inlining
 on this board**. A cluster Step 4.6's plan marks `drill-down` — or that you decide to drill
@@ -385,7 +393,7 @@ Add `--skeleton .provenmap/skeletons/<board-slug>.json` to either mode to digest
   and leave the rest to the directory glob. If you find yourself listing files one by one, or
   wanting to generate the list programmatically, that is the signal to move the claim up to
   directory granularity instead. Every skeleton file must end up in exactly one node's `coveredFiles`, OR in the board metadata's `waivedFiles` (files you judge non-architectural — never silently drop them), OR deliberately unclaimed (it will surface as _pending_ in coverage reports). **Hard rules the coverage dashboard enforces/surfaces:** never claim the same file from two nodes (double claims are flagged as defects); **an analysed node may claim at most 29 files — 30 or more is a broad claim** (the dashboard reports it and **excludes its files from the analysed percentage**), and the fix is one of two moves: set `layerBoardSlug` (a drill-down node has **no** file limit — its files count as _mapped, not analysed_ until the child board analyses them) or split it into nodes under the limit; waive **exact paths only, never globs** — waiving shrinks the denominator and the dashboard lists what was waived. **Don't hand-verify the partition — Step 5.5's `--claim-check` does it.**
-- The prepass does NOT classify archetypes, group the database layer, write descriptions, or detect non-import edges — those remain your job in Steps 5–6.
+- The prepass does NOT group the database layer, write descriptions, or detect non-import edges — those remain your job in Steps 5–6. It DOES type files: the index's `headlineRole` and its mapped `archetype` are your default typing — weigh them, and override with a stated reason when your reading says otherwise.
 
 Run this on every analysis (full and incremental); it is deterministic and fast, and always reflects current HEAD.
 
@@ -610,7 +618,7 @@ Apply these rules (start from the skeleton's `nodes[]` — file discovery and ex
 - **Agent-native artifacts are components, not docs**: skeleton nodes with `artifact.kind` (skills/commands/agents) are first-class architecture — group them like any other component family (e.g. a commands group, a knowledge/skills group, per plugin or domain), seed their `description` from `artifact.description`, and classify them with a fitting server archetype. If the catalogue has no fit for prompt-ware kinds, that is an archetype **gap** (e.g. a missing `agent_command`/`agent_skill`): use the closest existing archetype, record the gap in `metadata.archetypeGaps` so the closing report can name it, and never silently waive artifacts.
 - **Group database files**: into a single `database-layer` container node at L0/L1 — the skeleton lists these as individual files, so you group them.
 - **Apply the grouping plan**: Step 4.6's clusters, parents and root-level roles are the containment proposal — name the groups, override with a stated reason, do not re-derive boundaries from folder names
-- **Classify by archetype**: using server archetype names — the skeleton does NOT classify, this is your job
+- **Type by archetype**: the index's `headlineRole` → `archetype` (from `--detail`) is the default, in server archetype names; read first wherever `verify` is set; override with a stated reason when your reading says otherwise.
 - **Generate slugs**: use the skeleton's suggested `slug` as a starting point; refine from the primary class/export name
 
 **Finish Step 5 by writing the board JSON now** — `.provenmap/boards/<board-slug>.json`
@@ -847,6 +855,12 @@ advisory's `message` **verbatim**, then settle every one of them, either:
   `layerBoardSlug` drill-down is the only fix. `gateOverrides` is local-only — it is
   never pushed.
 
+The JSON's `typing` block (and the `🎯 Typing:` line) lists comparable nodes whose type
+differs from their files' mapped archetype. It is a signal, not an advisory — it never
+blocks: for each named node either adopt the mapped archetype or keep your type and say
+why in the node description's rationale. A role you keep overriding is a map entry to
+re-pin (Step 0).
+
 For a fanned-out drill-down this step is the agent's own (Step 8.7 already requires
 each agent to report its board's gate status and unresolved-advisory count); the
 orchestrator runs it here for the board it writes directly.
@@ -924,7 +938,7 @@ In `--auto` mode you do not make this split yourself — `pmap-prepass.js --auto
 3. Update the manifest (Step 9) with an entry for **every** board written this batch — the orchestrator is the only writer of `manifest.json`.
 4. Run Step 8.5 **once** — a single coverage refresh whose ▲/▼ delta shows the combined effect of the whole batch — then continue the Step 8.6 loop.
 
-Subagents must never write `manifest.json` or a board other than their own, and never run `pmap-prepass.js --coverage` — coverage is derived state the orchestrator recomputes once at the join.
+Subagents must never write `manifest.json` or a board other than their own, and never run `pmap-prepass.js --coverage` — coverage is derived state the orchestrator recomputes once at the join — and never rebuild the repo index: a subagent's `--scope-path … --digest` is a slice of it. Reading modes (`--digest`, `--detail`) read the existing index and never walk — only `--coverage` (and `--auto-plan`) rebuild it.
 
 ### Step 9: Update Manifest
 
