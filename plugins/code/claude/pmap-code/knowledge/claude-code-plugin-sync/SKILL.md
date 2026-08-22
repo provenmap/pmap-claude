@@ -28,11 +28,9 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-sync.js [options]
 | `--config <path>` | `.provenmap/config.json` | Config file path |
 | `--analysis <path>` | `.provenmap/boards/<board-slug>.json` | Analysis file path |
 | `--board-slug <slug>` | (required) | Board slug for this sync |
-| `--mode <mode>` | `merge` | Push mode: `merge` or `replace` |
 | `--dry-run` | - | Validate and transform only, don't push |
 | `--smart-sync` | - | Enable diff-based sync (recommended) |
 | `--force-pull` | - | Force refresh of server elements before diff |
-| `--force-push` | - | Push all elements regardless of diff |
 | `--store-file <name>` | `.provenmap/boards/stores/<board-slug>.store.json` | Store file name |
 | `--cache-file <name>` | `.provenmap/boards/archetypes-cache.json` | Archetype cache file name |
 | `--host <h>` | - | Plugin host (claude\|codex\|cursor) stamped on the push identity |

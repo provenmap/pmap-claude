@@ -35,7 +35,12 @@ Use `--dry-run` to validate and transform without pushing. Works with both smart
 ## Force Options
 
 - `--force-pull` — Always fetch server elements, ignoring the staleness threshold (5 min default)
-- `--force-push` — Push all elements regardless of diff (overrides smart sync optimization)
+
+## Push Mode
+
+Every push is a **replace**: the full board inventory is transmitted and the server deletes the
+elements this plugin authored that the latest analysis no longer contains (architect-created
+elements are never touched). The latest analysis *is* the board — there is no merge mode.
 
 ## Error Handling
 
