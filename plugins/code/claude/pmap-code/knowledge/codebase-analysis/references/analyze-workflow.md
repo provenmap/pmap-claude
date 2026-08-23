@@ -10,6 +10,11 @@ nothing.
 reformat, reorder, or summarise** — in your reply (the Bash output panel is collapsed for the
 user); branch only on exit codes and named JSON fields.
 
+**One reply runs the whole map (applies throughout):** end your reply only at the closing
+Report or at a stop a step names — never after relaying a panel or fixing a gate error; a
+relayed panel is progress, not completion. If a detour (a gate fix, a re-run) interrupts a
+step, finish the detour and resume the map where you left it.
+
 The layer ladder, node budgets, board grain rules, grouping verdicts, slug resolution and the
 board-file layout live in `references/layer-strategy.md`. Coverage/claiming rules and the
 edge-ownership model live in the codebase-analysis `SKILL.md`. This file points there rather
@@ -32,8 +37,11 @@ than restating them.
      nodes
 2. Run `git diff --name-only --diff-filter=D <analyzedAtCommit> HEAD` to confirm deleted files
 3. If the worklist is empty (no stale nodes, no pending files, nothing deleted): report
-   "Board is up to date — nothing changed since last analysis", print the Step -0.5 `display`
-   markdown verbatim, and stop here
+   "Board is up to date — nothing changed since last analysis" and print the Step -0.5
+   `display` markdown verbatim. If that dashboard still lists "Where to go next"
+   recommendations (an unbuilt drill-down, a pending area), the map has open work even
+   though nothing changed — continue at Step 8.6 and ask; printing the list without the
+   question is a defect. Stop here only when there are no recommendations either
 4. Otherwise, load the existing board data (nodes + edges) and **get the merge decision from
    the script — do not glob-match it by hand:**
 
@@ -635,7 +643,9 @@ already done):
   server archetype. If the catalogue has no fit for prompt-ware kinds, that is an archetype
   **gap** (e.g. a missing `agent_command`/`agent_skill`): use the closest existing
   archetype, record the gap in `metadata.archetypeGaps` so the closing report can name it,
-  and never silently waive artifacts.
+  and never silently waive artifacts. Fields per gap entry — `name` (the missing
+  archetype), `usedInstead` (the closest fit you applied), `exampleNodeSlugs` (array of
+  node slugs; `[]` allowed). Exactly those keys: Step 8.3's gate rejects any other shape.
 - **Group database files**: into a single `database-layer` container node at L0/L1 — the
   skeleton lists these as individual files, so you group them.
 - **Apply the grouping plan**: Step 4.6's clusters, parents and root-level roles are the
@@ -964,7 +974,10 @@ is a genuine user decision:
      this coverage snapshot to the platform."
 4. If the user picks a single recommendation, run another incremental pass scoped to it,
    then **return to Step 8.5** (refresh, dashboard, ask again — the loop ends when the user
-   syncs or nothing is left). If the user selected **multiple** areas, go to Step 8.7
+   syncs or nothing is left). A choice is consumed the moment its area completes: an area
+   the user asked for earlier — typed or selected — never substitutes for asking again on
+   the next pass, and "the user already chose" is not a reason to skip the question. If the
+   user selected **multiple** areas, go to Step 8.7
    instead — it owns the batch and returns to Step 8.5 itself. Per-kind mechanics:
    - `stale-board` → re-analyze that board's `staleNodes[].changedFiles` (Steps 5–8 scoped
      to those files)
