@@ -167,6 +167,11 @@ Coverage is the pipeline's honesty mechanism — every emitted node carries it:
   board metadata's **`waivedFiles`** (explicitly judged non-architectural —
   exact paths, never globs), or is deliberately left unclaimed to surface as
   *pending* in the coverage dashboard. Never drop a file silently.
+- **Minor files fold, never stand alone.** A skeleton row marked `minor` (small, imported, no
+  exported class) is claimed by its host node's `coveredFiles` — the node covering its importer
+  (one-host) or the node that owns its directory (shared / out-of-scope / cycle); it is never a
+  node of its own and never waived. `pmap-prepass.js --claim-check <board.json>` names the exact
+  host per unclaimed minor; `--board-report` warns (`A-MINOR-NODE`) when a node is one minor file.
 - **Claim by directory, not by file — that is what makes the partition
   automatic.** The digest's directories are disjoint by construction, so a
   board whose nodes each claim whole directory globs (`src/billing/**`) is

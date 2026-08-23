@@ -46,8 +46,9 @@ and why — `cross-cutting` (serves several groups), `boundary` (an adapter faci
 or `isolated`/`no-group` (no evidence; your judgment).
 
 Asked for a layer (`--layer <n>`), the plan also plans against that layer's node band and
-reports `predictedNodeCount` (clustered candidates **plus** board-root candidates), `layerBand`,
-and `budgetVerdict` (`fits` | `over-band` | `under-band`). An over-band plan escalates the
+reports `predictedNodeCount` (**significant** clustered candidates **plus** board-root
+candidates — `minor` rows are not counted; the Budget line says how many were left out),
+`layerBand`, and `budgetVerdict` (`fits` | `over-band` | `under-band`). An over-band plan escalates the
 largest eligible cluster to `drill-down` and says so in that cluster's evidence —
 `escalated: plan would hold <N> nodes vs band high <H>` — and where a recursive pass finds real
 sub-structure inside it, those sub-groups arrive as `subClusters` (ready-made groups for the
@@ -191,7 +192,7 @@ rolled-up L0 edges — breadth here is what creates hairballs.
 
 - **Scope**: Single service or module
 - **Target**: 5-20 nodes per board
-- **Node types**: Individual classes, handlers, internal modules
+- **Node types**: Individual classes, handlers, internal modules — significant files only; `minor` rows fold into their host (analyze-workflow Step 4.5)
 - **Grouping**: From the grouping plan. A small board with real coupling still earns containers; a large uncoupled one does not.
 - **When**: User drills into an L1 node
 

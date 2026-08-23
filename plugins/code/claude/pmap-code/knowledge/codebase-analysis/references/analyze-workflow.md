@@ -482,11 +482,16 @@ drill-down board's own skeleton instead of the repo-wide one.
   any of them. The digest's `stats.importEdgesByLanguage` shows what each stack
   contributed; a language with files but no edges there is the only case worth a manual
   look.
-- The skeleton is **file-granular** (the digest rolls it up for you). At **L2/L3** its
-  nodes map ~1:1 to board nodes — slice with `--detail` to name them. At **L0/L1**,
-  **aggregate** directories into coarse domain/component nodes (each node's `coveredFiles`
-  claims its files); edge rollup is Step 6's script (`--rollup … --apply`) — do not map
-  `imports` edges by hand.
+- The skeleton is **file-granular** (the digest rolls it up for you). At **L2/L3** one node per **significant** file — slice with `--detail` to name them.
+  A row marked `minor` is **never its own node and never waived**: a one-host minor is
+  claimed in the `coveredFiles` of the node that covers its `fold into` host (the script
+  names it); a shared minor — or one whose host is outside this board or a cycle — goes
+  to the node that owns its directory; a directory of nothing but minors is one leaf node
+  named for it (`auth-utilities`), not a container of tiny children. `--claim-check`
+  prints the exact `coveredFiles` edit per unclaimed minor; keep a minor as a node only
+  with a stated reason (the board report warns). At **L0/L1**, **aggregate** directories
+  into coarse domain/component nodes (each node's `coveredFiles` claims its files); edge
+  rollup is Step 6's script (`--rollup … --apply`) — do not map `imports` edges by hand.
 - **Persist the mapping — coverage provenance.** The file aggregation you just made IS the
   coverage relation; record it on every node as `coveredFiles`. The claiming rules — claim
   by directory, the partition (claimed / waived / deliberately pending), the 30-file
@@ -524,10 +529,12 @@ them readable regardless).
 
 **Always pass `--layer <this board's layer>`** — it is what makes the plan plan against a
 budget instead of merely clustering. From `--layer 1` up, the plan carries
-`predictedNodeCount` (clustered candidates **plus** board-root candidates), `layerBand`
+`predictedNodeCount` (**significant** clustered candidates **plus** board-root candidates —
+`minor` rows are not counted; the Budget line says how many were left out), `layerBand`
 (that layer's node band) and `budgetVerdict` (`fits` | `over-band` | `under-band`), and the
 display leads with
 `Budget: <clustered> clustered + <root> board-root = <total> node(s) predicted vs band <lo>–<hi> — <verdict>`.
+When the scope has minors the line ends `· N minor file(s) not counted (M folded into hosts, K shared)`.
 **Read the verdict BEFORE you author a node:** `over-band` means drill-downs are planned
 now, not discovered after the board is written, and it is where this board's grain is
 decided (Step 5). `--layer 0` is the re-grain described above and deliberately reports
