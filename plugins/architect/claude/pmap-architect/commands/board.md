@@ -50,8 +50,8 @@ several elements, run the grouping review:
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --group-plan --board <slug>
 ```
 
-Print its `display` **verbatim**; read its verdicts and the `Grouping rationale:` override per that
-reference. Every move re-parents a node — apply only what the architect confirms.
+Print its `display` **verbatim** (a summary); read verdicts from the JSON's `clusters`/`drift`
+and the `Grouping rationale:` override per that reference. Every move re-parents a node — apply only what the architect confirms.
 
 **Closing move (any session that wrote), per architect-core:** `preview_write_session_commit` →
 present the plan → ask for title/summary (AskUserQuestion) → `commit_write_session` → narrate the

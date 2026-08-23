@@ -5,9 +5,9 @@ argument-hint: "[server-url]"
 allowed-tools: Bash(node:*)
 ---
 
-Connect to the ProvenMap MCP server by signing in through the browser: pick a workspace, scope,
-and optional board restriction there, and the generated **MCP bearer token** is stored for you
-(user-scope, `~/.provenmap/architect-mcp.json`) and written into the host's MCP config when
+Connect to the ProvenMap MCP server by signing in through the browser: pick a workspace and
+scope there — the token covers that whole workspace — and the generated **MCP bearer token** is
+stored for you (user-scope, `~/.provenmap/architect-mcp.json`) and written into the host's MCP config when
 scriptable. The token never transits this chat. **The token acts as you**: writes made here
 join your one workspace working copy — the same session the web app shows — and committing or
 discarding from either surface decides both.

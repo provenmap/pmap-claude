@@ -58,9 +58,9 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js [options]
 | `--kind <kind>` | `code` | Catalogue kind to fetch (`code`\|`knowledge`) |
 | `--full` | - | Also emit the raw `archetypes[]` array (large — only `/analyze-archetypes` needs it) |
 
-**Output:** JSON with `display` (the compact catalogue you classify from — printed instead of the
-raw array), `nodeArchetypes`, `edgeArchetypes`, `cacheFile`, `catalogueHash`. `--full` adds
-`archetypes[]`.
+**Output:** JSON with `catalogue` (the compact catalogue you classify from — emitted instead of
+the raw array, and never printed), `display` (the bounded summary you do print),
+`nodeArchetypes`, `edgeArchetypes`, `cacheFile`, `catalogueHash`. `--full` adds `archetypes[]`.
 
 ### pmap-boards.js — Manage Boards
 

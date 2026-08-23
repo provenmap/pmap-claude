@@ -16,7 +16,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --no-cache --kind code --f
 Parse the `archetypes[]`, `nodeArchetypes[]`, and `edgeArchetypes[]` from the JSON output.
 (`--full` emits the raw `archetypes[]` array. This command is the one place that earns it —
 judging whether the catalogue has a *gap* needs each archetype's full description. Every other
-command reads the compact `display` instead.)
+command reads the compact `catalogue` instead.)
 
 Read `catalogueHash` straight from the script's JSON — **do not compute it yourself.** It is the
 lock's drift detector and has exactly one correct value; a second implementation that disagrees

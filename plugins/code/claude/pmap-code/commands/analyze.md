@@ -24,7 +24,7 @@ Print every `display` verbatim; branch only on exit codes and named fields.
 - 1 manifest + board slug (none → connect-now)
 - 1.5 worklist: ledger + `--claim-check --changed-since auto`; empty → up to date, stop
 - 2–4 config + stacks from the digest (script-owned)
-- 4.5 skeleton `--digest`/`--detail`; slice only inlined clusters
+- 4.5 skeleton read + `--detail`; slice only inlined clusters
 - 4.6 `--group-plan --layer <n>`; evidence flip → ask first
 - 5 you author nodes: grain from plan; claim coveredFiles; write board JSON
 - 5.5 `--claim-check`; exit 3 → fix double claim, re-run

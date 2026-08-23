@@ -48,10 +48,10 @@ Every archetype ships its own styles, and applying a node token **replaces them 
 each node token writes fill + stroke + text, so the question is never *does this overwrite?* (it
 always does) but *is what it says worth overwriting what was there?*
 
-The archetype catalogue answers that, and the **signals already carry it** — both domains print
-an "Archetypes on this board" section listing every archetype in use and what it asserts. Never
-fetch a catalogue during styling; the signals step did it once. Behind that section, each
-archetype carries a digest:
+The archetype catalogue answers that, and the **signals already carry it** — both domains put
+every archetype in use, and what it asserts, on `signals.archetypeProfiles` (the printed summary
+counts them; the profiles themselves are on the JSON payload and in the signals file). Never
+fetch a catalogue during styling; the signals step did it once. Each profile carries a digest:
 
 | Field | Meaning |
 | --- | --- |

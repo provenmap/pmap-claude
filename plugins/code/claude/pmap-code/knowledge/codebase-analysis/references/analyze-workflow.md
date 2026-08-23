@@ -268,11 +268,12 @@ If ProvenMap configuration exists (`.provenmap/config.json` with `bindingToken`)
    ```
 
 2. Parse the JSON output to get:
-   - `display`: the catalogue itself — every archetype grouped by primitive, one line each.
-     **This is what you classify from; read it, don't re-request it.** The raw
-     `archetypes[]` array is deliberately not emitted (a few hundred archetypes of JSON is
-     the single largest read in this command); pass `--full` only if you truly need every
-     field.
+   - `catalogue`: the catalogue itself — every archetype grouped by primitive, one line
+     each. **This is what you classify from; read it, don't re-request it — and never
+     print it: it is a working input, not output.** The `display` field is the bounded
+     summary you print in its place. The raw `archetypes[]` array is deliberately not
+     emitted (a few hundred archetypes of JSON is the single largest read in this
+     command); pass `--full` only if you truly need every field.
    - `nodeArchetypes`: Available archetype names for nodes
    - `edgeArchetypes`: Available archetype names for edges
    - `cacheFile`: where the full catalogue sits on disk — read it **only** for a specific
@@ -293,7 +294,7 @@ If ProvenMap configuration exists (`.provenmap/config.json` with `bindingToken`)
    `model`, `middleware`, `client`, `worker`, `module`, `migration`, `component`,
    `utility`) that have no archetype yet. If it is present, its `catalogueHash` equals this
    step's `catalogueHash`, and `unmappedRoles` is empty, there is nothing to do. Otherwise,
-   from the catalogue `display` you just read, choose **one** archetype name per unmapped
+   from the `catalogue` you just read, choose **one** archetype name per unmapped
    role (a role with no honest fit stays unmapped — the projection then shows the bare role
    and you type those files by hand), write `.provenmap/role-archetype-map.draft.json` as
    `{ "entries": [{ "role": "<role>", "archetypeName": "<catalogue name>", "rationale": "<one line>" }], "unmappedRoles": ["<role with no fit>"] }`,
@@ -394,7 +395,7 @@ inventory and the resolved `imports` graph — so the analysis does not reconstr
 raw file reads:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --out .provenmap/skeletons/repo.json --digest
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --out .provenmap/skeletons/repo.json
 ```
 
 For an L1+ drill-down board, scope the emitted nodes to the parent node's subtree (imports
@@ -402,16 +403,18 @@ may still target files anywhere under the repo root), and write it under the boa
 name so it never clobbers the repo-wide skeleton:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --scope-path <parent-node-path> --out .provenmap/skeletons/<board-slug>.json --digest
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --scope-path <parent-node-path> --out .provenmap/skeletons/<board-slug>.json
 ```
 
 The full skeleton is written to the `--out` path (all skeletons live in
 `.provenmap/skeletons/`) — **that file is the scripts' input, not yours: never read it
-whole.** `--digest` prints the compact view you work from plus a `display` you print
-verbatim. The repo index was ensured at Step -0.5; a `--scope-path` run **slices** it into
-the board's view (`cached: true` is the normal case) — it is never a second walk. Reading
-modes (`--digest`, `--detail`) read the existing index and never walk — only Step -0.5's
-`--coverage` (and `--auto-plan`) rebuild it.
+whole.** With no mode flag this is the **standard read**: it emits the compact `digest` you
+work from plus a bounded `display` summary — scale, stack, the five largest areas, parse
+health — that you print verbatim. There is no more verbose form to ask for. The repo index
+was ensured at Step -0.5; a `--scope-path` run **slices** it into the board's view
+(`cached: true` is the normal case) — it is never a second walk. Reading modes (the standard
+read and `--detail`) read the existing index and never walk — only Step -0.5's `--coverage`
+(and `--auto-plan`) rebuild it.
 
 The `digest` field contains:
 
@@ -457,8 +460,9 @@ It returns the area's **index rows** — `nodes[]`, each with `path`, `slug`, `n
 resolves it — Step 0) and `verify` (`single-basis` | `conflict` | `unclaimed`; absent when
 the evidence is strong) — plus `edgeSummary[]` per node (`in`, `out`, `topTargets`,
 `hubTargets`). **There is no raw edge list**: `--rollup` reads the index itself and you
-never hand-map edges. The `display` groups rows by directory with the `verify` rows first —
-those are the files that need a read.
+never hand-map edges. Work from `nodes[]` — the rows carrying a `verify` flag are the files
+that need a read. The `display` is a bounded summary (file counts and the verify breakdown);
+print it verbatim, but never expand it into a row per file.
 
 **Claims are hints, not facts** (0.76–0.85 precise by basis on the labelled corpus), and the
 script says which to verify: no `verify` → adopt the headline role / archetype as the
@@ -549,9 +553,11 @@ decided (Step 5). `--layer 0` is the re-grain described above and deliberately r
 **no** band (`layerBand: null`, `budgetVerdict: null`): the L0 budget is Step 5's 10-30
 target, judged by you.
 
-Print its `display` verbatim. The `display` is capped (default 25 rows per section) and
-names how many rows it dropped; the complete plan is written to `.provenmap/group-plan.json`.
-Read that file only if a capped section is the one you need — never print it.
+Print its `display` verbatim. It is a bounded summary — evidence basis, budget verdict,
+the largest groups with their verdicts, and what needs judgment as counts. **Work from the
+JSON**: `clusters`, `parents` and `roles` on the payload carry every group with its members
+and evidence, and the complete plan is written to `.provenmap/group-plan.json`. Read that
+file when you need a group the summary did not name — never print it.
 
 **Branch on `evidence` before you use anything else in the plan** — it is the JSON's
 `evidence` field and the display's first content line, and it says what produced these
@@ -567,7 +573,7 @@ groups:
   Say so to the user in one line, then: verify each proposed group against an actual
   reading of the code, and **do not invent coupling** — never write a `Grouping rationale:`
   or an edge that claims a relationship the topology never showed you. `cohesion`/`density`
-  come back `null` here (`—` in the display) because nothing measured them, and every group
+  come back `null` here (on the payload — nothing measured them), and every group
   comes back `verdict: "container"` regardless of size — this path has no size demotion —
   so **judge drill-down yourself for an oversized bucket**: a directory holding dozens of
   files is a child board, not one flat container.
@@ -913,7 +919,9 @@ After writing the board JSON, style it (methodology:
 `${CLAUDE_PLUGIN_ROOT}/knowledge/board-styling/SKILL.md` — read it if not already read):
 
 1. `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --style-signals <board-slug>` — print
-   `display` verbatim, note `signalsPath`.
+   `display` verbatim (a bounded summary: each signal as a count with a sample, plus the
+   arrangement suggestion in full), note `signalsPath`. Author from `signals` on the
+   payload — it carries every element's reason; the summary deliberately does not.
 2. Author the styling plan from the signals and write it to
    `.provenmap/styling/<board-slug>.plan.json`.
 3. `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --validate-styles --file
@@ -1083,9 +1091,9 @@ already applies exactly these rules and hands you `parallel[]` and `sequential[]
 
 Subagents must never write `manifest.json` or a board other than their own, and never run
 `pmap-prepass.js --coverage` — coverage is derived state the orchestrator recomputes once
-at the join — and never rebuild the repo index: a subagent's `--scope-path … --digest` is a
-slice of it. Reading modes (`--digest`, `--detail`) read the existing index and never
-walk — only `--coverage` (and `--auto-plan`) rebuild it.
+at the join — and never rebuild the repo index: a subagent's `--scope-path …` read is a
+slice of it. Reading modes (the standard read and `--detail`) read the existing index and
+never walk — only `--coverage` (and `--auto-plan`) rebuild it.
 
 ## Step 9: Update Manifest
 

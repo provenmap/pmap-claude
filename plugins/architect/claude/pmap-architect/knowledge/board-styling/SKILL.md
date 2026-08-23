@@ -8,12 +8,13 @@ description: How to style a ProvenMap board so it reads professionally — seman
 Styling is judgment guided by facts. The pipeline is always the same four moves:
 
 1. **Signals** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --style-signals --board <slug>`
-   prints deterministic facts (hubs, external cohort, container profiles, arrangement suggestion)
-   and writes a signals file (path in the JSON output). Never re-derive these facts by hand.
-2. **Plan** — you decide: tokens, sizes, composition, icons. The signals' **"Archetypes on this
-   board"** section already tells you what each archetype asserts — every token decision below is
-   judged against it, so do **not** call `get_archetypes` here; step 1 fetched the catalogue
-   once. **Resolve icons first**: before any
+   computes deterministic facts (hubs, external cohort, container profiles, archetype profiles,
+   arrangement suggestion) and writes a signals file (path in the JSON output). Its `display` is a
+   bounded summary you print verbatim; **author from `signals` on the payload**, which carries
+   every element's own reason. Never re-derive these facts by hand.
+2. **Plan** — you decide: tokens, sizes, composition, icons. The signals' `archetypeProfiles`
+   already tell you what each archetype asserts — every token decision below is judged against
+   them, so do **not** call `get_archetypes` here; step 1 fetched the catalogue once. **Resolve icons first**: before any
    token or size is final, collect every node whose archetype is a brand, cloud provider or SaaS
    integration and send all their names in ONE `match_icons` call (never one call per node). For a
    matched name, pass its top hit's `svgPath` verbatim as `iconUrl`; choose a `lucideIconName` only
@@ -38,7 +39,7 @@ Styling is judgment guided by facts. The pipeline is always the same four moves:
   merely restates the archetype trades its palette for a duplicate. Per element, in order:
   1. **Does it warrant a token at all?** Does the *requirement* demand this element be told
      apart from its neighbours? Most elements on a good board carry none.
-  2. **Find its archetype in the signals' "Archetypes on this board" list.** *Asserts kind*
+  2. **Find its archetype in the signals' `archetypeProfiles`.** *Asserts kind*
      means it already says what kind of thing this is — don't spend a Role token repeating it.
      *Style-less* means a Role token is the only thing that will say what the element is, so
      send it.
