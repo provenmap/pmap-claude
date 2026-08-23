@@ -11,6 +11,28 @@ metadata:
 
 `/sync` calls this skill in its evidence-proposal step, after `--pull` mirrors the board and inventories the corpus. The CLI already did the mechanical part (mirroring, hashing, diffing); this skill owns the judgment call underneath it — deciding **which documents substantiate which nodes**.
 
+## Building the link set
+
+`--pull` hands you two objects: `evidence` (`linkCount`, `drifted[]`, `missing[]`,
+`unlinkedNodes[]`) and `context` (`nodes[]`, `files[]`, `links[]`, `capped`). The proposed set is
+built from all four inputs:
+
+1. **Keep fresh links as-is** — every link in `context.links` that is not also in
+   `evidence.drifted` or `evidence.missing` is unchanged; carry its
+   `nodeSlug`/`path`/`anchor`/`excerpt`/`docUrl` forward as-is, no need to re-read the document.
+2. **Re-link drifted links** — for each entry in `evidence.drifted`, read the document at its
+   `path` (its content changed since the citation was recorded) and apply *Drift handling* below.
+3. **Propose links for `unlinkedNodes`** — for each node slug with zero evidence, search
+   `context.nodes`/`context.files` for a document that genuinely substantiates its claim — read it,
+   never link on filename alone. No candidate substantiates it? Leave it unlinked; report that in
+   `/sync`'s closing report as a finding, not a failure — name the node and say why, because the
+   push report never sees which nodes you chose not to link.
+4. **Drop missing links** — omit anything in `evidence.missing` entirely; its document no longer
+   exists in the corpus.
+
+If `context.capped` is `true`, `context.files` only lists the first 500 of `corpus.files` — the
+count still reflects the true total.
+
 ## What counts as substantiation
 
 A link is justified when the document **states or specifies** what the node claims — not merely mentions its name in passing. "The Billing API section describes rate limits, retries, and the `/charges` endpoint" substantiates a `billing-api` node; a line that just says "see also the billing API" does not.
@@ -36,3 +58,14 @@ Not every document is worth reading first. `references/linking-heuristics.md` ha
 ## Output
 
 The proposed set is written to `.provenmap/evidence-links.json` — never edit `.provenmap/boards/stores/*.evidence.json` directly; that file is the CLI's own store, rewritten only by `--push`.
+
+```json
+{ "links": [ { "nodeSlug": "billing-api", "path": "docs/billing.md", "anchor": "rate-limits", "excerpt": "…", "docUrl": null } ] }
+```
+
+You supply `nodeSlug`/`path`/`anchor`/`excerpt`/`docUrl` only — the CLI fills in `contentHash`
+itself from a fresh read of the document at push time, so never compute or guess one.
+
+When `--push` exits 3, the links file failed schema validation or an evidence path didn't resolve
+in the document corpus; `validationErrors[]` names the exact field/path. Fix
+`.provenmap/evidence-links.json` accordingly and retry the push once.

@@ -167,6 +167,16 @@ Coverage is the pipeline's honesty mechanism — every emitted node carries it:
   board metadata's **`waivedFiles`** (explicitly judged non-architectural —
   exact paths, never globs), or is deliberately left unclaimed to surface as
   *pending* in the coverage dashboard. Never drop a file silently.
+- **Claim by directory, not by file — that is what makes the partition
+  automatic.** The digest's directories are disjoint by construction, so a
+  board whose nodes each claim whole directory globs (`src/billing/**`) is
+  exactly-once *by construction*: there is no per-file bookkeeping to get
+  right, and no reason to enumerate 600 paths. Drop to individual file paths
+  **only** where a single directory genuinely splits across two nodes, and
+  then claim the minority files explicitly and leave the rest to the
+  directory glob. If you find yourself listing files one by one, or wanting
+  to generate the list programmatically, that is the signal to move the claim
+  up to directory granularity instead.
 - **The broad-claim limit is 30 files.** An analysed node may claim at most 29;
   at 30 or more the dashboard flags it as a broad claim. A node with
   `layerBoardSlug` is **exempt — a drill-down node has no file limit**, which
@@ -193,8 +203,9 @@ Coverage is the pipeline's honesty mechanism — every emitted node carries it:
   `.provenmap/coverage.json`) computes all of this; never hand-compute coverage
   numbers.
 
-The complete claiming rules live in `/analyze` Step 4.5 — follow them there
-rather than duplicating them here.
+These are the complete claiming rules — `/analyze`'s workflow reference
+(`references/analyze-workflow.md`, Step 4.5) points here rather than
+duplicating them.
 
 ## Output Format
 
@@ -309,3 +320,5 @@ Result: Updated analysis with minimal re-processing — only changed nodes updat
 - **`references/language-patterns.md`** - Complete language detection and framework patterns
 - **`references/framework-patterns.md`** - JS/TS framework patterns (legacy, detailed)
 - **`references/archetype-rules.md`** - Archetype classification rules
+- **`references/layer-strategy.md`** - Layer ladder, board grain, grouping floor/ceiling, slug resolution
+- **`references/analyze-workflow.md`** - The `/analyze` command's clause-level workflow contract (modes, steps, prompts, exit branches)

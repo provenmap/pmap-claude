@@ -105,6 +105,7 @@ future run resolves that locator deterministically.
 
 ## References
 
+- `references/run-workflow.md` — `/monitor`'s steps 2–6 (acquire → correlate → shape → push → report): every call, flag, exit branch and prompt. The command delegates to it; follow it exactly.
 - `references/vendor-recipes.md` — per-vendor MCP tools → signals mapping, connect one-liners, auth per surface. **Adding a vendor = adding a recipe here; no code changes.**
 - `references/insight-shaping.md` — intent-ready authoring rules, priority/effort heuristics, when to add paths or graph suggestions.
-- `references/scheduling.md` — recurring-run setup per host surface (desktop scheduled task, cloud routine, session loop) and the unattended-credentials pattern.
+- `references/scheduling.md` — the `/monitor setup` sequence, plus recurring-run setup per host surface (desktop scheduled task, cloud routine, session loop) and the unattended-credentials pattern.

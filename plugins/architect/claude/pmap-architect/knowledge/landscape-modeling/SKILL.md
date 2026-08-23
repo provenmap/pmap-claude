@@ -1,6 +1,6 @@
 ---
 name: landscape-modeling
-description: How to model an org's digital estate on the ProvenMap root landscape — the inception doctrine, archetype selection, and the binding handoff. Use when bootstrapping an empty workspace (/setup-workspace), placing a new system (/new-app), or editing the root landscape in a /board session. Key capabilities: the modelling doctrine (model what exists, one node per system), the source gate and shallow repo scan (--scan-repos), per-system kinds, app archetypes as the bindability lever, domain-group containers, the L0 granularity budget, the binding-handoff checklist, skill-profiles-start-empty truth. Covers both map mode (model what exists) and found mode (founding landscape for a new product line — strategic-only, graduation path).
+description: How to model an org's digital estate on the ProvenMap root landscape — the inception doctrine, archetype selection, and the binding handoff. Use when bootstrapping an empty workspace (/setup-workspace), placing a new system (/new-app), or editing the root landscape in a /board session. Key capabilities: the modelling doctrine (model what exists, one node per system), the source gate and shallow repo scan (--scan-repos), per-system kinds, app archetypes as the bindability lever, domain-group containers, the L0 granularity budget, the binding-handoff checklist, skill-profiles-start-empty truth, the /setup-workspace interview agendas and plan sketch, the /new-app grill agenda and binding gate. Covers both map mode (model what exists) and found mode (founding landscape for a new product line — strategic-only, graduation path).
 ---
 
 # Landscape Modeling
@@ -118,7 +118,9 @@ with the named boards + counts first (architect-core).
 
 `create_board(ownerNodeSlug, newBoardSlug, name)` per repo-backed node — it creates the board
 AND points the landscape node at it as its drill-down. The board is born **EMPTY**. Over MCP,
-`create_board` works for **root-board nodes only**.
+`create_board` works for **root-board nodes only**. Repo-backed means `repo` **and `new-app`**
+alike: a repository that does not exist yet still gets its board, and the content arrives from
+the developer's first push.
 
 **App-nesting rule:** a governing repo can never bind to a board with an app board anywhere
 above or below it. So repo-backed slots live on the root landscape; a layer under an app board
@@ -142,8 +144,8 @@ code-plugin source, binds it GOVERNING on the branch. Rules:
   captured, is it genuinely ambiguous → ask at the gate: _new app still needing implementation
   planning_ vs _existing app now being connected_. A `'new_app'` conversion routes into
   **build prep** next (the app-readiness
-  workflow): prep now in-session, or `/prepare-app <board>` later — the attention queue keeps
-  it listed until prepped.
+  workflow): prep now in-session when it is the run's lone graduation, else name
+  `/prepare-app <board>` per app — the attention queue keeps it listed until prepped.
 - **Pre-check eligibility** with `--classify-tree` (bind-eligibility column) before offering
   it; if the server still refuses (app-nesting rule), relay the refusal verbatim.
 - **Credentials are never issued here** — the tool deliberately returns none. The developer
@@ -168,13 +170,73 @@ carries that must never be softened: **skill profiles start EMPTY** — nothing 
 by binding; skills are composed in the platform's skill storefront afterwards. (The platform's
 own inception prompt claims a recipe seeds the profile — that is drift; do not repeat it.)
 
-## Deliberate divergence: the /new-app L1 sketch
+## /setup-workspace: the interview agendas, the plan sketch, the spine banner
 
-The wizard's "never draw inside an app board" guards scaffold handoffs, where developer pushes
-supply the truth. `/new-app` is different: the system is being *planned*, there is no code yet,
-and the architect's target sketch is the point. Drawing the L1 skeleton there is deliberate —
-narrate the reconciliation truth: when the repo binds and pushes, analysis reconciles against
-the sketch, and intents appear where reality disagrees.
+The fork at the top of the interview (map or found) picks one of two agendas. Both are *a few
+short questions, not a form* (the doctrine above), and both open with the one-line answer that
+becomes the root board description (`apply_diagram_info`).
+
+**Map mode — the org interview:** what the org does (one line); the systems that exist today,
+each with an explicit **kind** (the table above — nothing defaults to repo-backed, and the
+unclassified are batched into ONE follow-up question); the infra worth showing at L0; actors and
+user types; the real zones worth grouping.
+
+**Found mode — the product-line interview:** what is being built and for whom (one line); the
+intended systems and what each owns; actors and user types; the external SaaS it will lean on;
+the real zones. Stop when the intended systems have names, and never invent beyond what the
+architect has decided (the founding-landscape divergence below).
+
+**The plan sketch.** Present the scaffold plan as a fenced ASCII sketch of the landscape first —
+containers as boxes, the systems inside them with their kind chips, arrows for the main edges,
+with the L0 budget keeping it readable — then the confirmation table (system, kind, archetype,
+container, repo/scope). In found mode the table's kind column reads `planned`. One go-ahead
+covers the whole batch (the confirmation posture above).
+
+**Resuming, and closing the window.** The scaffold drafts file (architect-core) records the
+chosen mode: a *continue*-mode run on a sparse, still-unbound root extends what exists rather
+than restarting, and re-asks the fork only when there is no drafts file. Once the root is
+populated or anything is bound, `/setup-workspace`'s window has closed — after the first repo
+binds, systems are added one at a time through `/new-app`.
+
+**The spine banner.** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --spine setup-workspace
+--step <n>` renders each step change; `<n>` is the step number (3.5 for the styling step). Add
+`--interview-mode map|found` once the fork is answered, and `--banked '<json>'` with a flat JSON
+object of the name/value facts captured so far. Print the result verbatim in place of the
+`**Step N/M — <name>**` banner — never reformat, reorder, or summarise.
+
+## /new-app: the grill agenda, the L1 sketch, the binding gate
+
+**The grill agenda** — bounded rounds, worked before any write; ask, never invent:
+
+1. **Purpose** — one sentence.
+2. **Placement** — where it sits on the landscape: read the root board's nodes and edges, then
+   propose its neighbours for the architect to confirm.
+3. **Archetype** — an **app archetype** matching its repo scope if it will have a repo (the
+   bindability lever above), else a system archetype.
+4. **What it owns** — data, endpoints, events. This is the L1 skeleton.
+5. **What it replaces or splits** — the existing nodes that need re-wiring.
+
+Keep the running plan in a drafts file (architect-core) so the pass is resumable.
+
+**The L1 sketch — a deliberate divergence.** The wizard's "never draw inside an app board"
+guards scaffold handoffs, where developer pushes supply the truth. `/new-app` is different: the
+system is being *planned*, there is no code yet, and the architect's target sketch is the
+point. Drawing the L1 skeleton there is deliberate: containers, the key components, and the
+edges the grill named — nothing invented to fill the diagram. Narrate the reconciliation truth:
+when the repo binds and pushes, analysis reconciles against the sketch, and intents appear
+where reality disagrees.
+
+**The binding gate** closes in-session, without a portal trip. Three outcomes:
+
+- **The system has a repo** → offer `convert_node_to_app {nodeSlug, branch, observationType}`
+  under the rules above — `'new_app'` for the system being planned here (a freshly created
+  empty repo is still `'new_app'`), `'existing_app'` only when the grill revealed the code
+  already exists. Credentials are never issued here; the developer connects the repository
+  separately with the code plugin.
+- **The planning material is a document** → `bind_reference_source` on the new board — a
+  reference binding is enough to author intents against.
+- **The architect defers** → the classic narration: _"Intents need a code-bound board — bind
+  the repo, then rerun `/author-intent <board>` and I'll land this draft."_
 
 ## Deliberate divergence: the founding landscape (found mode)
 

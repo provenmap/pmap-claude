@@ -5,92 +5,21 @@ argument-hint: [--plan | <focus prompt>]
 allowed-tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 ---
 
-Implement the platform's spec for this app in this repo. The **primary spec carrier is the compiled skills bundle** (synced by `/skills` — specs, guidelines, and conventions ride inside the skill files); open **intents**, a designed **board** (elements with no source mapping yet), and **aspect snapshots** (DB schema / API surface) layer on top when they exist. Covers bootstrap (empty repo) and gap-fill (the spec grew), and it is **incremental**: re-running builds only the delta.
+**Write-capable.** No project file is created or edited before the user approves the plan (Step 3); always show what changed.
 
-**This command is write-capable.** Never create or edit project files before the user has approved the plan in Step 3, and always show what changed.
+**Display contract:** print every `display` verbatim in your reply; never reformat it; branch only on exit codes and the named fields.
 
-Read the methodology in [knowledge/platform-driven-build/SKILL.md](../knowledge/platform-driven-build/SKILL.md) before planning.
+**0 Preflight** (script-enforced, not your judgement) — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js`. 0 → go (`display` reports any `repairs.boardsRecovered` restore) · 1 (not connected / credentials rejected) → **connect-now offer** · 2 (binding unverified) → print `error`, stop, name `/status` · 11 (branch mismatch) → AskUserQuestion per the branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md`.
 
-## Workflow
+**1 Assemble the spec pack** — `boardSlug` from `.provenmap/config.json`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-build.js --board-slug <boardSlug>`. Exit 1 (not configured), or exit 3 with `errorType: "auth_invalid"` → **connect-now offer**; other exit 3 → stop, report `error` verbatim; exit 0 → print `display`. Pack notes: relay the note on `skills.available: false`, report the sections in `warnings[]`; neither blocks the build.
 
-### Step 0: Preflight — binding, branch, local state
+**1.5 Skills freshness** — if the pack (`packPath`) has `skills.available` and (`skills.upstreamChanged` or `skills.compiledCount` is 0), sync first — a stale spec builds the wrong app: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-skills.js --sync --board-slug <boardSlug>`; report it (name protected `localEdits[]`), then re-run `pmap-build.js` once.
 
-This command touches board state, so it runs behind the preflight gate. The gate is **enforced by a
-script, not by prose** — run it and react to its exit code; never decide on your own that the
-project is fine.
+**2 Branch on `nextAction`** — `none` → nothing to build from: "Compile skills for this app on the ProvenMap portal (or author a board design / intents), then re-run `/build`", stop · `map` → source but no spec: map it first — `/analyze` then `/sync`, stop · `intents` → spec built, only intent work remains: point at `/intents`, stop · `build` → continue.
 
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js
-```
+**Steps 3–5 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/platform-driven-build/SKILL.md` NOW and follow it exactly; improvise nothing.** It holds every source, invocation, branch, and rule: **3** plan from the spec — **the user approves the plan** before any file is touched, and a `--plan` argument stops there · **4** implement unit by unit — intent-covered units go through the intent machinery, and **the user confirms** before any resolution · **5** close the loop — `/analyze`, then `/sync`.
 
-Print the JSON's `display` field **verbatim** — do not reformat, reorder, or summarise it.
-
-| exit | meaning | action |
-| ---- | ------- | ------ |
-| 0 | Proceed | Continue to the next step. If `repairs.boardsRecovered` is non-empty, local state was just restored from the server — say so once (the `display` already carries the sentence) and continue. |
-| 1 | Not connected, or credentials rejected | Make the **connect-now offer**: AskUserQuestion "Connect to ProvenMap now?" → **Connect now** runs `pmap-login.js --start` then `--poll` inline (print each `display` verbatim) and resumes this command on `status: "complete"`; **Not now** stops with the `error` sentence verbatim. |
-| 2 | Binding could not be verified | Print `error` verbatim and stop. Name `/status` for the full local picture. |
-| 11 | Branch mismatch | Print `display` verbatim, then ask via AskUserQuestion. Header: `Branch`. Question: `"This project is bound to a different branch. How do you want to proceed?"` Options: **Re-bind to this branch (`/login`)** — run the `/login` workflow inline, then re-run this step; **Stop — I'll switch branches myself** — stop, having already printed the `git switch` line. Never run `git switch` yourself: the working tree may be dirty. |
-
-### Step 1: Assemble the spec pack
-
-Read `boardSlug` from `.provenmap/config.json`, then run:
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-build.js --board-slug <boardSlug>
-```
-
-- **Exit 1** → not configured — make the **connect-now offer** (see Error Handling)
-- **Exit 3** → stop and report the JSON `error` field. If `errorType` is `auth_invalid` — make the **connect-now offer** (see Error Handling)
-- **Exit 0** → print the `display` field **verbatim in your reply — do not reformat, reorder, or summarise** (the Bash output panel is collapsed for the user).
-
-**Skills freshness gate:** read the pack (`packPath`). If `skills.available` and (`skills.upstreamChanged` or `skills.compiledCount` is 0), sync first — building against a stale spec is building the wrong app:
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-skills.js --sync --board-slug <boardSlug>
-```
-
-Report the sync result (mention protected `localEdits[]` if any), then re-run `pmap-build.js` once for a fresh pack.
-
-### Step 2: Branch on the pack's `nextAction`
-
-- **`none`** → nothing to build from. Tell the user: "Compile skills for this app on the ProvenMap portal (or author a board design / intents), then re-run `/build`." Stop.
-- **`map`** → this repo has source but no platform spec. Tell the user to map it first: `/analyze` and `/sync`. Stop.
-- **`intents`** → the spec is built; only intent work remains. Point the user at `/intents`. Stop.
-- **`build`** → continue.
-
-### Step 3: Plan from the spec (approval gate)
-
-Read, in this order:
-
-1. The compiled skills under `skills.skillsDir` — the specs and conventions to honor (app-tier overrides win; never edit these files — they're lock-managed by `/skills`).
-2. The pack's `design.unbuilt[]` — designed elements with no source mapping (components to create; board edges give their dependencies).
-3. `.provenmap/build/aspects.json` (when `aspectsPath` was reported) — full DB tables and API endpoints to materialize as migrations and contracts.
-4. The pack's `intents.open[]` — architect work items; note which plan units they cover.
-
-Turn the unbuilt spec into an incremental implementation plan per the methodology skill: skill specs → app shape, stack, and conventions; designed nodes → components; edges → dependencies and boundaries; aspects → migrations + API contracts; `$ARGUMENTS` (if a focus prompt) narrows which part to build first. Use AskUserQuestion **only** at genuine decision points: the stack when the skills don't pin one, and build order when the spec is large.
-
-Present the plan (units, order, what each creates, which intents it covers) and get the user's approval. If `$ARGUMENTS` is `--plan`, stop here — no files are touched.
-
-### Step 4: Implement incrementally
-
-Work plan unit by plan unit:
-
-- **Intent-covered units go through the intent machinery** so attribution and verification accrue there: claim before touching files (`pmap-intents.js --claim <intentId> --by "<name>"`), implement, verify, and resolve only after the user confirms — exactly per `/intents` Steps 3–8 (never auto-resolve; no verify, no `implemented`).
-- Other units: create/edit the files, matching the conventions the compiled skills establish.
-- **Verify each unit** with the project's own checks (discover them: `package.json` scripts, Makefile, CI config; for a fresh scaffold, set up the minimal check the skills prescribe). Show the results.
-
-### Step 5: Close the loop
-
-Tell the user to run `/analyze`, then `/sync`. For a skills-driven build this is what **creates** the board — the freshly built app becomes a mapped, living board; for a design-led build the designed elements gain source mappings and stop appearing as unbuilt. Intent-backed work gets verified by the server when the sync matches. Then `/build` is idempotent: re-running reports the spec as built and points at `/intents`.
-
-## Error Handling
-
-- **No config** / **credentials rejected** (`errorType: "auth_invalid"`): make the **connect-now offer** (below)
-- **Skills feature gated** (`skills.available: false` in the pack): relay the pack's note — building can continue from intents/design/aspects if present
-- **Degraded sections** (`warnings[]` in the pack): report them; they don't block the build
-
-### Connect-now offer
+## Connect-now offer
 
 Used whenever ProvenMap is not configured or the credentials were rejected (`errorType: "auth_invalid"`). Ask with **AskUserQuestion** — "Connect to ProvenMap now?" (**Connect now** / **Not now**):
 

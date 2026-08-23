@@ -10,6 +10,11 @@ what the user pointed at in the running app, with screenshots and structured ide
 is judgment on top of it — mapping picks to code and drafting change language — never re-deriving
 what the manifest already states.
 
+Steps 3–7 of `/inspect` (interpret → decide → propose or attach → the two optional pushes), the
+other `pmap-inspect` modes, and how the picking browser behaves are in
+[references/session-workflow.md](references/session-workflow.md) — that reference is the
+command's contract; this skill is the interpretation method it calls into.
+
 ## Reading a session
 
 - `selections[]` — components the user clicked. Each has `cssSelector`, `xpath`, `ax`

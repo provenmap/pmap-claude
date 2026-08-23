@@ -29,6 +29,9 @@ finding quality IS intent quality. The exact mapping:
 6. **Priority**: keep the skeleton's severity-derived value unless evidence changes it. Escalate
    one level when the trend is `increasing` across runs, when `usersAffected` is material, or for
    cost signals whose delta exceeds the configured threshold multiple times over.
+7. **Carry the skeleton through.** `tags` and `measurement` were derived by the correlator from
+   the signal — leave them exactly as found (as with `id` above). Rewriting them breaks the
+   cross-run grouping and the one primary number that goes on the wire.
 
 ## Paths and suggestions — only when they earn their place
 

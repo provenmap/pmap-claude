@@ -13,6 +13,31 @@ When `/analyze-archetypes` runs, the architecture-analyzer agent invokes this sk
 
 Settling the vocabulary is **optional** — `/analyze` types every component with the closest available archetype and runs to completion regardless. These heuristics decide what is worth proposing: the same bar applies whether `/analyze-archetypes` is scanning for proposals up front, or `/analyze` is recording the gaps it hit in `metadata.archetypeGaps` so the user can act on them afterwards.
 
+## When to run `/analyze-archetypes`
+
+- After `/analyze` reported archetype gaps — it names the categories your codebase has that the catalogue doesn't.
+- When you want to curate the vocabulary up front on a fresh project, before any board exists.
+- After a codebase change that introduces a genuinely new component category (e.g. adding CDK stacks to a previously codebase-only repo).
+- After admin approves proposals you previously submitted — re-running confirms the catalogue is now complete and updates the lock file. Then `/analyze --clean` retypes the affected components.
+
+The command does **not** write board JSONs; it is a pre-analysis vocabulary check only. Approved proposals appear in `/code-plugin/archetypes` only after admin review in the ProvenMap UI — until then the live catalogue is unchanged, and `/analyze` warns if you have pending proposals submitted.
+
+## Running the scan (`--archetypes-only`)
+
+`/analyze-archetypes` Step 2 invokes the `architecture-analyzer` agent in `--archetypes-only` mode. The agent runs `/analyze` Steps 0, 3, 4, 5 (project detection → tech stack detection → component discovery + archetype classification) but stops there. It does **not** produce board JSON, edges, hierarchies, or manifest updates.
+
+**Model.** If `.provenmap/config.json` has `analysis.subagentModel`, pass it as the model for the dispatched agent; otherwise inherit the session model. Same rule as `/analyze` Step 8.7 — the setting pins every analysis subagent, and this scan is one.
+
+**Payload.** The agent's output conforms to `ArchetypeProposalPayloadSchema`: `proposed[]` (new-archetype candidates) plus `improvements[]` (improvement candidates — rename | split | redescribe | merge). Both are judged by the heuristics below, for what to propose and equally for what to skip.
+
+**Surface the evidence before asking.** The scan runs for minutes in the background; a spawn line followed by a summary gives the user nothing to judge. Before the submit prompt, print for each proposal:
+
+- the archetype name and the kind of gap (new archetype vs improvement)
+- the files and components that evidence it — the concrete instances found
+- which existing catalogue entries were considered and rejected, and why
+
+That is precisely the material needed to sanity-check a proposal before it consumes admin review time. If the agent's payload does not carry it, say so explicitly rather than presenting an unevidenced proposal as ready.
+
 ## What makes a good NEW archetype
 
 A proposal should clear all four bars:
@@ -144,4 +169,4 @@ Why it fails:
 - Covers only one node.
 - Already covered by a generic `webhook_handler` or `http_service` archetype.
 
-For more examples and edge cases, see [`references/proposal-quality-rules.md`](references/proposal-quality-rules.md).
+For more examples and edge cases, see [`references/proposal-quality-rules.md`](references/proposal-quality-rules.md). For the command's own Steps 1–5 — every CLI call, decision branch, printed line, and the lock file plus its optional strict gate — see [`references/scan-workflow.md`](references/scan-workflow.md).

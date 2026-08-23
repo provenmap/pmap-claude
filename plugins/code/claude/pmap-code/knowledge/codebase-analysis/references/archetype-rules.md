@@ -367,6 +367,18 @@ No other node has `"parentSlug": "nestjs-server"`. Internal components belong on
 ```
 Small cluster, no `layerBoardSlug`. Children are visible on this board.
 
+### `canContain` is advisory, not enforced
+
+Every archetype carries a `canContain` list, and the server accepts a push whose nesting
+contradicts it — verified against a board where vendor archetypes sat under a `domain_group`
+that excludes them and all 18 nodes pushed with `verify.ok: true`. Treat it as a rendering
+hint: a nesting it disallows may look odd on the canvas, but it will not be rejected. So do
+**not** retype a node to satisfy it, and do not place a node at board root to avoid
+violating it — pick the archetype that describes the component and the parent that
+describes the boundary. This is unrelated to the grouping node-count floor: that rule is
+enforced (grouping structure), `canContain` is not (archetype nesting) — the floor still
+applies regardless of any archetype's `canContain` list.
+
 ---
 
 ## Slug Generation

@@ -5,149 +5,21 @@ argument-hint: "[--url <url> | --env <name>] [--capture <url>] [--list | --show 
 allowed-tools: Read, Glob, Grep, Bash(node:*), AskUserQuestion
 ---
 
-Open the running app in a real browser, let the user click-select components (with notes) and
-draw **annotation boxes**, and record an **inspection session** — screenshots + structured
-metadata (selector, accessibility role/name, component name when detectable, route→`ui.page`
-correlation) under `.provenmap/inspections/<sessionId>/`. The session is local evidence for
-revising and implementing intents.
+Open the running app in a real browser, let the user click-select components (with notes) and draw **annotation boxes**, and record an **inspection session** under `.provenmap/inspections/<sessionId>/`.
 
-Every `pmap-inspect.js` call prints JSON with a `display` field — **print it verbatim; do not
-reformat, reorder, or summarise it.** Branch only on the exit code and named JSON fields.
+**Print every `display` verbatim** — never reformat, reorder or summarise; branch only on exit codes and named fields. Capture (steps 1–4) needs no credentials — never require `/configure` or `/login` first; only steps 5–7 talk to the server.
 
-Inspection itself works without ProvenMap credentials — never require `/configure` or `/login`
-before capturing. Only the **propose** step (step 5) talks to the server.
+**1 Start** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-inspect.js --start [--url <url> | --env <name>]`, passing through any `--url`/`--env` argument. 0 → go to 2 · 1 unresolvable URL → **AskUserQuestion** for the app URL (offering the environments it lists), re-run with `--url <answer>` plus `--save-env <name>` if they want it remembered · 1 "already active" → `--poll` that session, or `--stop` if the user abandons it · 1 "no browser found" → cloud/headless: `--capture <url>` per the reference, else stop.
 
-## Workflow
+**2 Poll** — the user is picking; wait: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-inspect.js --poll --max-wait 240`. `selectStatus: "pending"` → poll again (while the user is still picking) · `"complete"`/`"browser_closed"` with selections → go to 3 · `"cancelled"`, or `browser_closed` with nothing picked → stop · exit 3 → browser connection lost; relay `error`, offer `--start` again.
 
-1. **Start.** Pass through any `--url`/`--env` the user gave:
-   ```
-   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-inspect.js --start [--url <url> | --env <name>]
-   ```
-   - Exit 0 → print `display` verbatim, go to step 2.
-   - Exit 1 with an unresolvable-URL error → use `AskUserQuestion` to ask for the app URL (offer
-     any environments the error lists). Re-run with `--url <answer>`; if the user wants it
-     remembered, add `--save-env <name>`.
-   - Exit 1 "already active" → run `--poll` to continue that session instead (or `--stop` if the
-     user wants to abandon it).
-   - Exit 1 "no browser found" → print `display` verbatim and stop.
-2. **Poll until done.** The user is picking in the browser; wait for them:
-   ```
-   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-inspect.js --poll --max-wait 240
-   ```
-   - `selectStatus: "pending"` → print `display`, run `--poll` again (repeat while the user is
-     still picking).
-   - `selectStatus: "complete"` or `"browser_closed"` with selections → print `display`
-     verbatim, go to step 3.
-   - `selectStatus: "cancelled"` (or `browser_closed` with nothing picked) → print `display`,
-     stop.
-   - Exit 3 → the browser connection was lost; relay the `error` field and offer to `--start`
-     again.
-3. **Interpret the session.** Read [`${CLAUDE_PLUGIN_ROOT}/knowledge/ui-inspection/SKILL.md`](../knowledge/ui-inspection/SKILL.md)
-   and follow it. The `display`
-   summary lists every selection and annotation with screenshot paths (relative to
-   `sessionDir`). Read the selection clips (and the annotated composite when annotations exist),
-   then give the user a concise readout: which components were picked, on which routes, what the
-   notes ask for, and what code each pick maps to (the skill defines the mapping order —
-   `sourceFile` → component name → correlated `ui.page` files → selector/text grep). If identity
-   came back mostly floor-level and the user wants exact file:line, offer the
-   `code-inspector-plugin` setup from the skill's references.
-4. **Decide what the session becomes** — `AskUserQuestion` "What should this session become?":
-   - **Propose new intent (Recommended)** — when the notes describe changes to make. Default is
-     ONE intent for the whole session; offer a split-by-page option in this same question ONLY
-     when captures span multiple routes AND the notes describe unrelated concerns.
-   - **Attach to the intent I'm working on** — when the session is evidence for an already
-     claimed intent.
-   - **Keep locally** — stop after the readout; name `/intents` as the next command.
+**Steps 3–7 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/ui-inspection/references/session-workflow.md` NOW and follow it exactly; improvise nothing.** It holds every call, flag, branch, confirm and the other modes (`--capture`/`--list`/`--show`/`--stop`). The map: **3** interpret per the ui-inspection skill · **4** the **user** chooses what it becomes — new intent / attach to a claimed intent / keep locally (stop, name `/intents`) · **4.5** the preflight gate below · **5** propose or attach via `pmap-intents.js` · **6** the **user** confirms the intent push, told first what leaves the machine · **7** the **user** confirms the page-capture push.
 
-Capture (steps 1-4) is local and deliberately works without credentials; the gate below applies only from here, where this command first talks to the server.
-
-### Step 4.5: Preflight — binding, branch, local state
-
-This command touches board state, so it runs behind the preflight gate. The gate is **enforced by a
-script, not by prose** — run it and react to its exit code; never decide on your own that the
-project is fine.
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js
-```
-
-Print the JSON's `display` field **verbatim** — do not reformat, reorder, or summarise it.
-
-| exit | meaning | action |
-| ---- | ------- | ------ |
-| 0 | Proceed | Continue to the next step. If `repairs.boardsRecovered` is non-empty, local state was just restored from the server — say so once (the `display` already carries the sentence) and continue. |
-| 1 | Not connected, or credentials rejected | Make the **connect-now offer**: AskUserQuestion "Connect to ProvenMap now?" → **Connect now** runs `pmap-login.js --start` then `--poll` inline (print each `display` verbatim) and resumes this command on `status: "complete"`; **Not now** stops with the `error` sentence verbatim. |
-| 2 | Binding could not be verified | Print `error` verbatim and stop. Name `/status` for the full local picture. |
-| 11 | Branch mismatch | Print `display` verbatim, then ask via AskUserQuestion. Header: `Branch`. Question: `"This project is bound to a different branch. How do you want to proceed?"` Options: **Re-bind to this branch (`/login`)** — run the `/login` workflow inline, then re-run this step; **Stop — I'll switch branches myself** — stop, having already printed the `git switch` line. Never run `git switch` yourself: the working tree may be dirty. |
-
-5. **Execute the decision:**
-   - **Propose:** draft the payload per the ui-inspection skill (name = the ask in imperative
-     form; directive references component identity + evidence; anchors from correlated
-     `pageAspectSlug` as `{elementType:"aspect", aspectKind:"ui.page", slug}` or
-     `boardNodeSlug` as node anchors; include `inspectionSessionId`). Write it to
-     `<sessionDir>/propose.json`, then:
-     ```
-     node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --propose --payload <sessionDir>/propose.json
-     ```
-     Print `display` verbatim. Exit 1 with a config error triggers the connect-now offer below;
-     exit 3 / `notAvailable` → print `display` verbatim and stop.
-   - **Attach:** if exactly one local intent is `in_progress`, use it; otherwise run
-     `pmap-intents.js --list`, print `display` verbatim, and ask which intent. Then:
-     ```
-     node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --attach-inspection <intentId> --session <sessionId>
-     ```
-     Print `display` verbatim.
-6. **Offer the server push** (after a successful propose or attach, when ProvenMap is
-   configured). Tell the user exactly what would leave the machine — the environment name and the
-   captured URLs from the session summary — and ask (single confirm, part of a prior
-   AskUserQuestion or its own): push the capture screenshots + selection/annotation metadata to
-   the intent so the architect sees them? On yes:
-   ```
-   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --push-inspection <intentId> --session <sessionId>
-   ```
-   Print `display` verbatim. `notAvailable: true` is a soft stop — the display already explains
-   the session stays linked locally. On no: nothing uploads; the local link is enough for the
-   developer-side flow.
-7. **Offer the page-capture push** (independent of step 6, when the session summary shows
-   captures correlated to a `ui.page` and ProvenMap is configured): keeping the board's page
-   visuals fresh means pushing each correlated page's clean screenshot + element map as its
-   server-side visual reference. Name the environment + URLs, confirm once for all pages, then:
-   ```
-   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-inspect.js --push <sessionId>
-   ```
-   Print `display` verbatim (`notAvailable` is a soft stop). Fold this confirm into the step-6
-   question when both apply — one question, two checkboxes, never two rounds.
+**4.5 Preflight** — a **script, not prose**; never decide yourself that the project is fine: run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js`, branch on its exit code. 0 → go (`repairs.boardsRecovered` non-empty = state just restored from the server, per its `display`) · 1 (not connected / credentials rejected) → **connect-now offer** · 2 (binding unverified) → print `error`, stop, name `/status` · 11 branch mismatch → AskUserQuestion per the branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md`.
 
 ## Connect-now offer
 
-Only the propose step talks to ProvenMap. If it fails with the config-missing error (exit 1) or
-`errorType: "auth_invalid"`, ask with **AskUserQuestion** — "Connect to ProvenMap now?"
-(**Connect now** / **Not now**):
+Used when preflight (exit 1) or a server call reports config missing or `errorType: "auth_invalid"`. Ask with **AskUserQuestion** — "Connect to ProvenMap now?" (**Connect now** / **Not now**):
 
-- **Connect now** → run the browser login here, printing each JSON `display` verbatim:
-  `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then
-  `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --analyze-cmd analyze` (generous
-  Bash timeout, e.g. 250s). On `status: "complete"`, re-run the propose step.
-- **Not now** → stop with: `ProvenMap not configured — run /login (browser) or /configure
-  (manual) first` (or, for rejected credentials: `Your ProvenMap credentials were rejected — run
-  /login to reconnect`). The session stays local; nothing is lost.
-
-## Other modes
-
-- **Agent-driven capture** (no human, headless — also the fallback in cloud/headless sessions
-  where no local browser can open): `--capture <url>` screenshots a page and records an element
-  map. Print its `display`, then Read the screenshot if the task needs it.
-- **Session inventory**: `--list` and `--show <sessionId>` — print `display` verbatim.
-- **Abandon**: `--stop` kills the session's browser and cancels it.
-
-## Notes
-
-- The browser starts in **Browse** mode — the page is fully interactive (log in, navigate) and
-  nothing is captured. In the toolbar, **Pick** arms click-to-pick and **Annotate** arms
-  drag-a-box (each box takes a required note); clicking the armed mode again, or pressing
-  **Esc**, returns to Browse. The toolbar can be dragged out of the way (grab it anywhere except
-  a button); its position, picks, and annotations survive same-origin page navigations within
-  the session.
-- The inspection browser uses a dedicated profile (no daily-browsing state). Sessions are local
-  files by default — nothing leaves the machine unless the user explicitly pushes (steps 6–7),
-  and each push names exactly what it would send before it sends it.
+- **Connect now** → run the browser login here, each JSON `display` printed verbatim: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --analyze-cmd analyze` (Bash timeout ≥250s). On `status: "complete"`, re-run the step that failed.
+- **Not now** → stop with: `ProvenMap not configured — run /login (browser) or /configure (manual) first` (or, for rejected credentials: `Your ProvenMap credentials were rejected — run /login to reconnect`). The session stays local; nothing is lost.

@@ -1,6 +1,6 @@
 ---
 name: platform-driven-build
-description: How to build an app from the ProvenMap platform's spec — reading compiled skills as the primary spec, turning designed board elements into components, materializing aspect snapshots (DB schema, API surface) as migrations and contracts, and closing the loop so the board maps the built app. Used by /build.
+description: How to build an app from the ProvenMap platform's spec — reading compiled skills as the primary spec, turning designed board elements into components, materializing aspect snapshots (DB schema, API surface) as migrations and contracts, and closing the loop so the board maps the built app. Carries the planning and implementation steps /build delegates here. Used by /build.
 user-invokable: false
 metadata:
   author: ProvenMap
@@ -9,7 +9,9 @@ metadata:
 
 # Platform-Driven Build — Methodology
 
-`/build` invokes this skill to implement the platform's spec in the repo. The spec has up to four sources, **by primacy**:
+`/build` invokes this skill to implement the platform's spec in the repo. It runs Steps 0–2 itself (preflight, assemble the spec pack, the skills freshness gate, the `nextAction` branch) and delegates Steps 3–5 — plan, implement, close the loop — to the section of the same name below; the sections before it are the methodology those steps apply.
+
+The spec has up to four sources, **by primacy**:
 
 | Source | Carries | Comes from |
 |---|---|---|
@@ -51,6 +53,39 @@ From `.provenmap/build/aspects.json` (fields mirror the platform's aspect rows; 
 | `empty` | No source files | Bootstrap: scaffold per skills conventions, then build every plan unit |
 | `partial` | Source exists, spec has unbuilt parts | Gap-fill: touch only what the unbuilt spec requires — never refactor existing code that isn't in the delta |
 | `built` | No unbuilt spec | Don't build; `/intents` for remaining work |
+
+## Steps 3–5 — the workflow `/build` delegates here
+
+Reached on the pack's `nextAction: "build"`. Follow these steps in order, exactly as written — every source, invocation, branch, prompt, and rule below is part of `/build`'s contract, not a suggestion. Do not improvise a step.
+
+**Write-capable.** These steps create and edit project files. Never create or edit a file before the user has approved the plan in Step 3, always show the user what changed, and never record an intent resolution before the user has confirmed the outcome.
+
+### Step 3 — Plan from the spec (approval gate)
+
+Read, in this order:
+
+1. The compiled skills under the pack's `skills.skillsDir` — the specs and conventions to honor (app-tier overrides win; never edit these files — they're lock-managed by `/skills`).
+2. The pack's `design.unbuilt[]` — designed elements with no source mapping (components to create; board edges give their dependencies).
+3. `.provenmap/build/aspects.json`, when the pack reported `aspectsPath` — full DB tables and API endpoints to materialize as migrations and contracts.
+4. The pack's `intents.open[]` — architect work items; note which plan units they cover.
+
+Turn the unbuilt spec into an **incremental** implementation plan — the delta only, never a rebuild of what is already there: skill specs → app shape, stack, and conventions; designed nodes → components; edges → dependencies and boundaries; aspects → migrations + API contracts. The mapping rules for each of those four sources are the sections above, and the repo-state table says how much of the tree the plan may touch. If the user supplied a focus prompt argument, it narrows which part to build first.
+
+Use **AskUserQuestion** *only* at genuine decision points: the stack when the compiled skills don't pin one, and build order when the spec is large.
+
+Present the plan — units, order, what each unit creates, which intents it covers — and **get the user's approval before any file is touched**. If the argument was `--plan`, stop after presenting it; no files are touched.
+
+### Step 4 — Implement incrementally
+
+Work plan unit by plan unit:
+
+- **Intent-covered units go through the intent machinery** so attribution and verification accrue there: claim before touching files (`node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --claim <intentId> --by "<name>"`), implement, verify, and resolve only after the user confirms — exactly per `/intents` Steps 3–8 (never auto-resolve; no verify, no `implemented`).
+- Other units: create/edit the files, matching the conventions the compiled skills establish.
+- **Verify each unit** with the project's own checks — discover them in the repo (`package.json` scripts, a Makefile, CI config); for a fresh scaffold there is nothing to discover, so set up the minimal check the skills prescribe. Show the results.
+
+### Step 5 — Close the loop
+
+Tell the user to run `/analyze`, then `/sync` — the next section says what each kind of build gains from it. Then `/build` is idempotent: re-running reports the spec as built and points the user at `/intents`.
 
 ## Closing the loop
 

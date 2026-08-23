@@ -39,6 +39,10 @@ Root with zero nodes/edges and no bindings anywhere = the **empty-workspace stat
 `/setup-workspace` instead of orienting on nothing. Root orientation is a **portfolio** read
 (apps, health, cross-app edges), not a canvas walk.
 
+The orientation move each class deserves — and the working moves that need more than a line
+(drilling a container into its own board, reading the `--group-plan` grouping review, inline
+styling scope) — is in [references/orientation.md](references/orientation.md).
+
 ## Question-scoped reading and the answer mode
 
 For a direct question (`/ask-board`), read only what the question needs — no full orientation:

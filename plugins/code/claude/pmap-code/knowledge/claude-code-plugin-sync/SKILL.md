@@ -1,6 +1,6 @@
 ---
 name: pmap-sync
-description: Bundled Node.js CLI scripts for syncing codebase analysis to the ProvenMap Claude Code Plugin API. Provides pmap-sync.js for smart diff-based sync, pmap-archetypes.js for server archetype caching, and pmap-boards.js for board management. Self-contained — no npm install required.
+description: Bundled Node.js CLI scripts for syncing codebase analysis to the ProvenMap Claude Code Plugin API. Provides pmap-sync.js for smart diff-based sync, pmap-archetypes.js for server archetype caching, pmap-boards.js for board management, and pmap-adopt.js for aspect adoption. Self-contained — no npm install required.
 user-invokable: false
 metadata:
   author: ProvenMap
@@ -87,6 +87,30 @@ Reads the local manifest, fetches server boards, computes missing child boards, 
 
 **Exit codes:** 0=success, 1=config error, 2=API error
 
+### pmap-adopt.js — Adopt an Aspect
+
+Pushes one extracted aspect (database schema, API surface, frontend pages, event catalog, authz
+registry) onto the bound board, resolving its owner/usage links against the synced spine.
+
+**Invocation:**
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-adopt.js --aspect <kind> --payload <payload-file> --mode <mode>
+```
+
+**Options:** `--aspect <kind>` and `--payload <path>` (both required), `--mode replace|merge`
+(default `replace`), `--board-slug <slug>` (default `config.boardSlug`), `--analysis <path>`,
+`--extractor-version <v>`, `--config <path>`, `--dry-run`, `--no-verify`, `--host <h>`,
+`--domain <d>`.
+
+**Output:** JSON `AspectUpsertResult` with `inserted`, `updated`, `deleted`, `skippedManual`,
+`unlinked`, `unresolvedRefs`, `unknownSlugs`, `verify`.
+
+**Exit codes:** 0=success, 1=config error (a **branch mismatch** lands here), 2=spine-not-synced
+or analysis error, 3=payload validation error or post-ingest verify drift, 4=API error
+
+See [aspect-adoption.md](references/aspect-adoption.md) for the modes, the flags, and how to
+report each result field.
+
 ## Configuration Source
 
 Scripts read configuration from `.provenmap/config.json`.
@@ -98,4 +122,6 @@ Sync state is stored per-board in `.provenmap/boards/stores/<board-slug>.store.j
 ## References
 
 - [transformation-rules.md](references/transformation-rules.md) — Code archetype mapping table
-- [sync-protocol.md](references/sync-protocol.md) — Sync workflow documentation
+- [sync-protocol.md](references/sync-protocol.md) — What `pmap-sync.js` does internally: smart sync, diff fields, push mode
+- [sync-workflow.md](references/sync-workflow.md) — The `/sync` command's Steps 2.5–6: binding scope, integrity gate, push loop, reporting, tree repair
+- [aspect-adoption.md](references/aspect-adoption.md) — The `/adopt` command's delegated tier: `pmap-adopt.js` modes, flags, exit codes, and how to report every result field

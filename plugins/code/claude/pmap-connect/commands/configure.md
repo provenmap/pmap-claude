@@ -4,142 +4,83 @@ description: "Account · Configure ProvenMap credentials and settings"
 allowed-tools: Read, Write, Bash, AskUserQuestion
 ---
 
-Set up ProvenMap configuration for architecture sync.
+Manual ProvenMap setup — for CI, or when `/login`'s browser flow isn't available.
+Config schema, credential source, and the rebind flow:
+`${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md`.
 
-> **Faster option:** `/login` signs you in through the browser and writes these
-> credentials for you. Use `/configure` for manual setup or CI (credentials by hand).
+> **Security rule:** Never ask the user to paste `bindingToken` or `apiSecret` into the
+> chat — they edit the file directly, then confirm.
 
-## Credential Source
+## Step 1: Ensure the config file exists
 
-Credentials live in ONE place — the config file, never the chat:
+No `.provenmap/config.json`? Create `.provenmap/` and write the skeleton from the skill
+above — empty `bindingToken`/`apiSecret`/`boardSlug` plus its documented defaults. The
+empty credential fields are intentional: the user fills them in next.
 
-**`.provenmap/config.json`**
+If it exists, read it and continue — never overwrite the user's file. Either way, ensure
+`.provenmap/` is in `.gitignore` (add it if missing) so credentials aren't committed.
 
-```json
-{
-  "bindingToken": "YWJjMTIzLXV1aWQ6ZGVmNDU2LXV1aWQ",
-  "apiSecret": "ck_cp_live_xxx",
-  "baseUrl": "https://platform.provenmap.com/api",
-  "branch": "main",
-  "boardSlug": "my-project-overview",
-  "excludePaths": ["node_modules", "dist", ".git", "coverage"],
-  "includeTests": false,
-  "includeSourceReferences": true
-}
-```
+## Step 2: Detect current state
 
-> **Security rule:** Never ask the user to paste `bindingToken` or `apiSecret` into the chat. Always have them edit the file directly, then confirm.
+`bindingToken` and `apiSecret` both non-empty → display the config with secrets masked
+(`ck_cp_live_****`) and skip to Step 4. Either empty or missing → Step 3.
 
-## Configuration Workflow
-
-### Step 1: Ensure the config file exists
-
-- Check whether `.provenmap/config.json` exists.
-- **If it does NOT exist**, create the `.provenmap/` folder and write this skeleton (empty credentials, sane defaults). Empty credential fields are intentional — the user fills them in next:
-
-  ```json
-  {
-    "bindingToken": "",
-    "apiSecret": "",
-    "baseUrl": "https://platform.provenmap.com/api",
-    "branch": "main",
-    "boardSlug": "",
-    "excludePaths": ["node_modules", "dist", ".git", "coverage"],
-    "includeTests": false,
-    "includeSourceReferences": true
-  }
-  ```
-
-- **If it already exists**, read it and continue (do not overwrite the user's file).
-- Ensure `.provenmap/` is listed in `.gitignore` (add it if missing) so credentials never get committed.
-
-### Step 2: Detect current state
-
-Read `.provenmap/config.json` and inspect it:
-
-- **Credentials present** (`bindingToken` and `apiSecret` both non-empty): display the current configuration with secrets masked (e.g. `ck_cp_live_****`), then skip to Step 4 to verify.
-- **Credentials empty or missing**: go to Step 3.
-
-### Step 3: Ask the user to fill in credentials (in the file, not the chat)
+## Step 3: Fill in credentials (in the file, not the chat)
 
 Precondition: a ProvenMap source must already be created and bound to a workboard (do
-this in the ProvenMap UI first if it isn't yet). Once bound, get the values from
-ProvenMap: open the board's hub → the binding's row → **Copy credentials**. The secret
-is shown **once** — at binding creation or after "Regenerate secret & copy"
-(regenerating disconnects any other binding on the same source until it re-copies). The
-dialog's `.provenmap/config.json` snippet matches the fields below exactly.
+this in the ProvenMap UI first).
 
-Tell the user to open `.provenmap/config.json` in their editor and fill in:
+Have the user fill `bindingToken`, `apiSecret` and `branch` (must match the binding's
+configured branch, default `main`) into `.provenmap/config.json`; the other fields
+already default sanely. Then **AskUserQuestion** to confirm — e.g. "Saved both in
+`.provenmap/config.json`?", options **"Yes — verify now"** / **"Not yet"**.
 
-- `bindingToken` — base64url-encoded `workspaceId::bindingId`
-- `apiSecret` — format `ck_cp_live_` followed by an alphanumeric string
-- `branch` — must match the branch configured on the workboard binding (default `main`)
-- Optional: `baseUrl`, `excludePaths`, `includeTests`, `includeSourceReferences` (defaults to `true`; set `false` to omit file-path source references from synced nodes/edges) — the skeleton already has working defaults
+- **Not yet**: stop — they can re-run `/configure` when ready.
+- **Yes**: re-read the file. Still empty or malformed (`apiSecret` must start with
+  `ck_cp_live_`)? Name the exact field that is missing or wrong and re-prompt. Else
+  Step 4.
 
-Then use **AskUserQuestion** to confirm completion — for example:
-
-> "Have you saved your `bindingToken` and `apiSecret` in `.provenmap/config.json`?"
-> Options: **"Yes — verify now"**, **"Not yet"**
-
-- **Not yet**: stop here and let the user finish. They can re-run `/configure` when ready.
-- **Yes**: re-read `.provenmap/config.json`. If `bindingToken` or `apiSecret` is still empty/malformed (`apiSecret` must start with `ck_cp_live_`), tell the user exactly which field is missing or wrong and re-prompt. Otherwise continue to Step 4.
-
-### Step 4: Verify credentials (test connection)
-
-Test the connection using the credentials now in the file:
+## Step 4: Verify credentials
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --no-cache
 ```
 
 - **Exit 0** → connection works; report the archetype count as confirmation.
-- **Exit 1** → config file problem; report the JSON `error` field and point the user at the specific field in `.provenmap/config.json` to fix, then re-verify.
-- **Other non-zero** → API/auth failure; report the JSON `error` field. If `errorType` is `auth_invalid`, the credentials were rejected — have the user re-check `bindingToken`/`apiSecret` (or run `/login`), then re-verify.
+- **Exit 1** → config file problem; report the JSON `error` field, name the field to fix
+  in `.provenmap/config.json`, re-verify.
+- **Other non-zero** → API/auth failure; report the JSON `error` field. `errorType`
+  `auth_invalid` means the credentials were rejected — have the user re-check
+  `bindingToken`/`apiSecret` (or run `/login`), then re-verify.
 
-### Step 5: Discover root board
+## Step 5: Discover root board
 
-After a successful connection test, discover the root board:
+After a successful connection test:
 
-1. Run the boards CLI to fetch all boards from the server:
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-boards.js
+```
 
-   ```bash
-   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-boards.js
-   ```
+Find the root board (`isChildBoard === false`): **one** → set `boardSlug` to its slug;
+**several** → ask the user which to use; **none** → warn them to create a board in the
+ProvenMap UI first (config can still be saved, but `/sync` won't work until a root board exists). Write `boardSlug` into `.provenmap/config.json`, preserving the user's other fields.
 
-2. Parse the JSON output and find the root board (`isChildBoard === false`):
-   - **Exactly one root board**: auto-set `boardSlug` in the config to the root board's slug
-   - **Multiple root boards**: ask the user which root board to use for this project
-   - **No root boards**: warn the user to create a board in the ProvenMap UI first. Configuration can still be saved, but `/sync` will not work until a root board exists.
+## Step 6: Confirmation
 
-3. Write `boardSlug` into `.provenmap/config.json` (preserve the user's other fields).
-
-### Step 6: Confirmation
-
-Report configuration complete:
-
-- Configuration file location (`.provenmap/config.json`)
-- Connection details (URL, branch, root board slug) with secrets masked
-- Connection test result
-- Confirmation that `.provenmap/` is gitignored
+Report complete: config file location, connection details (URL, branch, root board
+slug) with secrets masked, the test result, and that `.provenmap/` is gitignored.
 
 ## Reconfiguration
 
-If configuration already exists, ask the user whether to:
+Already configured? Ask the user: switch board in the browser (rebind flow in the skill
+above, or `/login switch`), edit fields then re-verify from Step 4, re-verify as-is, or
+cancel and keep existing.
 
-- **Switch to a different board (browser)** — re-bind this project to another board without hand-editing credentials. This re-resolves the full credential triple (`bindingToken` + `apiSecret` + `boardSlug`), since a different board is a different binding with its own secret. The `--rebind` flag is what unlocks the board picker — without it, a bound project's login is authentication-only:
-  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain connect --plugin-version 0.10.13` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
-  2. After they sign in, pick the new board, and confirm, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain connect` (give the Bash call ~250s; re-run on `status: "pending"`). Print `display` verbatim.
-  3. On `status: "complete"`, the config now points at the newly selected board — the `display` panel already shows it.
-- Update specific fields (have them edit `.provenmap/config.json`, then confirm + re-verify)
-- Re-run verification against the current file
-- Cancel and keep existing
+## Next step
 
-## After configuring — state the next step
-
-When configuration is verified, run the offline status report and relay **only its `Lifecycle:` line** so the user knows the single next command:
+Verified? Run the status report and relay **only its `Lifecycle:` line** — one next
+step, not the whole report:
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --domain connect
 ```
-
-Do not print the whole report here — one line, one next step.

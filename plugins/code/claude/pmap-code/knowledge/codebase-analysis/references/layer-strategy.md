@@ -57,6 +57,29 @@ A board of 20 uncoupled nodes needs no containers; a board of 6 tightly-coupled 
 two. The plan proposes, you name and may override — record an override the topology cannot
 justify by starting the container's description with `Grouping rationale:`.
 
+### Grouping floor and ceiling
+
+Node count does not tell you *how* to group — the clusters come from coupling, not from a
+count. But node count is a hard **floor and ceiling** pair, and drill-down nodes
+(`layerBoardSlug` set) are exempt from both counts — their detail lives on a child board:
+
+- **Floor (enforced):** a board with more than 8 non-drill-down nodes must have at least one
+  `domain_group` with at least one node nested under it. A flat L0 landscape of pure
+  drill-down systems is a legal shape. `--board-report`, `--validate` and `/sync` all enforce
+  this (exit 3).
+- **Ceiling (A-CONTAINER-CEILING, L0/L1 only, advisory):** a container with more than 8
+  inline (non-drill-down) children is one layer's detail drawn on this board. Default to
+  making it an opaque drill-down node (set `layerBoardSlug`, move the children to the child
+  board) or splitting it; keeping it inline is allowed with a `Drill-down rationale: …` line
+  in its description — the board report lists every recorded override so the user sees the
+  judgment call before `/sync`. This **warns, it does not fail the board**: at L0 the
+  ceiling, the >8-node grouping floor and the 30-file broad-claim limit all press at once,
+  and drill-down is the single move that satisfies all three — so reach for it first rather
+  than carving nodes to fit.
+
+Group by coupling; never leave a board over 8 non-drill-down nodes flat, and never let one
+container hold a whole layer inline without saying why.
+
 ## Board Grain — decided per board, not from the depth number
 
 The ladder below is the **vocabulary** (what each layer answers and how many nodes it is
@@ -110,6 +133,51 @@ can carry, while the board's own group plan says whether it is container-grade o
 - **Target**: 10-30 nodes
 - **Node types**: This repo's deployables (as opaque drill-down nodes) at the center, externally-evidenced systems (databases, third-party APIs/SaaS, providers) around them. Use domain_group containers only for small clusters that won't drill down.
 - **When**: Default analysis, first run
+
+#### Building the L0 System Context
+
+Build a C4 System Context, not an inventory. The board answers one question: _what is this
+system, and what does it talk to?_ Keep to 10-30 nodes, in two rings:
+
+- **Center — this system's own deployables.** The apps, services and workers this repo
+  ships, at the grain the `--group-plan --layer 0` plan used (declared workspaces, or
+  top-level directories in a single-package repo). One node per thing that ships and can
+  fail on its own — not one per folder.
+- **Around them — externally-evidenced systems.** Databases, third-party APIs/SaaS, queues,
+  auth/payment/email/observability providers. The evidence is deterministic and already in
+  front of you: the digest's `stacks.dependencies[]`, the `infra` classification (a
+  `migration`, `terraform`, `kubernetes` or `serverless` file names the datastore or
+  platform it provisions), and the skeleton's `externalImports` accounting. Add a system
+  only where there is evidence for it; never populate this ring from guesswork about a
+  typical stack.
+- **Lean and flat.** Every internal node with internals worth seeing is an **opaque
+  drill-down** (`layerBoardSlug`) into its L1 container board — not a container with
+  children here. A flat L0 of drill-down systems plus their external neighbours is the
+  intended shape, and drill-down nodes are exempt from the grouping floor.
+
+**`dependencies[]` is the external-system evidence.** A vendor SDK there (payments, auth,
+email, observability, search, feature flags) is a third party this codebase talks to, and
+that is what an `external_system` node is for. Read the list and decide; do **not** guess
+vendor names and grep the tree for each one — anything you failed to guess stays invisible,
+and the list already names them all. Grep only to find *where* a dependency you selected is
+used, once you have chosen it. Caveat: the list is parsed from `package.json`
+`dependencies` only — for a non-JS workspace, or for a service reached over plain HTTP with
+no SDK, you still read code to find it.
+
+**Drill-down is the default at L0, not a garnish.** An analysed node may claim at most 29
+files, and L0 is capped at 10-30 nodes — so a repo of any size cannot be covered by
+analysed L0 nodes alone. Any node that would claim 30 or more files gets `layerBoardSlug`
+(a proposed child-board slug); a drill-down node has no file limit and defers its detail to
+that board. Splitting a 200-file domain into seven 29-file L0 nodes is the wrong repair —
+it blows the node budget and creates an edge hairball. Reach for splitting only when a node
+is modestly over and genuinely holds two concerns.
+
+**L0 targets significance, not exhaustiveness.** Coverage is satisfied when every file is
+claimed by _some_ node — and a container may claim its whole subtree via `coveredFiles` and
+defer the detail to a child board (`layerBoardSlug`). Do NOT generate an L0 node per
+leftover directory just to claim its files; fold small leftovers into the nearest
+significant container and let the drill-down carry the detail. More L0 nodes means more
+rolled-up L0 edges — breadth here is what creates hairballs.
 
 ### L1 — Domain Drill-down
 

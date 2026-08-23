@@ -87,3 +87,7 @@ Read `.provenmap/boards/<board-slug>.json` for the node slugs the spine already 
 - `forms[].action`
 
 `authGuards[].requiredRoles[]` is the one exception — see above, that's a different namespace entirely.
+
+## Payload file — one per board layer
+
+Write the payload to `.provenmap/aspects/tmp/pages-payload.json`. When adopting onto a layered board's sub-boards, write one payload per sub-board instead, named `.provenmap/aspects/tmp/pages-payload-<sub-board>.json` (e.g. `pages-payload-portal-app.json`) — the inspector's route→page correlation merges every `pages-payload*.json` in that directory, so this suffix convention is what keeps drill-down pages correlatable.

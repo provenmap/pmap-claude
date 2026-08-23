@@ -68,6 +68,11 @@ Styling is judgment guided by facts. The pipeline is always the same four moves:
   `network` (never give it an orientation — the validator rejects it). Set the board once,
   override only containers that genuinely read differently. Density: `tight` for dense
   infrastructure, `airy` for a centrepiece diagram.
+- **A freshly sketched app L1** (`/new-app` Step 3.5) has nothing styled yet — style
+  everything, and expect it to read `flow` with the app's core service as the one `lg` node.
+- **A freshly drawn root landscape** (`/setup-workspace` Step 3.5) commits styled, not raw: the
+  same style-everything case, shaped by the C4-context root composition above (`flow` +
+  `horizontal`, externals small) unless the signals argue otherwise.
 - **Root boards are C4-shaped.** The system under discussion is the one xl node; people and
   externals surround it; flows are labelled edges with Flow tokens.
 - **Edges carry Flow/State/Severity tokens only** — no sizes, no Role. Synchronous = solid,

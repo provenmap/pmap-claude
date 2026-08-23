@@ -4,14 +4,14 @@ Documents the sync workflow used by `pmap-sync.js` to push analysis data to Prov
 
 ## Smart Sync (Recommended)
 
-Use `--smart-sync` for diff-based syncing. This minimizes API calls by only pushing changed elements.
+Use `--smart-sync` for diff-based syncing. It pulls server state and computes the diff that drives the sync report and the post-push confirmation; the push itself always carries the full board.
 
 **Workflow:**
 1. **Get archetypes** (cached, 1-hour TTL) — validate archetype names in transformed data
 2. **Pull server elements** (if stale or forced) — fetch current state from `GET /code-plugin/elements`
 3. **Track local elements** — hash each node/edge and store in the element store file
 4. **Compute diff** — compare local hashes against server state to find new, changed, unchanged, and server-only elements
-5. **Push changes** — send only new/changed elements via `POST /code-plugin/push`
+5. **Push** — send the full board inventory via `POST /code-plugin/push` (see *Push Mode* below; the diff is for reporting, not for trimming the payload)
 6. **Update store** — mark pushed elements as synced
 
 **Diff result fields:**

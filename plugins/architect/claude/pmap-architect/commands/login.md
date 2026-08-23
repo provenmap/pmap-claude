@@ -17,14 +17,9 @@ discarding from either surface decides both.
 
 ## Login Workflow
 
-**Arguments — `$ARGUMENTS`:** when `$ARGUMENTS` starts with `http://` or
-`https://` it is the API base URL of the ProvenMap server to sign in against —
-any deployment (e.g. `/login https://<your-server>/api`); the compiled-in
-default is production. Append `--base-url $ARGUMENTS` to the `--login-start`
-call in Step 1 — Step 2's poll resumes against the same server automatically.
-The CLI **stores** that server immediately, so every later `/login`, `/status`,
-and retry targets it with no argument and no environment variable. Empty
-`$ARGUMENTS` = use the stored server, else production.
+The command accepts an optional server URL argument. When the user supplied one starting with
+`http://` or `https://`, append `--base-url <that URL>` to the `--login-start` invocation;
+otherwise use the stored server, else production.
 
 The script's JSON output always includes a `display` field of ready-made markdown. **Print
 `display` verbatim in your reply — never reformat, summarise, or rebuild it; the Bash output
@@ -43,7 +38,7 @@ Print the output verbatim. If it reports **Connected**, stop — the user is alr
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --login-start --host claude
-# add --base-url $ARGUMENTS when $ARGUMENTS is an http(s) URL
+# add --base-url <url> when the user's argument is an http(s) URL
 ```
 
 Print the JSON `display` field verbatim, then wait for the user to finish in the browser before
@@ -70,8 +65,6 @@ Print the JSON `display` field verbatim. Then, by `status`:
 
 - **Approval needs workspace admin** (access-manage) — the same gate as generating a token in the
   settings UI. Without it, an admin generates the token there and the user wires it via `/configure`.
-- **Non-default server (self-hosted, on-prem, staging):** pass the server as
-  the command's argument — `/login https://<your-server>/api` — no environment
-  variable needed, and it works in every host. `PMAP_BASE_URL` remains
-  supported as an environment-level override. The stored endpoint and later
-  re-logins then follow the approving server automatically.
+- **Non-default server (self-hosted, on-prem, staging):** pass it as the command argument —
+  `/login https://<your-server>/api` — or set `PMAP_BASE_URL`; the server used is then stored
+  for later `/login` and `/status` calls.

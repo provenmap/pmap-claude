@@ -47,3 +47,10 @@ Show the draft to the user for approval before sending. Then the command runs
 `pmap-intents.js --clarify <intentId> --note "<approved note>"`. Never send an empty or auto-written note.
 
 See [references/gap-criteria.md](references/gap-criteria.md) for the exact blocking criteria and worked note examples.
+
+## 4. Where this review sits
+
+`/intents` runs Steps -1 to 1 inline (preflight, pull the list, pick an intent) and delegates Steps
+2–8 — gate the pick, claim, show and map to source, **this review**, implement, verify, resolve,
+reject — to [references/implementation-workflow.md](references/implementation-workflow.md). That
+file is the contract for those steps: every CLI call, branch, and prompt. This skill is its Step 4.5.

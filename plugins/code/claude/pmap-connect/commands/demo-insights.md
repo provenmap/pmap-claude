@@ -1,114 +1,69 @@
 ---
 category: map
-description: "Map · Generate a few demonstrative, path-rich insights on a board to showcase the insights feature"
+description: "Map · Generate a few demonstrative, path-rich insights that showcase the insights feature"
 argument-hint: "[count] [--board <slug>] [focus prompt]"
 allowed-tools: Read, Glob, Grep, Write, Bash(node:*), AskUserQuestion
 ---
 
-Generate a small set of **demonstrative** insights — each with edge-grounded paths that connect multiple nodes — so a board makes an immediate visual impression. This is the showcase counterpart to `/insights`: where `/insights` runs an analysis to completion, `/demo-insights` deliberately picks path-friendly skills and emphasises legible, multi-node paths over exhaustive findings.
+**Demonstrative** insights: multi-node, edge-grounded paths. Read `${CLAUDE_PLUGIN_ROOT}/knowledge/demonstrative-insights/SKILL.md` first.
 
-Use it to seed a board for a demo, a screenshot, or a walkthrough. It reuses the same server-defined skills and the same push pipeline as `/insights` — only the selection and authoring priorities differ.
+### Step 0: Prerequisites
 
-Read the methodology in [knowledge/demonstrative-insights/SKILL.md](../knowledge/demonstrative-insights/SKILL.md) and the path recipes in [knowledge/demonstrative-insights/references/path-recipes.md](../knowledge/demonstrative-insights/references/path-recipes.md) before authoring. The payload schema is the same one `/insights` uses — see [knowledge/insights/references/report-output-format.md](../knowledge/insights/references/report-output-format.md#scope).
-
-## Workflow
-
-### Step 0: Validate Prerequisites
-
-Read `boardSlug` from `.provenmap/config.json` and `.provenmap/boards/manifest.json` (if present) to discover layer boards. Then list the server-defined skills:
+Read `boardSlug` from `.provenmap/config.json`, and any layer boards from `.provenmap/boards/manifest.json`:
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --list-insight-skills --board-slug <boardSlug> --domain connect
 ```
 
-Handle the result exactly as `/insights` does:
+Exit codes:
 
-- **Exit 1** → not configured — make the **connect-now offer** (see Error Handling)
-- **Exit 2** → "No board data found — run `/sync` first" and stop
-- **Exit 3** → report the API `error` field and stop (if `errorType` is `auth_invalid`, credentials were rejected — make the **connect-now offer**, see Error Handling)
-- `featureAvailable: false` → "No insight skills available for this account" and stop
-- empty `skills` → "No insight skills configured — contact your workspace admin" and stop
+- **1** → not configured: **connect-now offer** (below)
+- **2** → "No board data found — run `/sync` first"; stop
+- **3** → stop, report `error`; `errorType: "auth_invalid"` → **connect-now offer**
+- `featureAvailable: false` → "No insight skills available for this account"; stop
+- empty `skills` → "No insight skills configured — contact your workspace admin"; stop
 
-### Step 1: Parse Arguments
+### Step 1: Arguments
 
-From `$ARGUMENTS`:
+From any arguments with this request: leading integer = insight count (default **3**, clamp **2–4**); `--board <slug>` = target board (default Step 0's `boardSlug`); rest = optional focus theme.
 
-- **count** — leading integer = how many demonstrative insights to create. Default **3**; clamp to **2–4** (a demo board stays legible).
-- **`--board <slug>`** — target board. Default: the config `boardSlug` (the root/L0 board, which usually has the richest edge set for paths).
-- **focus prompt** — any remaining natural-language text becomes `{{focus}}`, an optional theme that biases skill choice and path subjects. Omit if empty.
+### Step 2: Select skills
 
-### Step 2: Select Path-Friendly Skills (distinct polarities)
-
-Demonstrative value comes from **variety**, not volume. Consult the skill → shape mapping in the methodology skill and pick `count` skills that each produce a different _kind_ of path and a different polarity.
-
-Preferred picks when available, in order: **feature-journey** (observation flow), **blast-radius** (risk cascade), **hidden-dependency** (risk/observation chokepoint), then **how-does-it-work** / **onboarding-map** / **future-readiness**. If `{{focus}}` names a concern (e.g. "security", "performance"), include the matching skill and still pair it with at least one path-producing skill.
-
-Fall back to any skills in the `discovery`, `reliability`, or `architecture_health` categories if the preferred set is unavailable. Explain each pick in one sentence. Then fetch each chosen skill's full definition:
+Pick `count` path-friendly skills, each a different path shape and polarity, per *Selecting the skills*. One sentence why each, then:
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --get-insight-skill <skill-slug>
 ```
 
-Note each skill's `resultsMode` (`append` vs `replace`) and tell the user — it matters when re-running a demo. (`replace` overwrites the prior run of that skill; `append` adds to it.)
-
-### Step 3: Build the context pack (the source of truth for paths)
-
-Run the prepass in **demo mode** (bounded universe — the target board plus its direct children, no siblings):
+### Step 3: Context pack
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --build-context --board-slug <board> --demo --out .provenmap/insights/<board>.context.json --summary --domain connect
 ```
 
-Read the full pack from `.provenmap/insights/<board>.context.json` (the canonical path `--save-insight --demo` reads for its quality gates). It gives you, without any manual indexing:
+Read the pack back — the path ground truth: every step must traverse a real `pack.edges` edge. On a non-zero exit, use the fallback in *The context pack*.
 
-- **node index** — `pack.elements[]` (`{key, board, slug, type, name, description}`), with pre-assigned scope keys
-- **edge adjacency** — `pack.edges[]` (`{board, sourceKey, targetKey, type, description}`) — the source of truth for path grounding
-- **degree** — `pack.degree[]` (`{key, board, fanIn, fanOut}`), ranked most-connected first — your hub/chokepoint shortlist
-- **context vars** — `pack.boards[].context`
+### Step 4: Author insights
 
-Every path step you author must traverse a real edge from `pack.edges`. Do **not** invent connections. (Fallback / skip-when-trivial: on a non-zero exit, or for a single small board, read `.provenmap/boards/<board>.json` directly and index it by hand per [knowledge/insights/references/graph-context.md](../knowledge/insights/references/graph-context.md).)
+One push payload per skill, per *Assembling the payload*.
 
-### Step 4: Author One Demonstrative Insight per Skill
+### Step 5: Validate and push
 
-For each chosen skill, build a single push payload following the recipe in `references/path-recipes.md` and the schema in `report-output-format.md`:
-
-1. **Scope first (copy from the pack).** Copy `pack.scopeBoards` into `scope.boards`. For every node you cite, copy its row from `pack.elements` into `scope.elements` keeping the pre-assigned `key` and `board` verbatim, adding `role` (`focus`/`context`). Cite only what you use; never re-generate keys. Anything you spot in source that has no row in `pack.elements` belongs in a `GraphSuggestion` (`action: "add"`, `element: null`), not a cited finding.
-2. **1–3 findings.** Just enough to anchor the path — each path's key step should carry a `findingRef`. Use `recommendation` for `risk`/`opportunity`, `context` for `observation`/`strength` (never both).
-3. **At least one multi-node path** — this is the point of the command:
-   - 3–6 nodes on the main line; every consecutive pair backed by a real edge.
-   - Prefer a **branching fan-out** (`branches[]`) on a high-degree node — pick it straight from the top of `pack.degree` (highest fan-in/fan-out); it reads as a hub on the board and is the most visually compelling.
-   - Never repeat an element key in consecutive steps.
-   - Set `defaultBoard` to the alias most steps belong to.
-4. **Optional: one suggestion** (`add`/`modify`/`remove`) to show structural proposals render.
-5. Give the insight a **distinct polarity** from the others so the board shows a spread of colours.
-6. Write a tight markdown `content` report and a `title` / `description`.
-
-### Step 5: Validate and Push
-
-Write each payload to a temp file and push:
+Write each payload to a temp file:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight /tmp/demo-insight-<slug>.json --board-slug <board> --demo --require-pack --push --host claude --domain connect
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight /tmp/insight-<slug>.json --board-slug <board> --demo --require-pack --push --host claude --domain connect
 ```
 
-Pass **`--demo`** so the demo quality gates apply: every payload must have ≥1 path with ≥3 connected nodes, and every same-board path step pair must be **edge-grounded** against the pack (these are HARD for demo — `validationErrors[]` + exit 3). Also runs Zod + `validateScopeReferences` (ElementKey/BoardAlias/findingRef resolve; unique ids; no consecutive-duplicate steps; `recommendation`/`context` mutually exclusive) and the pack gates (cited elements exist in the pack). On **exit 3**, read `validationErrors[]`, fix the payload, rewrite the temp file, and retry. `warnings[]` (exit 0) are non-blocking — review once, don't loop.
+`--demo` makes the demo gates hard failures. On **exit 3** read `validationErrors[]`, fix the temp file, retry; `warnings[]` (exit 0) don't block.
 
 ### Step 6: Summary
 
-Print a table and a share hint:
-
-```
-| Skill             | Polarity    | Findings | Paths | Nodes in paths | Status |
-| feature-journey   | observation |    3     |   2   |       6        | pushed |
-| blast-radius      | risk        |    3     |   1   |       9        | pushed |
-| hidden-dependency | risk        |    3     |   3   |      11        | pushed |
-```
-
-Then tell the user the board is ready to open/share, and remind them which skills used `replace` (re-running overwrites) vs `append` (re-running adds).
+Print a row per skill (polarity, findings, paths, path nodes, status), say the board is ready to share, and name the `replace` vs `append` skills.
 
 ## Error Handling
 
-Same as `/insights`: no board data → `/sync`; a skill with no instructions → skip and report; push fails or endpoint unavailable → save locally and report "Saved locally — push failed: <error>".
+Skill with no instructions → skip and report. Failed push or dead endpoint → save locally: "Saved locally — push failed: <error>".
 
 ### Connect-now offer
 

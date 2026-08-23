@@ -1,6 +1,6 @@
 ---
 name: demonstrative-insights
-description: How to craft a small, high-impact set of demonstrative insights that showcase the insights feature on a board — choosing path-friendly skills for visual variety, building edge-grounded multi-node paths, and applying reusable path recipes. Used by /demo-insights.
+description: How to craft a small, high-impact set of demonstrative insights that showcase the insights feature on a board — choosing path-friendly skills for visual variety, reading the context pack, assembling and validating each push payload, building edge-grounded multi-node paths, and applying reusable path recipes. Used by /demo-insights.
 user-invokable: false
 metadata:
   author: ProvenMap
@@ -30,7 +30,7 @@ metadata:
 4. **Legible.** 3–6 nodes on a path's main line. Use `branches[]` to fan out from a high-degree node — a hub-and-spokes branch reads instantly and is the most compelling shape on a board.
 5. **Fast.** The board JSON already carries node descriptions and edges. Trust it. Only open source files to confirm a specific number you want to cite (e.g. "imported ~125 times").
 
-## Skill → polarity → path shape
+## Selecting the skills (skill → polarity → path shape)
 
 Pick skills that each produce a *different* kind of path:
 
@@ -43,11 +43,39 @@ Pick skills that each produce a *different* kind of path:
 | `onboarding-map` | observation | Importance-ordered tour | Execution Journey (broadened) |
 | `future-readiness` | opportunity | Seam → strained area → proposed change | any + a `GraphSuggestion` |
 
+**Preference order**, when the account has them: `feature-journey` (observation flow), `blast-radius` (risk cascade), `hidden-dependency` (risk/observation chokepoint), then `how-does-it-work` / `onboarding-map` / `future-readiness`. If the preferred set is unavailable, fall back to any skills in the `discovery`, `reliability`, or `architecture_health` categories.
+
 If a focus prompt names a concern (security, performance, cost), include that skill too — but still pair it with at least one path-producing skill so the demo has a path.
+
+## The context pack
+
+`pmap-insights.js --build-context --demo` writes the pack to `.provenmap/insights/<board>.context.json` — the canonical path `--save-insight --demo` reads back for its quality gates. It gives you, without any manual indexing:
+
+- **node index** — `pack.elements[]` (`{key, board, slug, type, name, description}`), with pre-assigned scope keys
+- **edge adjacency** — `pack.edges[]` (`{board, sourceKey, targetKey, type, description}`) — the source of truth for path grounding
+- **degree** — `pack.degree[]` (`{key, board, fanIn, fanOut}`), ranked most-connected first — your hub/chokepoint shortlist
+- **context vars** — `pack.boards[].context`
+
+`--demo` bounds the universe to the target board plus its direct children — no siblings.
+
+Fallback, and for a single small board where the pack is overkill: on a non-zero exit, read `.provenmap/boards/<board>.json` directly and index it by hand per [../insights/references/graph-context.md](../insights/references/graph-context.md).
+
+## Assembling the payload
+
+One push payload per chosen skill:
+
+1. **Scope first (copy from the pack).** Copy `pack.scopeBoards` into `scope.boards`. For every node you cite, copy its row from `pack.elements` into `scope.elements` keeping the pre-assigned `key` and `board` verbatim, adding `role` (`focus`/`context`). Cite only what you use; never re-generate keys. Anything you spot in source that has no row in `pack.elements` belongs in a `GraphSuggestion` (`action: "add"`, `element: null`), not a cited finding.
+2. **1–3 findings.** Just enough to anchor the path — each path's key step should carry a `findingRef`. Use `recommendation` for `risk`/`opportunity`, `context` for `observation`/`strength` (never both).
+3. **At least one multi-node path** — build it with the checklist below.
+4. **Optional: one suggestion** (`add`/`modify`/`remove`) to show structural proposals render.
+5. Give the insight a **distinct polarity** from the others in the set (see *Visually varied*, above).
+6. Write a tight markdown `content` report and a `title` / `description`.
+
+`--save-insight --demo` validates all of it before pushing: Zod, then `validateScopeReferences` (ElementKey/BoardAlias/findingRef resolve; unique ids; no consecutive-duplicate steps; `recommendation`/`context` mutually exclusive), the pack gates (cited elements exist in the pack), and the demo gates — ≥1 path with ≥3 connected nodes, and every same-board path step pair edge-grounded against the pack.
 
 ## Building a path (the checklist)
 
-- **Scope before steps.** Copy each node you cite from `pack.elements` into `scope.elements` once, keeping its pre-assigned `key`/`board` verbatim. Paths/findings reference keys, never raw slugs. (The pack comes from `pmap-insights.js --build-context --demo` — see [the command](../../commands/demo-insights.md) Step 3.)
+- **Scope before steps.** Register every node you cite in `scope.elements` first (*Assembling the payload*, step 1). Paths and findings reference those keys, never raw slugs.
 - **Pick the hub from the graph.** Read fan-in/fan-out straight from `pack.degree` (ranked most-connected first). The top node is your branch point for a fan-out path; a node with high `fanIn` is your chokepoint for a hidden-dependency path.
 - **Main line: 3–6 nodes**, each consecutive pair a real edge. Direction can follow or reverse an edge — what matters is that the edge exists.
 - **Branches for fan-out.** Attach `branches[]` to the hub step, one branch per dependent — each branch element must also share a real edge with the hub.
