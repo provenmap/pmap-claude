@@ -6,7 +6,7 @@ This document describes the step-by-step process for executing a server-defined 
 
 An InsightSkill is a server-defined analysis task. The server provides the instructions and references; the plugin executes them using Claude as the analysis engine. The existing architecture board provides the context.
 
-The output is an `InsightsRoot` object built around a **Scope** (the boards + elements this analysis covers) and three optional arrays referencing scope by short keys: `insights[]`, `paths[]`, `suggestions[]`. There is no `affectedElements` array — scope plus per-finding `relatedElements` does that job.
+The output is an `InsightDraft[]` — a flat array of findings. There is no wrapping container, no scope dictionary, no separate paths or suggestions arrays. Each finding carries its own `trail` (the traversal through the graph) and optionally a `proposal` (a structural change). Board and node slugs in trails are the canonical values from the pack — never invented mnemonics.
 
 ## Execution Steps
 
@@ -73,7 +73,7 @@ The summary prints to stdout; read the **full pack** from `.provenmap/insights/<
 - **Exit 1/2 or any error** → fall back to the manual walk below and generate keys/aliases by hand.
 - **Skip when trivial:** for a single board under ~30 nodes with no manifest/child boards, reading that one board JSON directly is simpler — skip the prepass.
 
-Pack shape: `boards[]` (`{slug, alias, layer, parentBoardSlug, context:{techStacks,languages,archetypes}, nodeCount, edgeCount}`), `scopeBoards[]` (copy-ready `scope.boards` rows), `elements[]` (`{key, board, slug, type, name, description}` — keys ≤12, aliases ≤20, pre-validated; **aliases are the normalized board slug, not short mnemonics**), `edges[]` (`{board, sourceKey, targetKey, type, description}`), `degree[]` (`{key, board, fanIn, fanOut}`, ranked by **combined** fan-in+fan-out, most-connected first), `primaryBoardDefault`, `stats` (`{boardCount, elementCount, edgeCount, droppedEdges, duplicateSlugs, unresolved[]}`). A non-zero `droppedEdges` means some board edges had unresolved endpoints and were omitted — don't assume two nodes are unconnected solely because no `pack.edges` row links them.
+Pack shape: `boards[]` (`{slug, alias, layer, parentBoardSlug, context:{techStacks,languages,archetypes}, nodeCount, edgeCount}`), `scopeBoards[]` (legacy scope helper — unused in v2; use `boards[].slug` and `elements[].slug` directly for trail stops), `elements[]` (`{key, board, slug, type, name, description}` — `slug` is the canonical node slug to use in trail stops), `edges[]` (`{board, sourceKey, targetKey, type, description}`), `degree[]` (`{key, board, fanIn, fanOut}`, ranked by **combined** fan-in+fan-out, most-connected first), `primaryBoardDefault`, `stats` (`{boardCount, elementCount, edgeCount, droppedEdges, duplicateSlugs, unresolved[]}`). A non-zero `droppedEdges` means some board edges had unresolved endpoints and were omitted — don't assume two nodes are unconnected solely because no `pack.edges` row links them.
 
 Fallback — read the board's analysis data from `.provenmap/boards/<boardSlug>.json` and extract skill variables — see [graph-context.md](graph-context.md) for details. Also read `.provenmap/boards/manifest.json` (if it exists) to discover child/layer boards. For nodes that have a `layerBoardSlug`, read that child board's data file too to enable cross-board analysis. Also read any sibling boards discovered from the manifest to enable cross-domain paths.
 
@@ -93,7 +93,7 @@ Determine `{{primaryBoardSlug}}` — the board to use as the top-level primary f
 3. **Skill scope** — if the skill's instructions explicitly target a specific layer or domain, use the matching board
 4. **Finding concentration** — if during analysis the majority of findings relate to elements on a single child board, switch to it
 
-Pick only from `pack.boards`: the board you choose must have a row in `pack.scopeBoards` and must **not** appear in `pack.stats.unresolved` (a board the pack couldn't load). Store the result as `{{primaryBoardSlug}}` — it replaces `{{boardSlug}}` both in the payload and in the save/push CLI command. Elements on sibling/child boards are still legal — they live in `scope.elements` with a different board alias.
+Pick only from `pack.boards`: the board you choose must **not** appear in `pack.stats.unresolved` (a board the pack couldn't load). Store the result as `{{primaryBoardSlug}}` — this goes in the top-level `boardSlug` of the push command. Trail stops on sibling/child boards reference those boards by their canonical slug directly.
 
 ### 3. Read Skill Instructions
 
@@ -139,287 +139,140 @@ When instructions reference a named document (e.g., "see `owasp-patterns`"), fin
 
 References are named markdown documents that provide detailed detection patterns, classification rules, or domain knowledge the analysis needs.
 
-### 7. Build the Scope dictionary
+### 7. Plan trail stops for each finding
 
-**Author this first**, before findings/paths/suggestions — everything else references it.
+Before writing InsightDraft objects, identify the board and node slugs for each finding's trail. Trails use canonical slugs directly — no scope dictionary, no element keys, no board aliases.
 
-**From the pack (preferred):** copy `pack.scopeBoards` into `scope.boards` (its aliases are normalized board slugs — copy verbatim, don't shorten to mnemonics like the examples below). For each cited element, emit `{ key, slug, board }` **verbatim** from its `pack.elements` row plus `role`/`emphasis` (drop `type`/`name`/`description`). This is what guarantees the payload passes scope validation on the first try. Three rules:
+**From the pack:**
 
-- **Cite only what you use** (plus deliberate `context` elements) — do not dump the whole index.
-- **All-or-nothing boards:** every cited element's board must be present in `scope.boards` (copying `pack.scopeBoards` whole satisfies this); never prune a board you still reference.
-- **Discovered in source?** A component you find in the source that has no `pack.elements` row must become a `GraphSuggestion` (`action:"add"`, `element:null`) — never invent a key and cite it.
+- Board slugs: `pack.boards[].slug` — use the exact string, e.g. `"my-project-overview"`.
+- Node slugs: `pack.elements[].slug` — use the exact string, e.g. `"auth-service"`.
+- Edge slugs: `pack.edges[]` — derive as `sourceSlug--targetSlug` if not explicit.
 
-**By hand (fallback, no pack):** for each board your analysis touches, register an entry in `scope.boards`. For each element you'll cite (anchor of a finding, step of a path, target of a suggestion, or referenced as context), register an entry in `scope.elements` exactly once.
+**Rules:**
 
-```json
-{
-  "scope": {
-    "boards": [
-      { "slug": "my-project-overview", "alias": "ovw" },
-      { "slug": "auth-domain", "alias": "auth" }
-    ],
-    "elements": [
-      { "key": "e1", "slug": "auth-service", "board": "auth", "role": "focus" },
-      { "key": "e2", "slug": "api-gateway", "board": "ovw", "role": "focus" },
-      { "key": "e3", "slug": "user-db", "board": "auth", "role": "context" }
-    ]
-  }
-}
-```
+- Every trail must have exactly one entry stop (no `from`).
+- All subsequent stops set `from` to the `id` of the stop they follow.
+- `via` is required when `from` is set; forbidden on the entry stop.
+- Two stops with the same `from` create a branch — label them with `branchLabel`.
+- A component found in source that has no `pack.elements` row becomes a `proposed: true` stop on the trail, plus a `proposal` field on the InsightDraft.
+- Board-level finding (no specific node): one stop with `board` set and `node` omitted.
 
-Conventions:
+### 8. Produce InsightDraft objects
 
-- **`alias`** — short token, regex `^[a-z0-9_-]+$`, max 20 chars. Pick something memorable from the slug (e.g. `ovw` for `my-project-overview`, `auth` for `auth-domain`). Boards reference each other only by alias inside this payload.
-- **`key`** — short token, regex `^[a-z0-9_-]+$`, max 12 chars. Either sequential (`e1`, `e2`) or semantic (`auth`, `gw`, `db`). Keys are referenced from findings, paths, and suggestions.
-- **`role`** — `focus` for elements your analysis anchors findings or paths on; `context` for elements referenced only for surrounding context. Default is `focus` if omitted.
-- **`emphasis`** — optional, only meaningful for `role: context` elements; for focus elements the renderer derives emphasis from the highest-priority pinned finding. Valid values: `none`, `highlight`, `pulse`, `glow`, `outline`, `focus`.
-- **One row per element** — no duplicates. Use the same key everywhere you reference it.
-
-Everything outside `scope` references it by `key`/`alias` only — see [report-output-format.md](report-output-format.md#scope) for the full schema.
-
-### 8. Produce ElementInsight Objects
-
-For each finding, create an `ElementInsight` referencing scope by element key:
+For each finding, create an `InsightDraft` with a trail grounded on pack slugs:
 
 ```json
 {
-  "id": "sec-001",
-  "element": "e1",
   "name": "Hardcoded JWT Secret",
-  "insight": "JWT secret key is hardcoded as a string literal in src/auth/login.ts:42; rotation requires code changes.",
+  "insight": "JWT secret is a string literal in src/auth/login.ts:42; rotation requires code changes.",
   "polarity": "risk",
   "priority": "critical",
   "confidence": "verified",
-  "impact": "Compromise of source access reveals signing key, allowing arbitrary token forgery.",
-  "effort": "small",
-  "recommendation": "Read the secret from JWT_SECRET environment variable; rotate via deployment, not commit.",
-  "tags": ["security", "secrets"]
+  "impact": "Source-code access reveals the signing key, enabling token forgery.",
+  "tags": ["security", "secrets"],
+  "advice": {
+    "kind": "recommendation",
+    "text": "Read the secret from JWT_SECRET environment variable; rotate via deployment.",
+    "effort": "small"
+  },
+  "trail": [
+    { "id": "s1", "board": "my-project-overview", "node": "auth-service" }
+  ]
 }
 ```
 
 Field guide:
 
-- **`id`** — unique within this analysis (e.g., `sec-001`, `perf-003`).
-- **`element`** — ElementKey from `scope.elements`. Null/omit for board-wide findings that don't anchor to a single element.
-- **`relatedElements`** — array of ElementKeys also implicated. The diagram highlights all of them together.
-- **`name`** — short label (≤ 100 chars).
-- **`insight`** — evidence-driven description (5–500 chars). State _what_ you found and _why_ it matters. Opinion lives in `recommendation`.
-- **`polarity`** — one of `risk`, `strength`, `opportunity`, `observation`. (No "metric" — measurements are a separate field, see below.)
-- **`priority`** — one of `critical`, `high`, `medium`, `low`. Orthogonal to polarity (a strength can still be high priority to highlight).
+- **`name`** — short label (≤ 100 chars), imperative.
+- **`insight`** — evidence-driven description (5–500 chars). State _what_ you found and _why_ it matters. Opinions live in `advice.text`.
+- **`polarity`** — one of `risk`, `strength`, `opportunity`, `observation`.
+- **`priority`** — one of `critical`, `high`, `medium`, `low`.
 - **`confidence`** — one of `verified` (read the code), `likely` (strong evidence), `inferred` (derived from patterns), `speculative` (pattern-match guess). Be honest; the renderer surfaces this.
-- **`impact`** — optional. For risks/opportunities: consequence if left unaddressed. For strengths: what is gained by leveraging it. Max 300 chars.
-- **`effort`** — optional. Relative work to act on the finding: `trivial`, `small`, `medium`, `large`, `epic`. Only meaningful when `recommendation` is set.
-- **`measurement`** — optional. Quantitative supporting data. See "Measurements" below.
-- **`tags`** — classification tags for grouping/filtering (max 10).
-- **`recommendation`** — concrete action to take (max 500 chars). Populate when polarity is `risk` or `opportunity` and there's an actionable next step.
-- **`context`** — supplementary background (max 500 chars). Populate for `observation`/`strength`, or `risk` without a concrete action.
-- **Mutual exclusion** — populate `recommendation` **OR** `context`, not both. The CLI rejects payloads that set both.
-- **`relatedFindings`** — array of other finding `id`s this one connects to (amplifies, depends on, follows from).
+- **`impact`** — optional. Consequence if unaddressed (risk/opportunity) or gained by leveraging (strength). Max 300 chars.
+- **`measurement`** — optional. Attach quantitative data to any polarity: `{ value, unit, baseline?, threshold?, trend? }`.
+- **`tags`** — free-text classification keywords (max 10).
+- **`advice`** — one object: `{ kind: "recommendation", text, effort }` when there is a concrete action; `{ kind: "context", text }` for background only. Never both. `effort` (`trivial`|`small`|`medium`|`large`|`epic`) is required for recommendations, omitted for context.
+- **`trail`** — minimum 1 stop. See [report-output-format.md](report-output-format.md#trail) for the full Stop schema.
+- **`proposal`** — optional. Set when the finding proposes a structural board change. See [report-output-format.md](report-output-format.md#proposal).
 
-#### Measurements
+#### Multi-stop trail example
 
-When a finding has a quantitative dimension, attach a `measurement` rather than using a separate signal type:
+When a finding traces a flow (blast radius, dependency cascade, auth path), use multiple stops:
 
 ```json
 {
-  "id": "perf-002",
-  "element": "e2",
   "name": "Auth endpoint p99 latency",
   "insight": "Auth endpoint p99 latency is 850ms at peak, dominated by bcrypt comparison.",
   "polarity": "observation",
   "priority": "medium",
   "confidence": "likely",
-  "measurement": {
-    "value": 850,
-    "unit": "ms",
-    "baseline": 200,
-    "threshold": 500,
-    "trend": "increasing"
+  "measurement": { "value": 850, "unit": "ms", "baseline": 200, "threshold": 500, "trend": "increasing" },
+  "advice": {
+    "kind": "context",
+    "text": "Bcrypt cost factor is 14, set in 2019; modern hardware supports 12 without weakening security."
   },
-  "context": "Bcrypt cost factor is 14, set in 2019; modern hardware supports 12 without weakening security."
-}
-```
-
-`measurement` attaches to any polarity. Use `baseline` for the target/SLA value, `threshold` for the value beyond which the measurement is noteworthy, and `trend` for direction over time if known.
-
-### 9. Trace Insight Paths
-
-Create `InsightPath` objects only when the analysis traces connected flows through the graph's edges — execution paths, blast radius chains, or dependency cascades. If the skill's analysis produces point findings without tracing flows between them, omit paths entirely. Zero paths is a valid outcome.
-
-```json
-{
-  "id": "path-001",
-  "title": "User Authentication Flow",
-  "description": "Critical path from login request to session creation.",
-  "polarity": "observation",
-  "priority": "high",
-  "defaultBoard": "ovw",
-  "steps": [
-    {
-      "element": "e2",
-      "label": "Receives login request",
-      "annotation": "Rate limited 10 req/s"
-    },
-    {
-      "element": "e1",
-      "label": "Validates credentials",
-      "findingRef": "sec-001"
-    },
-    { "element": "e3", "label": "Reads user record" }
-  ],
-  "tags": ["auth", "latency"]
-}
-```
-
-Field guide:
-
-- **`id`**, **`title`**, **`description`** — as before. Title ≤ 100 chars, description ≤ 500.
-- **`polarity`**, **`priority`** — overall nature of the path.
-- **`defaultBoard`** — BoardAlias from `scope.boards`. The most common board across the steps; used for fast UI lookup. Each step's element resolves to its own board via `scope.elements` regardless of this default.
-- **`steps`** — ordered, minimum 2.
-  - **`element`** — required ElementKey.
-  - **`label`** — what happens at this step (≤ 100).
-  - **`annotation`** — extra context like latency or load (≤ 300).
-  - **`findingRef`** — optional id of an `ElementInsight` in this same analysis. If set, the step inherits the finding's polarity/priority/recommendation; don't duplicate the prose.
-  - **`branches`** — optional array of sub-steps for non-linear flows (conditional branches, fan-outs). Recursive — branches can have their own branches.
-
-#### Path quality rules
-
-- **Edge-grounded** — ground every consecutive step pair against `pack.edges` (fallback: `edges[]` from the board data). Each pair should correspond to an actual edge (direct or within 1-2 hops); use `pack.degree` to locate hubs/chokepoints worth tracing. Do not invent connections that don't exist in the graph. Edge-grounding applies within each board; cross-board transitions are valid when the flow continues across board boundaries.
-- **No consecutive duplicates** — never place the same `element` key in back-to-back steps. An element may reappear later if the flow genuinely revisits it in a different role (with a distinct `label`). If revisits make the path hard to follow, split into separate forward/return paths.
-
-#### Branches example
-
-```json
-{
-  "id": "path-blast-001",
-  "title": "Payment failure blast radius",
-  "description": "Where a payment-service outage propagates.",
-  "polarity": "risk",
-  "priority": "high",
-  "defaultBoard": "ovw",
-  "steps": [
-    { "element": "pay", "label": "payment-service outage" },
-    {
-      "element": "ord",
-      "label": "order-service blocks on retries",
-      "branches": [
-        {
-          "element": "ntf",
-          "label": "notification-service skips confirmation"
-        },
-        { "element": "anly", "label": "analytics pipeline misses event" }
-      ]
-    },
-    { "element": "user", "label": "user sees error" }
+  "trail": [
+    { "id": "s1", "board": "my-project-overview", "node": "api-gateway", "note": "Entry — rate limited" },
+    { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "api-gateway--auth-service" }, "board": "my-project-overview", "node": "auth-service", "note": "850ms p99" },
+    { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "auth-service--user-db" }, "board": "my-project-overview", "node": "user-db", "note": "Read per request" }
   ]
 }
 ```
 
-### 10. Propose Graph Suggestions
+Ground every consecutive stop pair against `pack.edges`. Two stops with the same `from` express a branch (fan-out). A stop on a different board uses `via: { kind: "layer", direction: "descend" }` or `via: { kind: "jump" }` for unrelated hops.
 
-When the analysis identifies structural improvements to the board, create `GraphSuggestion` objects. All element references are ElementKeys.
+### 9. Structural proposals
+
+There is no separate `GraphSuggestion` step. When the analysis identifies a structural improvement (add a node, remove an edge, modify a container), set `proposal` on the InsightDraft whose trail names the affected elements. A `proposed: true` stop marks a node that doesn't exist yet.
 
 ```json
 {
-  "id": "sug-001",
-  "action": "add",
-  "targetType": "node",
   "name": "Add Redis cache layer",
-  "rationale": "Auth service queries user-db on every request. A cache layer would cut p99 latency by ~80%.",
+  "insight": "auth-service queries user-db on every request; no caching layer exists.",
   "polarity": "opportunity",
   "priority": "high",
-  "tags": ["performance", "caching"]
+  "confidence": "verified",
+  "advice": { "kind": "recommendation", "text": "Introduce Redis; cache sessions with 15-min TTL.", "effort": "medium" },
+  "trail": [
+    { "id": "s1", "board": "my-project-overview", "node": "auth-service" },
+    { "id": "s2", "from": "s1", "via": { "kind": "proposedEdge" }, "board": "my-project-overview", "node": "redis-cache", "proposed": true, "parent": "infra-container" }
+  ],
+  "proposal": { "action": "add", "targetType": "node", "changes": [{ "field": "name", "before": null, "after": "Redis Cache" }] }
 }
 ```
 
-Field guide:
+See [report-output-format.md](report-output-format.md#proposal) for the full Proposal schema.
 
-- **`action`** — `add`, `remove`, or `modify`.
-- **`targetType`** — `node`, `edge`, or `container`.
-- **`element`** — ElementKey of the element to remove or modify. Null/omit for `add` actions.
-- **`fromElement`**, **`toElement`** — ElementKeys for the source and target of an edge suggestion.
-- **`name`** — what is being suggested (≤ 100).
-- **`rationale`** — why (5–500).
-- **`polarity`**, **`priority`** — same enums as ElementInsight.
-
-For adding a new element that doesn't yet exist in scope, omit `element` and describe the addition in `name`+`rationale`. For an edge between two existing elements, set both `fromElement` and `toElement` to their ElementKeys (and those elements must be in `scope.elements`).
-
-### 11. Write Markdown Report
+### 10. Write Markdown Report
 
 Compose a markdown report for the `content` field:
 
 - Summary with finding counts by priority and polarity
-- Detailed findings grouped by element or category, mentioning each finding's confidence and (where set) measurement
-- Paths traced through the architecture
-- Suggested structural changes
-- Recommendations for actionable findings
+- Detailed findings grouped by element or category, mentioning each finding's confidence and (where set) measurement and trail
+- Advice for actionable findings (recommendation text + effort, or context)
 
-### 12. Assemble and Save
+### 11. Assemble and Save
 
-Build the `PushInsightsCommand` JSON. Every reference inside `insights`/`paths`/`suggestions` must resolve to a row in `scope.elements` or `scope.boards`:
+Build the `PushInsightsCommand` JSON. The `insights` field is a flat `InsightDraft[]` — no wrapper object, no scope, no paths, no suggestions:
 
 ```json
 {
   "boardSlug": "<primaryBoardSlug>",
   "insightSkillSlug": "<skill.slug>",
-  "insights": {
-    "scope": {
-      "boards": [
-        { "slug": "<primaryBoardSlug>", "alias": "ovw" },
-        { "slug": "auth-domain", "alias": "auth" }
-      ],
-      "elements": [
-        {
-          "key": "e1",
-          "slug": "auth-service",
-          "board": "auth",
-          "role": "focus"
-        },
-        { "key": "e2", "slug": "api-gateway", "board": "ovw", "role": "focus" }
+  "insights": [
+    {
+      "name": "Hardcoded JWT Secret",
+      "insight": "JWT secret is a string literal in src/auth/login.ts:42.",
+      "polarity": "risk",
+      "priority": "critical",
+      "confidence": "verified",
+      "advice": { "kind": "recommendation", "text": "Read JWT_SECRET from env; rotate via deployment.", "effort": "small" },
+      "trail": [
+        { "id": "s1", "board": "my-project-overview", "node": "auth-service" }
       ]
-    },
-    "insights": [
-      {
-        "id": "sec-001",
-        "element": "e1",
-        "name": "Hardcoded JWT Secret",
-        "insight": "JWT secret is a string literal in src/auth/login.ts:42.",
-        "polarity": "risk",
-        "priority": "critical",
-        "confidence": "verified",
-        "recommendation": "Read JWT_SECRET from env; rotate via deployment."
-      }
-    ],
-    "paths": [
-      {
-        "id": "path-001",
-        "title": "Auth Flow",
-        "polarity": "observation",
-        "priority": "high",
-        "defaultBoard": "ovw",
-        "steps": [
-          { "element": "e2", "label": "Receives login" },
-          {
-            "element": "e1",
-            "label": "Validates credentials",
-            "findingRef": "sec-001"
-          }
-        ]
-      }
-    ],
-    "suggestions": [
-      {
-        "id": "sug-001",
-        "action": "add",
-        "targetType": "node",
-        "name": "Add secrets manager",
-        "rationale": "Centralise secret storage to eliminate hardcoded values.",
-        "polarity": "opportunity",
-        "priority": "high"
-      }
-    ]
-  },
+    }
+  ],
   "content": "<markdown report>",
   "title": "<skill.name> — <date>",
   "description": "<summary line>",
@@ -434,30 +287,27 @@ Before assembling, pull the org's ContextTag vocabulary so you tag with names th
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-context-tags.js
 ```
 
-Note:
+Notes:
 
-- `insights.scope` is **required**. `insights.insights`, `insights.paths`, `insights.suggestions` are all optional — include only what the analysis produces.
-- **`tags`** — curated ContextTag names classifying the **whole** insight (risk area, domain, lifecycle). Copy names **verbatim** from `pmap-context-tags.js` output (`tagNames`); the server **drops** any name not in the vocabulary, so never invent one. Optional — omit or use `[]` when none fit. This is distinct from the per-finding `tags` inside each ElementInsight, which are free-text keywords.
-- Do not set `insights.name` — the data layer fills it from the parent record's title at render time.
-- `info` is a short (≤ 350 char) human-readable line describing **what this run surfaced** — e.g. `"3 auth risks incl. a hardcoded JWT secret; missing rate-limit on the payment path"`. It is stored on the push's audit thread so the pushed insight is traceable back to this analysis run and its source binding. Be specific and concrete; if omitted, the CLI falls back to a generic `Insights: <skill> → <board>` label.
+- **`insights`** — `InsightDraft[]`. Every trail stop's `board` must be a slug from `pack.boards[].slug`; every `node` must be from `pack.elements[].slug`. The CLI validates this.
+- **`tags`** — curated ContextTag names classifying the **whole** insight (risk area, domain, lifecycle). Copy names **verbatim** from `pmap-context-tags.js` output (`tagNames`); the server **drops** any name not in the vocabulary. Optional — omit or use `[]` when none fit. Distinct from the per-finding `tags` inside each InsightDraft, which are free-text keywords.
+- `info` is a short (≤ 350 char) human-readable line describing **what this run surfaced** — e.g. `"3 auth risks incl. a hardcoded JWT secret; missing rate-limit on the payment path"`. Be specific; if omitted, the CLI falls back to a generic label.
 
-Write the payload to a temp file (e.g. `/tmp/insight-<slug>.json`). **First ensure the pack exists for `{{primaryBoardSlug}}`** — if you switched the primary board away from the one you built the pack for in step 2, rebuild it now (`--build-context --board-slug <primaryBoardSlug> --out .provenmap/insights/<primaryBoardSlug>.context.json`). Then save with `--require-pack`, so a missing pack fails loudly instead of silently skipping the pack gates:
+Write the payload to a temp file (e.g. `/tmp/insight-<slug>.json`). **First ensure the pack exists for `{{primaryBoardSlug}}`** — if you switched the primary board, rebuild it now (`--build-context --board-slug <primaryBoardSlug> --out .provenmap/insights/<primaryBoardSlug>.context.json`). Then save with `--require-pack`:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight /tmp/insight-<slug>.json --board-slug <primaryBoardSlug> --require-pack --push --host claude --domain connect
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight /tmp/insight-<slug>.json --board-slug <primaryBoardSlug> --require-pack --push --host claude --domain code
 ```
 
-The CLI runs three validation gates before writing/pushing:
+The CLI runs validation gates before writing/pushing:
 
 1. Zod schema (structural validity).
-2. `validateScopeReferences` (every `element`/`fromElement`/`toElement` ElementKey resolves in `scope.elements`; every `scope.elements[].board` and every `defaultBoard` BoardAlias resolves in `scope.boards`; every `findingRef`/`relatedFindings` id matches a finding; **unique ids**; **no self-reference**; **no consecutive-duplicate path steps**; **finite measurement values**; no `ElementInsight` has both `recommendation` and `context`).
-3. `validateInsightContent` against the context pack (when present): every cited `scope.elements` `{slug,board}` **exists in the pack**; the primary board is not in `pack.stats.unresolved`; same-board path step pairs are **edge-grounded** against `pack.edges` (HARD for `/demo-insights`, a warning for `/insights`).
+2. Trail validation: every stop's `board` resolves in the pack; every `node` resolves on that board; `via` is present iff `from` is set; exactly one entry stop; no duplicate `id`s within a trail; `proposed: true` stops name a `node`.
+3. Edge-grounding against the context pack (when present): same-board consecutive stops should correspond to a real `pack.edges` entry (HARD for `/demo-insights`, a warning for `/insights`).
 
-Two channels: **`validationErrors[]` + exit 3** is blocking — fix the listed fields and retry (errors carry a JSON path, the bad value, and the fix; copy any "did you mean" pack row verbatim). **`warnings[]` + exit 0** is non-blocking and already saved — review once (unbacked `verified`, unreferenced scope rows, ungrounded `/insights` paths) and improve if cheap, but **do not loop** on warnings.
+Two channels: **`validationErrors[]` + exit 3** is blocking — fix the listed fields and retry (errors carry a JSON path, the bad value, and the fix; copy any "did you mean" pack row verbatim). **`warnings[]` + exit 0** is non-blocking and already saved — review once and improve if cheap, but **do not loop** on warnings.
 
-Self-check before pushing: every `findingRef`/`relatedFindings` id equals an `insights[].id`; every element key in steps **and `branches`** (walked recursively) has a `scope.elements` row; cited rows were copied from the pack.
-
-### 13. Report Result
+### 12. Report Result
 
 - If pushed successfully: "Pushed to server (insightId: abc-123-def)"
 - If push not available: "Saved locally — server push not yet available"

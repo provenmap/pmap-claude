@@ -59,8 +59,8 @@ the tree — clean by construction); draw the answer-subgraph on it with the nor
 tools (ungoverned — nothing is staged), hand back its slug + a prose précis, and clean up with
 `delete_context_board` when the conversation is done — never `discard_write_session`, which
 would revert the architect's whole working copy. When the tool is absent (older server), fall
-back to `create_insight` with `scope.elements` — highlights on the existing canvas; never fake
-a board.
+back to `create_insight` with a `trail` of stops, each naming a board slug and node slug
+directly — highlights on the existing canvas; never fake a board.
 
 ## Layered boards & cross-board navigation
 

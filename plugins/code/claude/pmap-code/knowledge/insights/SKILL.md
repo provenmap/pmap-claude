@@ -67,4 +67,4 @@ Insight results are stored per-skill at `.provenmap/boards/insights/<skill-slug>
 
 - [execution-protocol.md](references/execution-protocol.md) — How to execute an InsightSkill
 - [graph-context.md](references/graph-context.md) — How to extract board context for analysis
-- [report-output-format.md](references/report-output-format.md) — Scope, ElementInsight, InsightPath, GraphSuggestion schemas
+- [report-output-format.md](references/report-output-format.md) — InsightDraft, Stop, trail, advice, proposal, and measurement schemas

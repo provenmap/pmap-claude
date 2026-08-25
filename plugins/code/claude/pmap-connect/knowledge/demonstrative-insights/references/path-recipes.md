@@ -1,18 +1,18 @@
-# Path Recipes
+# Trail Recipes
 
-Three reusable, archetype-agnostic recipes for demonstrative paths. Each maps a graph signal → a path shape → a polarity. Pick nodes from `pack.degree` (ranked fan-in/fan-out) and ground every step pair on `pack.edges`; the worked examples use the React monorepo root board (`master`), but the heuristics apply to any board.
+Three reusable, archetype-agnostic recipes for demonstrative multi-stop trails. Each maps a graph signal → a trail shape → a polarity. Pick nodes from `pack.degree` (ranked fan-in/fan-out) and ground every consecutive stop pair on `pack.edges`; the worked examples use a React monorepo root board, but the heuristics apply to any board.
 
-A note on the examples: they assume `scope.boards` has the target board aliased as `ovw`, and use short element keys (`recon`, `sched`, …) registered in `scope.elements`.
+In v2, traversal lives in each InsightDraft's `trail` — a `Stop[]`. There are no separate InsightPath objects. Branches are expressed as multiple stops with the same `from` value, each with a `branchLabel`. Every stop's `board` and `node` must be canonical slugs from the pack (`pack.boards[].slug`, `pack.elements[].slug`).
 
 ---
 
 ## Recipe 1 — Execution Journey (observation)
 
-**Use for:** `feature-journey`, `how-does-it-work`, `onboarding-map`. The friendliest demo path: a single flow from where work enters to where it ends.
+**Use for:** `feature-journey`, `how-does-it-work`, `onboarding-map`. The friendliest demo trail: a single flow from where work enters to where it ends.
 
 **Graph signal:** an entrypoint node (low inbound from internal nodes, or a renderer/controller/UI archetype) with a forward chain of outbound edges into an engine and then a leaf dependency.
 
-**Shape:** linear, 3–5 steps, optionally one branch to an adapter/sibling the entrypoint also calls.
+**Trail shape:** linear, 3–5 stops, optionally one branch to an adapter/sibling the entrypoint also calls.
 
 ```
 entrypoint ──▶ engine ──▶ scheduling/IO leaf
@@ -23,10 +23,20 @@ entrypoint ──▶ engine ──▶ scheduling/IO leaf
 1. Entrypoint = the node a user action hits first.
 2. Follow outbound edges to the component that does the real work (the engine).
 3. Continue to the terminal dependency (a queue, scheduler, store, or external call) — the latency-sensitive hop.
-4. If the entrypoint also calls an adapter/bindings layer, hang it off the entrypoint as a branch.
+4. If the entrypoint also calls an adapter/bindings layer, add it as a branch stop from the entrypoint.
 
-**Worked example (render pipeline):**
-`react → react-dom` (branch → `react-dom-bindings`) `→ react-reconciler → scheduler`. Anchor a finding on the entrypoint (`react-dom`) and the latency hop (`scheduler`). Polarity: observation.
+**Trail structure:**
+
+```json
+"trail": [
+  { "id": "s1", "board": "<board-slug>", "node": "react-dom", "note": "Entry point" },
+  { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "react-dom--react-reconciler" }, "board": "<board-slug>", "node": "react-reconciler", "note": "Core reconciliation engine" },
+  { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "react-reconciler--scheduler" }, "board": "<board-slug>", "node": "scheduler", "note": "Latency-sensitive hop", "branchLabel": "main path" },
+  { "id": "s4", "from": "s1", "via": { "kind": "edge", "edge": "react-dom--react-dom-bindings" }, "board": "<board-slug>", "node": "react-dom-bindings", "note": "Adapter layer", "branchLabel": "bindings path" }
+]
+```
+
+Anchor `advice.kind: "context"` on the trail's purpose. Polarity: `observation`.
 
 ---
 
@@ -34,9 +44,9 @@ entrypoint ──▶ engine ──▶ scheduling/IO leaf
 
 **Use for:** `blast-radius`. The most dramatic shape — one failure fanning out across the system.
 
-**Graph signal:** a **single point of failure** = highest fan-in node (many inbound edges) that is also synchronously depended upon. Often there's a deeper kernel one ring below it (a node the SPOF itself depends on).
+**Graph signal:** a **single point of failure** = highest fan-in node (many inbound edges) that is also synchronously depended upon. Often there's a deeper kernel one ring below it.
 
-**Shape:** root → SPOF hub with a wide `branches[]` fan-out (Ring 1 dependents) → continue the main line to one downstream degradation (Ring 2).
+**Trail shape:** root stop → SPOF stop → main dependent + branch stops for the other dependents → downstream degradation.
 
 ```
 kernel ──▶ SPOF hub ──▶ primary dependent ──▶ downstream degradation
@@ -46,13 +56,26 @@ kernel ──▶ SPOF hub ──▶ primary dependent ──▶ downstream degra
 ```
 
 **How to pick nodes:**
-1. Scan `pack.degree` for the node with the highest `fanIn` (the rows are ranked by combined fan-in+fan-out, so the SPOF may not be row 1 — sort by `fanIn` yourself). That node is the SPOF hub; anchor a `critical` risk finding on it.
-2. If the hub itself depends on a lower node (e.g. a shared kernel), make that the root (Ring 0) — anchor a second risk finding there.
-3. Put all the hub's other dependents in `branches[]` (Ring 1) — one branch each, labelled with how they fail.
-4. Continue the main line through one dependent to something it in turn affects (Ring 2 degradation).
+1. Scan `pack.degree` for the node with the highest `fanIn` — sort by `fanIn` yourself since `degree` is ranked by combined fan-in+fan-out. That's the SPOF hub.
+2. If the hub depends on a lower node (a shared kernel), make that the entry stop (Ring 0).
+3. The SPOF hub is stop 2 (anchor the `critical` risk finding here).
+4. All the hub's dependents become branch stops sharing the same `from` (Ring 1) — label each with how it degrades.
+5. Continue the main line through one dependent to something it affects (Ring 2 degradation).
 
-**Worked example (reconciler cascade):**
-`shared → react-reconciler` (branches: `react-art`, `react-native-renderer`, `react-test-renderer`, `react-noop-renderer`, `devtools`) `→ react-dom → server-components`. A second short path can show the *upstream* direction: `scheduler → react-reconciler` ("if the thing the engine depends on stalls, the engine freezes"). Polarity: risk.
+**Trail structure (branches from the SPOF stop):**
+
+```json
+"trail": [
+  { "id": "s1", "board": "<board-slug>", "node": "shared", "note": "Root kernel — Ring 0" },
+  { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "shared--react-reconciler" }, "board": "<board-slug>", "node": "react-reconciler", "note": "SPOF hub — anchor finding here" },
+  { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "react-reconciler--react-dom" }, "board": "<board-slug>", "node": "react-dom", "note": "Primary dependent", "branchLabel": "react-dom path" },
+  { "id": "s4", "from": "s2", "via": { "kind": "edge", "edge": "react-reconciler--react-art" }, "board": "<board-slug>", "node": "react-art", "note": "Renderer fails", "branchLabel": "react-art path" },
+  { "id": "s5", "from": "s2", "via": { "kind": "edge", "edge": "react-reconciler--react-native-renderer" }, "board": "<board-slug>", "node": "react-native-renderer", "note": "RN fails", "branchLabel": "react-native path" },
+  { "id": "s6", "from": "s3", "via": { "kind": "edge", "edge": "react-dom--server-components" }, "board": "<board-slug>", "node": "server-components", "note": "Ring 2 degradation" }
+]
+```
+
+Polarity: `risk`, priority: `critical` on the SPOF hub finding.
 
 ---
 
@@ -60,9 +83,9 @@ kernel ──▶ SPOF hub ──▶ primary dependent ──▶ downstream degra
 
 **Use for:** `hidden-dependency`. Shows the unassuming node everything quietly runs through.
 
-**Graph signal:** a node whose fan-in is disproportionate to its archetype — a "utility"/"shared"/"config" type with far more inbound edges than expected. Multiple independent callers reach the same node.
+**Graph signal:** a node whose fan-in is disproportionate to its archetype — a "utility"/"shared"/"config" type with far more inbound edges than expected.
 
-**Shape:** one caller → chokepoint, with `branches[]` to the *other* independent callers (fan-**in** visualised). Optionally a second, thin chain that ends at a universal hub.
+**Trail shape:** one caller → chokepoint, with branch stops for the other independent callers (fan-in visualised). Optionally a second thin chain ending at a universal hub.
 
 ```
 caller ──▶ chokepoint
@@ -72,19 +95,25 @@ caller ──▶ chokepoint
 ```
 
 **How to pick nodes:**
-1. Scan `pack.degree` for a node with anomalous `fanIn` for its type (a small/utility package with many dependents).
-2. Make one dependent the main entry step, the chokepoint the second step (anchor the finding here), and the remaining dependents branches.
-3. For a contrasting second path, trace a long thin chain (A → B → hub) into a node with the highest fan-in overall and branch out its dependents — the "universal hub" observation.
+1. Scan `pack.degree` for a node with anomalous `fanIn` for its type.
+2. Pick one dependent as the entry stop, make the chokepoint the second stop (anchor the finding here).
+3. All other dependents become branch stops with the same `from` as the chokepoint, each labelled.
 
-**Worked example (scheduler + shared + react):**
-- `react-dom → scheduler` (branches: `react-art`, `react-native-renderer`, `react-reconciler`) — the tiny package on everyone's hot path.
-- `react-dom-bindings → shared` (branches: `react-reconciler`, `server-components`) — the unpublished kernel.
-- `use-subscription → use-sync-external-store → react` (branches: `react-cache`, `react-refresh`, `devtools`, `server-components`, `build-tooling`) — the universal peer hub.
+**Trail structure:**
 
-Polarities: risk for the chokepoints, observation for the universal hub (expected coupling, worth noting not fixing).
+```json
+"trail": [
+  { "id": "s1", "board": "<board-slug>", "node": "react-dom", "note": "One dependent — entry" },
+  { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "react-dom--scheduler" }, "board": "<board-slug>", "node": "scheduler", "note": "Chokepoint — everyone depends on this tiny package" },
+  { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "react-art--scheduler" }, "board": "<board-slug>", "node": "react-art", "note": "Also depends", "branchLabel": "react-art" },
+  { "id": "s4", "from": "s2", "via": { "kind": "edge", "edge": "react-reconciler--scheduler" }, "board": "<board-slug>", "node": "react-reconciler", "note": "Also depends", "branchLabel": "react-reconciler" }
+]
+```
+
+Note the branch stops on the chokepoint go *back* to callers — this visualises the inbound fan-in. The `via.edge` slug must exist in `pack.edges`; derive it as `callerSlug--schedulerSlug` if not explicit. Polarity: `risk` for chokepoints with no fallback; `observation` for expected hubs.
 
 ---
 
 ## Combining recipes for a set
 
-A strong 3-insight demo uses one of each: **Journey** (observation) + **Cascade** (risk) + **Chokepoint** (risk/observation). That spread gives the board a flow, a dramatic fan-out, and a coupling story — three different visual signatures and a balance of colour. Keep total nodes-in-paths roughly 6–11 per insight so each stays readable.
+A strong 3-insight demo uses one of each: **Journey** (observation) + **Cascade** (risk) + **Chokepoint** (risk/observation). That spread gives the board a flow, a dramatic fan-out, and a coupling story — three different visual signatures and a balance of colour. Keep total stops-per-insight roughly 4–8 so each trail stays readable.

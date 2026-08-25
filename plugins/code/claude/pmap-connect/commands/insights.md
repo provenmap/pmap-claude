@@ -16,9 +16,9 @@ allowed-tools: Read, Glob, Grep, Write, Bash(node:*), AskUserQuestion
 - **1 Resolve the skills** from the command argument: a prompt → you match it to the `skills[]` precis, select one or more, and keep the prompt as the **focus prompt**; `--select` or no argument → print the skills table, then the **user** supplies the skill(s) **and** a required focus prompt via AskUserQuestion; `--list` → table, then stop; `--all` / `<skill-slug>` → run every skill / only that one, empty focus prompt.
 - **1.5 Fetch** each selected skill in turn (`--get-insight-skill`) — exit 3 skips only that skill.
 - **1.6 Build the context pack** (`--build-context`), or its documented fallback when the prepass fails.
-- **2 Execute** per skill: pack → primary board → interpolate the skill variables and the user focus → analyse with Read/Glob/Grep → `scope` copied from the pack → findings, paths, suggestions → markdown report → validate and save/push (`--require-pack`), fixing any `validationErrors` and retrying.
+- **2 Execute** per skill: pack → primary board → interpolate the skill variables and the user focus → analyse with Read/Glob/Grep → `InsightDraft[]` (each with a trail grounded on pack slugs) → markdown report → validate and save/push (`--require-pack`), fixing any `validationErrors` and retrying.
 
-**3 Summary** — after the last skill, print one row per skill: Skill | Findings | Paths | Suggestions | Critical | High | Status (`pushed`/`saved`).
+**3 Summary** — after the last skill, print one row per skill: Skill | Findings | Trail Stops | Critical | High | Status (`pushed`/`saved`).
 
 ## Connect-now offer
 

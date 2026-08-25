@@ -67,7 +67,7 @@ session analysis as a draft run.
 ## Recording a session analysis
 
 When you performed a real analysis in-session (e.g. an assessment via board-reading), offer to
-record it: `create_insight` with the narrative and structured findings — `scope.boards` and
-`scope.elements` address boards and nodes by **slug**; findings reference them by short key;
-finding ids then feed `promote_insight_findings`. Unknown tags are dropped, not rejected. The
+record it: `create_insight` with the narrative and structured findings — each finding carries a
+`trail` of stops; each stop references a board and node by their canonical slug directly (no
+scope dictionary, no short keys); finding ids then feed `promote_insight_findings`. Unknown tags are dropped, not rejected. The
 run lands as a draft.

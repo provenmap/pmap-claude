@@ -59,7 +59,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight /tmp/insight-
 
 ### Step 6: Summary
 
-Print a row per skill (polarity, findings, paths, path nodes, status), say the board is ready to share, and name the `replace` vs `append` skills.
+Print a row per skill (polarity, findings, trail stops, status), say the board is ready to share, and name the `replace` vs `append` skills.
 
 ## Error Handling
 

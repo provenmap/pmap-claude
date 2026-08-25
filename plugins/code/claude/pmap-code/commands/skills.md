@@ -55,13 +55,13 @@ Exit codes:
 
 ### Step 2: Report the result
 
-If `withheld.count > 0`, tell the user: "`<withheld.count>` skill file(s) need a newer plugin — run `/update`". Print `note` verbatim if present. `--sync`: relay `written`/`updated`/`deleted`/`unchanged`, `orphansKept[]`, `foreign[]`; remind the user to **commit** the skills + lock file. `--status`: relay `inSync`, `upstreamChanged`, `locallyModified[]`, `missing[]` (meanings above).
+If `withheld.count > 0`: "`<count>` file(s) need a newer plugin — run `/update`". Print `note` verbatim. `--sync`: relay `written`/`updated`/`deleted`/`unchanged`, `orphansKept[]`, `foreign[]`; remind to **commit**. If `referenced > 0`: "N referenced skill(s) fetched from GitHub (verified)". If `thirdPartyScripts`: list paths as a warning. If `externalFailed`: list each `sourceSlug`+`reason`; say re-run retries, treeHash mismatch needs curator re-pin. `--status`: relay `inSync`, `upstreamChanged`, `locallyModified[]`, `missing[]`.
 
 CLI owns writing; never edit a skill file yourself.
 
 ## Connect-now offer
 
-Used whenever ProvenMap is not configured or the credentials were rejected (`errorType: "auth_invalid"`). Ask with **AskUserQuestion** — "Connect to ProvenMap now?" (**Connect now** / **Not now**):
+On config-missing or `errorType: "auth_invalid"`, AskUserQuestion "Connect to ProvenMap now?" (**Connect now** / **Not now**):
 
-- **Connect now** → run the browser login here, printing each JSON `display` verbatim **in your reply** (the Bash output panel is collapsed for the user): `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain code` (generous Bash timeout, e.g. 250s). On `status: "complete"`, resume this command from the step that failed; anything else — stop, the display explains.
-- **Not now** → stop with the canonical message: "ProvenMap not configured — run `/login` (browser) or `/configure` (manual) first" (or, when credentials were rejected: "Your ProvenMap credentials were rejected — run `/login` to reconnect").
+- **Connect now** → `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `--poll --host claude --domain code` (250s timeout). Print each `display` verbatim. On `status: "complete"` resume; else stop.
+- **Not now** → "ProvenMap not configured — run `/login` or `/configure` first" (rejected: "run `/login` to reconnect").

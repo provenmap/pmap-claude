@@ -75,13 +75,13 @@ Build this from `nodes[]` — include `slug`, `type` (archetype), and `descripti
 
 The prepass already resolves the multi-board universe and emits `boards`/`elements`/`edges` keyed across all of them — consume `pack` and skip this walk. The steps below are the **fallback** when the pack is unavailable.
 
-Insights can start at any layer board and paths can span across board boundaries. To enable cross-board analysis:
+Insights can start at any layer board and trails can span across board boundaries. To enable cross-board analysis:
 
 1. **Read the manifest** — `.provenmap/boards/manifest.json` lists all boards and their hierarchy (parent/child relationships, layer levels)
 2. **Discover child boards** — nodes in the primary board may have a `layerBoardSlug` field pointing to a child board. Read each child board's data file at `.provenmap/boards/<layerBoardSlug>.json`
-3. **Cross-board references via scope** — boards do not appear inline on findings/paths/suggestions. Instead, every board you touch gets one row in `insights.scope.boards` (with a short `alias`), and every element you cite gets one row in `insights.scope.elements` (with a short `key` plus the alias of its board). Findings, path steps, and suggestions then reference elements by `key` only. See [report-output-format.md](report-output-format.md#scope) for the full schema.
+3. **Cross-board references in trail stops** — each trail stop carries a `board` field (canonical board slug from `pack.boards[].slug`) and a `node` field (canonical node slug from `pack.elements[].slug`). There is no scope dictionary or board alias — use the full slug verbatim on every stop. A stop on a sibling board uses `via: { kind: "layer", direction: "ascend" }` to ascend then a second stop uses `{ kind: "layer", direction: "descend" }` into the sibling, or `via: { kind: "jump" }` for an unrelated cross-board hop. See [report-output-format.md](report-output-format.md#trail) for the full Stop schema.
 4. **Read sibling boards** — when the primary board is an L1 child, also read sibling L1 boards (other children of the same parent in the manifest). Use the manifest's parent-child relationships to identify all siblings.
 
 ### Primary Board Selection
 
-See the Primary Board Selection section in [execution-protocol.md](../execution-protocol.md) for selection criteria. Store the result as `{{primaryBoardSlug}}` — this goes in the top-level `boardSlug` of the push command. All other boards your analysis covers get registered in `scope.boards`.
+See the Primary Board Selection section in [execution-protocol.md](../execution-protocol.md) for selection criteria. Store the result as `{{primaryBoardSlug}}` — this goes in the top-level `boardSlug` of the push command. All other boards appear only as the `board` field on trail stops (canonical slug, no separate registration required).
