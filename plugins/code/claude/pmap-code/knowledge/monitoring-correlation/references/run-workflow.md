@@ -52,12 +52,9 @@ anchors, priority, measurement, tags already set). For **each** finding, apply t
 authoring rules in `insight-shaping.md`: verify against the matched element's source before
 upgrading `confidence` to `verified`; `name` as an imperative work item and `insight` as evidence;
 **always set `recommendation` and `effort`**, never `recommendation` and `context` together; carry
-`id`, `tags` and `measurement` through unchanged; add an `InsightPath` (blast radius of a critical
-finding, edge-grounded against the context pack) or a `GraphSuggestion` (signals reveal a
-structural gap, e.g. a hot dependency that isn't on the board) only when warranted.
+`id`, `tags` and `measurement` through unchanged.
 
-Edit the skeleton file in place. Findings tagged `unmatched` are board-level facts — keep them,
-and note in `context` what would help anchor them (they carry no `recommendation`).
+Edit the skeleton file in place. Extend the trail 2–4 stops (using `pack.edges` for grounding) for `critical` findings on high-fan-in nodes to show blast radius. Set `proposal: { action: "add", targetType: "node"|"edge", ... }` when signals reveal a dependency or resource that has no corresponding board element. Findings tagged `unmatched` are board-level facts — keep them, and note in `context` what would help anchor them (they carry no `recommendation`).
 
 ## Step 5: Save and push
 

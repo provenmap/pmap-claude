@@ -24,10 +24,10 @@ metadata:
 
 ## What makes a good demonstrative insight
 
-1. **Path-first.** The path *is* the demo. Each insight ships ≥1 `InsightPath` connecting several nodes. Findings exist mainly to give path steps a `findingRef` (colour + priority).
-2. **Edge-grounded.** Every consecutive pair of path steps must traverse a real edge from the board's `edges[]`. A path that invents connections is worse than no path — it misrepresents the architecture. Cross-board hops are fine when the flow genuinely continues across boards (register both boards in scope).
-3. **Visually varied.** Across the set, use different **polarities** (observation / risk / opportunity) so the board shows a spread of colour, and different **path shapes** (linear flow, fan-out cascade, chokepoint chain).
-4. **Legible.** 3–6 nodes on a path's main line. Use `branches[]` to fan out from a high-degree node — a hub-and-spokes branch reads instantly and is the most compelling shape on a board.
+1. **Trail-first.** The trail *is* the demo. Each insight ships a multi-stop `trail` connecting several nodes. Board and node slugs come directly from the pack — never invent them.
+2. **Edge-grounded.** Every consecutive stop pair must traverse a real edge from `pack.edges`. A trail that invents connections is worse than no trail — it misrepresents the architecture. Cross-board hops are fine when the flow genuinely continues across boards.
+3. **Visually varied.** Across the set, use different **polarities** (observation / risk / opportunity) so the board shows a spread of colour, and different **trail shapes** (linear flow, fan-out cascade, chokepoint chain).
+4. **Legible.** 3–6 stops on a trail's main line. Use branch stops (same `from` value, distinct `branchLabel`) to fan out from a high-degree node — a hub-and-spokes shape reads instantly and is the most compelling shape on a board.
 5. **Fast.** The board JSON already carries node descriptions and edges. Trust it. Only open source files to confirm a specific number you want to cite (e.g. "imported ~125 times").
 
 ## Selecting the skills (skill → polarity → path shape)
@@ -41,7 +41,7 @@ Pick skills that each produce a *different* kind of path:
 | `blast-radius` | risk | SPOF root → hub → fan-out to dependents | Blast-Radius Cascade |
 | `hidden-dependency` | risk / observation | Many callers → one chokepoint (fan-in) | Hidden-Dependency Chokepoint |
 | `onboarding-map` | observation | Importance-ordered tour | Execution Journey (broadened) |
-| `future-readiness` | opportunity | Seam → strained area → proposed change | any + a `GraphSuggestion` |
+| `future-readiness` | opportunity | Seam → strained area → proposed change | any + a `proposal` |
 
 **Preference order**, when the account has them: `feature-journey` (observation flow), `blast-radius` (risk cascade), `hidden-dependency` (risk/observation chokepoint), then `how-does-it-work` / `onboarding-map` / `future-readiness`. If the preferred set is unavailable, fall back to any skills in the `discovery`, `reliability`, or `architecture_health` categories.
 
@@ -51,7 +51,7 @@ If a focus prompt names a concern (security, performance, cost), include that sk
 
 `pmap-insights.js --build-context --demo` writes the pack to `.provenmap/insights/<board>.context.json` — the canonical path `--save-insight --demo` reads back for its quality gates. It gives you, without any manual indexing:
 
-- **node index** — `pack.elements[]` (`{key, board, slug, type, name, description}`), with pre-assigned scope keys
+- **node index** — `pack.elements[]` (`{key, board, slug, type, name, description}`); use `board` + `slug` as trail stop values
 - **edge adjacency** — `pack.edges[]` (`{board, sourceKey, targetKey, type, description}`) — the source of truth for path grounding
 - **degree** — `pack.degree[]` (`{key, board, fanIn, fanOut}`), ranked most-connected first — your hub/chokepoint shortlist
 - **context vars** — `pack.boards[].context`
@@ -62,26 +62,23 @@ Fallback, and for a single small board where the pack is overkill: on a non-zero
 
 ## Assembling the payload
 
-One push payload per chosen skill:
+One push payload per chosen skill — a `PushInsightsCommand` with `insights: InsightDraft[]`:
 
-1. **Scope first (copy from the pack).** Copy `pack.scopeBoards` into `scope.boards`. For every node you cite, copy its row from `pack.elements` into `scope.elements` keeping the pre-assigned `key` and `board` verbatim, adding `role` (`focus`/`context`). Cite only what you use; never re-generate keys. Anything you spot in source that has no row in `pack.elements` belongs in a `GraphSuggestion` (`action: "add"`, `element: null`), not a cited finding.
-2. **1–3 findings.** Just enough to anchor the path — each path's key step should carry a `findingRef`. Use `recommendation` for `risk`/`opportunity`, `context` for `observation`/`strength` (never both).
-3. **At least one multi-node path** — build it with the checklist below.
-4. **Optional: one suggestion** (`add`/`modify`/`remove`) to show structural proposals render.
-5. Give the insight a **distinct polarity** from the others in the set (see *Visually varied*, above).
-6. Write a tight markdown `content` report and a `title` / `description`.
+1. **1–3 findings.** Each is one `InsightDraft`. Use `recommendation` for `risk`/`opportunity`, `context` for `observation`/`strength` (never both in the same finding).
+2. **Multi-stop trail on every finding** — build it with the checklist below. Trail `board` and `node` values must be canonical slugs from the pack.
+3. **Optional: one proposal** (`action: "add"|"modify"|"remove"`, `targetType: "node"|"edge"`) on one finding, to show structural proposals render. When adding a node, mark it `proposed: true` in the trail; when adding an edge, add a `proposedEdge` via hop.
+4. Give each insight a **distinct polarity** from the others in the set (see *Visually varied*, above).
+5. Write a tight markdown `content` report and a `title` / `description`.
 
-`--save-insight --demo` validates all of it before pushing: Zod, then `validateScopeReferences` (ElementKey/BoardAlias/findingRef resolve; unique ids; no consecutive-duplicate steps; `recommendation`/`context` mutually exclusive), the pack gates (cited elements exist in the pack), and the demo gates — ≥1 path with ≥3 connected nodes, and every same-board path step pair edge-grounded against the pack.
+`--save-insight --demo` validates all of it before pushing: Zod schema (trail board/node slugs, advice mutually exclusive), the pack gates (every trail stop grounded in the pack), and the demo gates — ≥1 insight with ≥3 connected trail stops, and every same-board consecutive stop pair edge-grounded against the pack.
 
-## Building a path (the checklist)
+## Building a trail (the checklist)
 
-- **Scope before steps.** Register every node you cite in `scope.elements` first (*Assembling the payload*, step 1). Paths and findings reference those keys, never raw slugs.
-- **Pick the hub from the graph.** Read fan-in/fan-out straight from `pack.degree` (ranked most-connected first). The top node is your branch point for a fan-out path; a node with high `fanIn` is your chokepoint for a hidden-dependency path.
-- **Main line: 3–6 nodes**, each consecutive pair a real edge. Direction can follow or reverse an edge — what matters is that the edge exists.
-- **Branches for fan-out.** Attach `branches[]` to the hub step, one branch per dependent — each branch element must also share a real edge with the hub.
-- **No consecutive duplicates.** An element may reappear later in a genuinely different role (distinct `label`), never back-to-back.
-- **Anchor with `findingRef`.** Put the insight's main finding on the hub/origin step so the path inherits its colour and priority.
-- **`defaultBoard`** = the board alias most steps belong to.
+- **Pick nodes from the pack.** Use `pack.degree` (ranked most-connected first) to identify the hub (`fanIn` for chokepoints, `fanOut` for blast-radius roots). Every stop's `board` and `node` must be canonical slugs from `pack.boards[].slug` / `pack.elements[].slug`.
+- **Main line: 3–6 stops**, each consecutive pair grounded on a real edge. Each stop after the first carries `from` (prior stop id) and `via: { kind: "edge", edge: "<edge-slug>" }`.
+- **Branches for fan-out.** Add extra stops sharing the same `from` as the hub stop, each with a distinct `branchLabel`. Every branch stop must also share a real edge with the hub.
+- **No consecutive duplicates.** A node may reappear later in a genuinely different role (distinct `note`), never back-to-back.
+- **First stop is the anchor.** The `trail` field lives on the `InsightDraft` — there is no separate findingRef; the finding's polarity and priority apply to the whole trail.
 
 ## Re-running a demo
 
@@ -90,5 +87,5 @@ Each skill has a `resultsMode`: `replace` (a new run overwrites the previous run
 ## References
 
 - [references/path-recipes.md](references/path-recipes.md) — three reusable, archetype-agnostic path recipes with worked examples
-- [../insights/references/report-output-format.md](../insights/references/report-output-format.md) — Scope, ElementInsight, InsightPath, GraphSuggestion schemas (shared with `/insights`)
+- [../insights/references/report-output-format.md](../insights/references/report-output-format.md) — InsightDraft, Trail, Stop, Proposal schemas (shared with `/insights`)
 - [../insights/references/graph-context.md](../insights/references/graph-context.md) — extracting node/edge context from board JSON

@@ -18,8 +18,8 @@ and [`${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md`](../knowledge/boar
    the scope (board or `tree`).
 2. **Frame** — `list_insight_skills` for the org's templates (pull the chosen one's full
    methodology with `get_insight_skill` and follow it faithfully), or an ad-hoc dimension.
-3. **Sweep** — read per the frame, apply the criteria, build element-anchored findings +
-   suggestions.
+3. **Sweep** — read per the frame, apply the criteria, build element-anchored findings
+   (`InsightDraft[]` with trails); structural changes go as `proposal` on the finding.
 4. **Review in reverse** — walk findings with the architect; keep what survives their
    challenge.
 5. **Record** — `create_insight` (draft run), then the "Promote any of this to intents?" offer.

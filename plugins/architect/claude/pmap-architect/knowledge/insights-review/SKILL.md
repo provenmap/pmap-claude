@@ -32,7 +32,7 @@ session analysis as a draft run.
 | `get_insight`              | findings + suggestions with the ids that feed `promote_insight_findings`; raw report content is never returned       |
 | `list_insight_skills`      | insight templates in the org (slug, name, description, category)                                                     |
 | `get_insight_skill`        | one template's full methodology: instructions + references — the faithful-run input                                  |
-| `create_insight`           | record an analysis as a **draft run**: markdown narrative + structured payload (scope, findings, paths, suggestions) |
+| `create_insight`           | record an analysis as a **draft run**: markdown narrative + `insights: InsightDraft[]` (each finding with a `trail`) |
 | `promote_insight_findings` | reviewed findings/suggestions → one draft intent each                                                                |
 
 ## Review workflow
@@ -54,8 +54,7 @@ session analysis as a draft run.
    (older server) fall back to description-guided + house criteria, and say so. Scope: one
    board or `tree`.
 2. **Sweep.** Read per the frame (spine, aspects, layers as relevant); apply the criteria;
-   build findings — element-anchored by slug, severity + polarity, a recommendation each — and
-   graph-shaped suggestions where the fix is a diagram change.
+   build findings as `InsightDraft[]` — element-anchored by slug (trail with real board+node slugs), severity + polarity, a recommendation each. When the fix is a diagram change (add/remove/modify a node or edge), set `proposal` on the finding rather than creating a separate object.
 3. **Review with the architect — the grill in reverse.** Walk the findings; they challenge, you
    defend or drop. Keep only what survives.
 4. **Record.** `create_insight` (narrative + structured payload) — a draft run, visible in the
