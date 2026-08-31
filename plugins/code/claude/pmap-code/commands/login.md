@@ -46,7 +46,7 @@ Requests a one-time code, opens the browser (best-effort). A bound project
 re-authenticates to its board; `--rebind` (`switch`) unlocks the full picker:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --host claude --domain code --plugin-version 0.13.1   # add --rebind only for /login switch
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --host claude --domain code --plugin-version 0.14.0   # add --rebind only for /login switch
 # add --base-url <url> when the user's argument is an http(s) URL
 ```
 

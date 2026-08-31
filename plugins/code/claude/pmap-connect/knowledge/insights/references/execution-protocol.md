@@ -73,7 +73,7 @@ The summary prints to stdout; read the **full pack** from `.provenmap/insights/<
 - **Exit 1/2 or any error** → fall back to the manual walk below and generate keys/aliases by hand.
 - **Skip when trivial:** for a single board under ~30 nodes with no manifest/child boards, reading that one board JSON directly is simpler — skip the prepass.
 
-Pack shape: `boards[]` (`{slug, alias, layer, parentBoardSlug, context:{techStacks,languages,archetypes}, nodeCount, edgeCount}`), `scopeBoards[]` (legacy scope helper — unused in v2; use `boards[].slug` and `elements[].slug` directly for trail stops), `elements[]` (`{key, board, slug, type, name, description}` — `slug` is the canonical node slug to use in trail stops), `edges[]` (`{board, sourceKey, targetKey, type, description}`), `degree[]` (`{key, board, fanIn, fanOut}`, ranked by **combined** fan-in+fan-out, most-connected first), `primaryBoardDefault`, `stats` (`{boardCount, elementCount, edgeCount, droppedEdges, duplicateSlugs, unresolved[]}`). A non-zero `droppedEdges` means some board edges had unresolved endpoints and were omitted — don't assume two nodes are unconnected solely because no `pack.edges` row links them.
+Pack shape: `boards[]` (`{slug, alias, layer, parentBoardSlug, context:{techStacks,languages,archetypes}, nodeCount, edgeCount}`), `scopeBoards[]` (legacy scope helper — unused in v2; use `boards[].slug` and `elements[].slug` directly for trail stops), `elements[]` (`{key, board, slug, type, name, description}` — `slug` is the canonical node slug to use in trail stops), `edges[]` (`{board, slug, sourceKey, targetKey, type, description}` — `slug` is what a trail's `via.edge` carries, verbatim), `degree[]` (`{key, board, fanIn, fanOut}`, ranked by **combined** fan-in+fan-out, most-connected first), `primaryBoardDefault`, `stats` (`{boardCount, elementCount, edgeCount, droppedEdges, duplicateSlugs, unresolved[]}`). A non-zero `droppedEdges` means some board edges had unresolved endpoints and were omitted — don't assume two nodes are unconnected solely because no `pack.edges` row links them.
 
 Fallback — read the board's analysis data from `.provenmap/boards/<boardSlug>.json` and extract skill variables — see [graph-context.md](graph-context.md) for details. Also read `.provenmap/boards/manifest.json` (if it exists) to discover child/layer boards. For nodes that have a `layerBoardSlug`, read that child board's data file too to enable cross-board analysis. Also read any sibling boards discovered from the manifest to enable cross-domain paths.
 
@@ -147,7 +147,7 @@ Before writing InsightDraft objects, identify the board and node slugs for each 
 
 - Board slugs: `pack.boards[].slug` — use the exact string, e.g. `"my-project-overview"`.
 - Node slugs: `pack.elements[].slug` — use the exact string, e.g. `"auth-service"`.
-- Edge slugs: `pack.edges[]` — derive as `sourceSlug--targetSlug` if not explicit.
+- Edge slugs: `pack.edges[].slug` — copy verbatim (server format `<source>--<relation>--<target>`); never derive one.
 
 **Rules:**
 
@@ -214,8 +214,8 @@ When a finding traces a flow (blast radius, dependency cascade, auth path), use 
   },
   "trail": [
     { "id": "s1", "board": "my-project-overview", "node": "api-gateway", "note": "Entry — rate limited" },
-    { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "api-gateway--auth-service" }, "board": "my-project-overview", "node": "auth-service", "note": "850ms p99" },
-    { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "auth-service--user-db" }, "board": "my-project-overview", "node": "user-db", "note": "Read per request" }
+    { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "api-gateway--calls--auth-service" }, "board": "my-project-overview", "node": "auth-service", "note": "850ms p99" },
+    { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "auth-service--calls--user-db" }, "board": "my-project-overview", "node": "user-db", "note": "Read per request" }
   ]
 }
 ```
@@ -244,15 +244,7 @@ There is no separate `GraphSuggestion` step. When the analysis identifies a stru
 
 See [report-output-format.md](report-output-format.md#proposal) for the full Proposal schema.
 
-### 10. Write Markdown Report
-
-Compose a markdown report for the `content` field:
-
-- Summary with finding counts by priority and polarity
-- Detailed findings grouped by element or category, mentioning each finding's confidence and (where set) measurement and trail
-- Advice for actionable findings (recommendation text + effort, or context)
-
-### 11. Assemble and Save
+### 10. Assemble and Save
 
 Build the `PushInsightsCommand` JSON. The `insights` field is a flat `InsightDraft[]` — no wrapper object, no scope, no paths, no suggestions:
 
@@ -273,9 +265,6 @@ Build the `PushInsightsCommand` JSON. The `insights` field is a flat `InsightDra
       ]
     }
   ],
-  "content": "<markdown report>",
-  "title": "<skill.name> — <date>",
-  "description": "<summary line>",
   "tags": ["risk:security-review", "area:auth"],
   "info": "<one-line audit summary of what this analysis surfaced, ≤350 chars>"
 }
@@ -303,12 +292,12 @@ The CLI runs validation gates before writing/pushing:
 
 1. Zod schema (structural validity).
 2. Trail validation: every stop's `board` resolves in the pack; every `node` resolves on that board; `via` is present iff `from` is set; exactly one entry stop; no duplicate `id`s within a trail; `proposed: true` stops name a `node`.
-3. Edge-grounding against the context pack (when present): same-board consecutive stops should correspond to a real `pack.edges` entry (HARD for `/demo-insights`, a warning for `/insights`).
+3. Grounding against the context pack (when present): every stop's `board` and `node` exist in the pack, and every `via.edge` is a real `pack.edges[].slug` that joins the two stops (HARD — the server rejects the push otherwise; only a board with `droppedEdges` downgrades a missing edge to a warning). `/demo-insights` additionally requires at least one trail of 3+ connected stops.
 
 Two channels: **`validationErrors[]` + exit 3** is blocking — fix the listed fields and retry (errors carry a JSON path, the bad value, and the fix; copy any "did you mean" pack row verbatim). **`warnings[]` + exit 0** is non-blocking and already saved — review once and improve if cheap, but **do not loop** on warnings.
 
-### 12. Report Result
+### 11. Report Result
 
-- If pushed successfully: "Pushed to server (insightId: abc-123-def)"
+- If pushed successfully: "Pushed to server (batchId: abc-123, N insights)". The result's `insights[]` lists the created rows in send order — keep it when proposing intents from these findings in the same session; nothing can recover that mapping later.
 - If push not available: "Saved locally — server push not yet available"
 - If push failed: "Saved locally — push failed: <error>"

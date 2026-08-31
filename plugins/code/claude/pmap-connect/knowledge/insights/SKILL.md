@@ -46,7 +46,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js [mode] [options]
 
 ### pmap-context-tags.js — ContextTag Vocabulary
 
-Fetches the org's curated ContextTag vocabulary (1-hour TTL cache). Pull it during analysis so you can classify findings with tags the org actually uses — the `name` values are what you put in the insight payload's `tags` array, and the server **rejects any name not in this list**.
+Fetches the org's curated ContextTag vocabulary (1-hour TTL cache). Pull it during analysis so you can classify insights with tags the org actually uses — the `name` values are what you put in the insight payload's `tags` array, and the server **rejects any name not in this list**.
 
 **Invocation:**
 ```bash

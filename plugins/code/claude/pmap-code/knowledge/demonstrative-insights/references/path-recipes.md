@@ -30,9 +30,9 @@ entrypoint ──▶ engine ──▶ scheduling/IO leaf
 ```json
 "trail": [
   { "id": "s1", "board": "<board-slug>", "node": "react-dom", "note": "Entry point" },
-  { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "react-dom--react-reconciler" }, "board": "<board-slug>", "node": "react-reconciler", "note": "Core reconciliation engine" },
-  { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "react-reconciler--scheduler" }, "board": "<board-slug>", "node": "scheduler", "note": "Latency-sensitive hop", "branchLabel": "main path" },
-  { "id": "s4", "from": "s1", "via": { "kind": "edge", "edge": "react-dom--react-dom-bindings" }, "board": "<board-slug>", "node": "react-dom-bindings", "note": "Adapter layer", "branchLabel": "bindings path" }
+  { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "react-dom--uses--react-reconciler" }, "board": "<board-slug>", "node": "react-reconciler", "note": "Core reconciliation engine" },
+  { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "react-reconciler--uses--scheduler" }, "board": "<board-slug>", "node": "scheduler", "note": "Latency-sensitive hop", "branchLabel": "main path" },
+  { "id": "s4", "from": "s1", "via": { "kind": "edge", "edge": "react-dom--uses--react-dom-bindings" }, "board": "<board-slug>", "node": "react-dom-bindings", "note": "Adapter layer", "branchLabel": "bindings path" }
 ]
 ```
 
@@ -67,11 +67,11 @@ kernel ──▶ SPOF hub ──▶ primary dependent ──▶ downstream degra
 ```json
 "trail": [
   { "id": "s1", "board": "<board-slug>", "node": "shared", "note": "Root kernel — Ring 0" },
-  { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "shared--react-reconciler" }, "board": "<board-slug>", "node": "react-reconciler", "note": "SPOF hub — anchor finding here" },
-  { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "react-reconciler--react-dom" }, "board": "<board-slug>", "node": "react-dom", "note": "Primary dependent", "branchLabel": "react-dom path" },
-  { "id": "s4", "from": "s2", "via": { "kind": "edge", "edge": "react-reconciler--react-art" }, "board": "<board-slug>", "node": "react-art", "note": "Renderer fails", "branchLabel": "react-art path" },
-  { "id": "s5", "from": "s2", "via": { "kind": "edge", "edge": "react-reconciler--react-native-renderer" }, "board": "<board-slug>", "node": "react-native-renderer", "note": "RN fails", "branchLabel": "react-native path" },
-  { "id": "s6", "from": "s3", "via": { "kind": "edge", "edge": "react-dom--server-components" }, "board": "<board-slug>", "node": "server-components", "note": "Ring 2 degradation" }
+  { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "shared--uses--react-reconciler" }, "board": "<board-slug>", "node": "react-reconciler", "note": "SPOF hub — anchor finding here" },
+  { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "react-reconciler--uses--react-dom" }, "board": "<board-slug>", "node": "react-dom", "note": "Primary dependent", "branchLabel": "react-dom path" },
+  { "id": "s4", "from": "s2", "via": { "kind": "edge", "edge": "react-reconciler--uses--react-art" }, "board": "<board-slug>", "node": "react-art", "note": "Renderer fails", "branchLabel": "react-art path" },
+  { "id": "s5", "from": "s2", "via": { "kind": "edge", "edge": "react-reconciler--uses--react-native-renderer" }, "board": "<board-slug>", "node": "react-native-renderer", "note": "RN fails", "branchLabel": "react-native path" },
+  { "id": "s6", "from": "s3", "via": { "kind": "edge", "edge": "react-dom--uses--server-components" }, "board": "<board-slug>", "node": "server-components", "note": "Ring 2 degradation" }
 ]
 ```
 
@@ -104,13 +104,13 @@ caller ──▶ chokepoint
 ```json
 "trail": [
   { "id": "s1", "board": "<board-slug>", "node": "react-dom", "note": "One dependent — entry" },
-  { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "react-dom--scheduler" }, "board": "<board-slug>", "node": "scheduler", "note": "Chokepoint — everyone depends on this tiny package" },
-  { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "react-art--scheduler" }, "board": "<board-slug>", "node": "react-art", "note": "Also depends", "branchLabel": "react-art" },
-  { "id": "s4", "from": "s2", "via": { "kind": "edge", "edge": "react-reconciler--scheduler" }, "board": "<board-slug>", "node": "react-reconciler", "note": "Also depends", "branchLabel": "react-reconciler" }
+  { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "react-dom--uses--scheduler" }, "board": "<board-slug>", "node": "scheduler", "note": "Chokepoint — everyone depends on this tiny package" },
+  { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "react-art--uses--scheduler" }, "board": "<board-slug>", "node": "react-art", "note": "Also depends", "branchLabel": "react-art" },
+  { "id": "s4", "from": "s2", "via": { "kind": "edge", "edge": "react-reconciler--uses--scheduler" }, "board": "<board-slug>", "node": "react-reconciler", "note": "Also depends", "branchLabel": "react-reconciler" }
 ]
 ```
 
-Note the branch stops on the chokepoint go *back* to callers — this visualises the inbound fan-in. The `via.edge` slug must exist in `pack.edges`; derive it as `callerSlug--schedulerSlug` if not explicit. Polarity: `risk` for chokepoints with no fallback; `observation` for expected hubs.
+Note the branch stops on the chokepoint go *back* to callers — this visualises the inbound fan-in. The `via.edge` slug is copied verbatim from `pack.edges[].slug` (server format `<source>--<relation>--<target>`) — never derived. Polarity: `risk` for chokepoints with no fallback; `observation` for expected hubs.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: intents-authoring
-description: How to author, anchor, and manage ProvenMap intents — the living specs that connect architecture decisions to delivery. Use when creating intents, authoring requirements against a board, managing the intent queue (transition, assign, delete), or turning findings and board changes into work. Key capabilities: the intent lifecycle, DRAFT-only stance, the impact→attach→describe authoring loop, the authoring interview, anchor recording with the platform's verbs, single-board rule and session-linked federation, the materialization gates (duplicate, already-implemented, sequencing), structured directives, staleness and verification semantics.
+description: How to author, anchor, and manage ProvenMap intents — the living specs that connect architecture decisions to delivery. Use when creating intents, authoring requirements against a board, managing the intent queue (transition, assign, delete), or turning insights and board changes into work. Key capabilities: the intent lifecycle, DRAFT-only stance, the impact→attach→describe authoring loop, the authoring interview, anchor recording with the platform's verbs, single-board rule and session-linked federation, the materialization gates (duplicate, already-implemented, sequencing), structured directives, staleness and verification semantics.
 ---
 
 # Intents Authoring
@@ -33,7 +33,7 @@ putting it in the description truncates it.
 **When to write a narrative.** Write one when the material carries reasoning that would otherwise
 be lost: a PRD or RFC's problem statement, a rejected alternative, an explicit out-of-scope
 boundary, a constraint that explains an odd-looking choice. Do NOT manufacture one — an intent
-whose why is genuinely "the finding says so, and the finding is linked" should omit the field
+whose why is genuinely "the insight says so, and the insight is linked" should omit the field
 rather than restate its own directive in longer words. Padding it is worse than leaving it empty:
 it trains the architect to skip the section on every future intent.
 
@@ -65,7 +65,7 @@ open`) or rejects it.
 | `update_intent`            | revise a draft/needs_clarification intent — fields + context anchors (changed anchors preserved) |
 | `transition_intent`        | lifecycle moves (draft→open locks for developer pulls; →rejected reverts staged changes)         |
 | `assign_intent`            | assign to users; empty list clears; assigning an open intent moves it to assigned                |
-| `promote_insight_findings` | reviewed findings/suggestions → one draft intent each (see insights-review)                      |
+| `promote_insights`         | reviewed insight ids → one draft intent each (see insights-review)                               |
 | `delete_intent`            | delete + withdraw everything staged                                                              |
 
 Address intents by slug (`list_intents` → `get_intent`).
@@ -137,7 +137,7 @@ architect-core's taxonomy — intents are legal only on code-bound boards):
    board-grounded approaches, trade-offs, recommendation first; the chosen approach seeds the
    sweep and the directive skeleton, the rejected ones become narrative material. Skip when
    the approach is already decided — a settled change, a prescriptive bound document, a
-   promoted finding.
+   promoted insight.
 3. **Sweep candidates — holistically.** Estate pass first: place the ask on the whole estate
    (the `--classify-tree` cache or `get_board_tree`) — which sibling app boards it touches,
    which root-landscape systems are implicated. Then the close-in sweep — facts from reads,
@@ -173,7 +173,7 @@ before submit"`. Templates and composition rules:
    five-point check. Fix silently; surface only what changes meaning.
 9. **Read-back — the one landing gate.** Render the assembled intent once: name, description,
    directive (grouped per `composeDirective`), narrative — or the line "— omitted, reasoning
-   lives on the linked finding" — anchor table (slug · type · note), the _Drafted from_
+   lives on the linked insight" — anchor table (slug · type · note), the _Drafted from_
    line when `draftedFromSourceSlug` is set, and the _After_ line when `afterIntentSlug`
    is set. One AskUserQuestion: **Land as draft** /
    **Revise**. Multi-board split → render every per-board intent, one question for the batch.

@@ -6,7 +6,7 @@ allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_p
 ---
 
 Turn a decision into governance: normalized record → a durable `ADR:` decision board (where the
-rule lives) → compliance insight runs (the _is_) → per-app remediation intents (the work owed).
+rule lives) → a compliance insight batch per app (the _is_) → per-app remediation intents (the work owed).
 The whole arc lives in [`${CLAUDE_PLUGIN_ROOT}/knowledge/adr-adoption/SKILL.md`](../knowledge/adr-adoption/SKILL.md)
 — read it plus [`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md);
 sweeps use [`${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md`](../knowledge/board-reading/SKILL.md),
@@ -27,8 +27,8 @@ landing uses [`${CLAUDE_PLUGIN_ROOT}/knowledge/intents-authoring/SKILL.md`](../k
 5. **Record** — `create_decision_board {name: "ADR: <title>"}` and write the normalized record
    there (adr-adoption §4). This is the standing rule's home; it never "completes".
 6. **Land, federated** — `create_insight` per swept app where violations were found, then
-   remediation drafts: `promote_insight_findings` on reviewed violations, plus `create_intent`
-   per affected code-bound app board where compliance needs work no finding covers
+   remediation drafts: `promote_insights` on reviewed violations, plus `create_intent`
+   per affected code-bound app board where compliance needs work no insight covers
    (`--validate intent` first). Unbound affected boards named + skipped with the binding gate
    narrated. Close with the standard move: `preview_write_session_commit` → present the plan →
    title/summary (AskUserQuestion) → `commit_write_session` → narrate what was generated.

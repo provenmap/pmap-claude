@@ -54,7 +54,7 @@ passed as run context.
 
   > Run /monitor for this repository. Credentials come from the environment
   > (PMAP_BINDING_TOKEN, PMAP_API_SECRET). Use --from-server board context. Pull
-  > signals from the connected monitoring connectors, correlate, shape the findings per the
+  > signals from the connected monitoring connectors, correlate, shape the insights per the
   > monitoring-correlation skill, and push with --require-pack. Non-interactive: skip mapping
   > prompts and leave proposals in the report.
 

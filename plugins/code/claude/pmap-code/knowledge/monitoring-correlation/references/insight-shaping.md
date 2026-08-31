@@ -1,24 +1,24 @@
-# Insight Shaping — making findings intent-ready
+# Insight Shaping — making insights intent-ready
 
-When an architect promotes a finding, the platform maps it **mechanically** onto an intent — so
-finding quality IS intent quality. Each finding is an `InsightDraft` (v2 model). The exact mapping:
+When an architect promotes an insight, the platform maps it **mechanically** onto an intent — so
+insight quality IS intent quality. Each one is an `InsightDraft`. The exact mapping:
 
-| Finding field | Becomes on the intent | Authoring rule |
+| Insight field | Becomes on the intent | Authoring rule |
 |---|---|---|
 | `name` | intent **name** | Imperative work item: "Fix TypeError in CheckoutSession.finalize" — never "Error observed in checkout" |
 | `insight` | description + directive ¶1 | Evidence only: what fails, where, how often, since when. No opinions. |
-| `advice.text` (kind: `"recommendation"`) | directive ¶2 | **The concrete corrective action a developer executes.** Use `recommendation` for all actionable findings. |
-| `advice.text` (kind: `"context"`) | directive ¶3 | Blast radius, related deploys, trend notes. Use `context` for `unmatched`/pure-observation findings — never both kinds. |
+| `advice.text` (kind: `"recommendation"`) | directive ¶2 | **The concrete corrective action a developer executes.** Use `recommendation` for all actionable insights. |
+| `advice.text` (kind: `"context"`) | directive ¶3 | Blast radius, related deploys, trend notes. Use `context` for `unmatched`/pure-observation insights — never both kinds. |
 | `trail` stops | intent **anchors** | The trail's entry stop (and nearby stops) are the primary anchors. Anchors are what `/intents --show` resolves back to source files — keep the trail tight. |
-| `priority`, `advice.effort` | carried verbatim | **Set both on every actionable finding.** `effort` lives inside `advice` (kind: `"recommendation"`). |
-| `id` | `origin.findingIds` | The skeleton already set it from the signal fingerprint — never change it. |
+| `priority`, `advice.effort` | carried verbatim | **Set both on every actionable insight.** `effort` lives inside `advice` (kind: `"recommendation"`). |
+| `id` | — | Local to the skeleton: it groups a signal across runs on this machine and never reaches the wire. The platform mints the ids promotion uses. |
 
-## Per-finding checklist (skeleton → intent-ready)
+## Per-insight checklist (skeleton → intent-ready)
 
 1. **Verify before claiming.** Read the matched node's source (from its `sourceReferences` /
    the signal's stack frames). Only upgrade `confidence` to `verified` after reading the code;
    if the match looks wrong, say so in `advice.text` (kind: `"context"`) and leave confidence at `likely`/`inferred` —
-   or fix the mapping via the teach-once loop instead of shipping a mis-anchored finding.
+   or fix the mapping via the teach-once loop instead of shipping a mis-anchored insight.
 2. **Name = the work.** ≤100 chars, imperative, specific.
 3. **Insight = the evidence.** Counts, window, sample error, users affected. The measurement
    carries the primary number; the prose carries the story.
@@ -35,17 +35,17 @@ finding quality IS intent quality. Each finding is an `InsightDraft` (v2 model).
 
 ## Trails and proposals — only when they earn their place
 
-- **Multi-stop trail** (blast radius): for `critical` findings on high-fan-in nodes, extend the
+- **Multi-stop trail** (blast radius): for `critical` insights on high-fan-in nodes, extend the
   trail 2–4 stops using the context pack's `edges`/`degree` (ground every consecutive stop pair
   against `pack.edges`; `via: { kind: "edge", edge: "<slug>" }` for each hop). This is what
   makes the portal overlay explain impact. Branches share the same `from` value; label each with `branchLabel`.
 - **Proposal**: only when signals reveal a **structural** truth the board is missing — a
   recurring timeout on a dependency that has no edge, a resource generating cost with no node.
-  Set `proposal: { action: "add", targetType: "node"|"edge", ... }` on the finding and mark the
+  Set `proposal: { action: "add", targetType: "node"|"edge", ... }` on the insight and mark the
   new node as `proposed: true` in the trail. Never propose structure to "fix" a mapping problem —
   that is what `map.json` is for.
 
-## Unmatched findings
+## Unmatched insights
 
 Keep them (they are real production facts), leave `advice` empty or set `kind: "context"` with
 what would anchor them next run — usually one `map.json` entry or a tag on the node. If the same

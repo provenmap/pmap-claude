@@ -17,9 +17,9 @@ To orient on a board, read in this order (each call is cheap; batch where possib
 
 1. `get_board_tree` — every descendant layer board (slug, name, drill path).
 2. `get_workboard_details` — the board itself: structure, nodes, edges, semantic styles.
-3. `get_hub_status` — intent counts, latest insight run, binding health (`scope: 'tree'`
+3. `get_hub_status` — intent counts, latest insight batch, binding health (`scope: 'tree'`
    aggregates the subtree).
-4. `list_intents` / `list_insights` — what work and findings are already in flight.
+4. `list_intents` / `list_insights` — what work and insights are already in flight.
 
 Summarize: purpose, the domains/containers, layer structure, and anything in flight — slug-first,
 then invite direction.

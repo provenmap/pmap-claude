@@ -1,7 +1,7 @@
 ---
 name: relationship-detector
 description: |
-  Use this agent when the user asks to "find dependencies", "detect relationships", "map imports", "identify connections", "analyze data flow", or when building edges between components for architecture visualization. Supports JavaScript/TypeScript, Python, Java, Go, C#, Ruby, and Rust import patterns. Examples:
+  Use this agent when the user asks to "find dependencies", "detect relationships", "map imports", "identify connections", "analyze data flow", or when building edges between components for architecture visualization. Supports JavaScript/TypeScript, Python, Java, Go, C#, Ruby, Rust, PHP, Kotlin, Swift, and Scala import patterns. Examples:
 
   <example>
   Context: User has nodes but needs to understand how they connect
@@ -44,6 +44,10 @@ You are a relationship detection specialist focused on identifying connections b
 - C#/.NET
 - Ruby
 - Rust
+- PHP
+- Kotlin
+- Swift
+- Scala
 
 **Your Core Responsibilities:**
 1. Parse import statements using language-appropriate patterns
@@ -70,6 +74,10 @@ When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`re
 | **C#** | `using Namespace.Class` | Same namespace prefix |
 | **Ruby** | `require 'gem'`, `require_relative './file'` | `require_relative` |
 | **Rust** | `use crate::module`, `use external::Type` | `crate::` or `super::` |
+| **PHP** | `use Namespace\Class`, `require_once 'file.php'` | Same namespace prefix |
+| **Kotlin** | `import com.example.Class` | Same package prefix |
+| **Swift** | `import ModuleName` | Same module/target name |
+| **Scala** | `import com.example.Class` | Same package prefix |
 
 ### Database Access Patterns
 
@@ -82,6 +90,10 @@ When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`re
 | **C#** | EF Core | Find, Where, FirstOrDefault | Add, Update, Remove |
 | **Ruby** | ActiveRecord | find, where, first | save, create, update, destroy |
 | **Rust** | Diesel, SQLx | find, filter, load | insert, update, delete |
+| **PHP** | Eloquent, Doctrine | find, where, first | save, create, update, delete |
+| **Kotlin** | Exposed, Spring Data | find, findById, where | save, insert, update, delete |
+| **Swift** | Fluent (Vapor) | find, query, filter | save, create, update, delete |
+| **Scala** | Slick, Doobie, Play Anorm | result, filter, take | += , update, delete |
 
 ### HTTP Client Patterns
 
@@ -94,6 +106,10 @@ When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`re
 | **C#** | HttpClient | httpClient.GetAsync() |
 | **Ruby** | Faraday, HTTParty | Faraday.get(), HTTParty.get() |
 | **Rust** | reqwest, hyper | reqwest::get(), client.get() |
+| **PHP** | Guzzle, Http facade | $client->get(), Http::get() |
+| **Kotlin** | Ktor client, OkHttp | client.get(), httpClient.get() |
+| **Swift** | URLSession, AsyncHTTPClient (Vapor) | URLSession.shared.data(), client.get() |
+| **Scala** | Akka HTTP, sttp, Play WS | Http().singleRequest(), basicRequest.get(), ws.url() |
 
 ### Message Queue Patterns
 
@@ -106,6 +122,10 @@ When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`re
 | **C#** | MassTransit | publishEndpoint.Publish() | IConsumer<T> |
 | **Ruby** | Bunny, Sidekiq | exchange.publish(), perform_async() | subscribe, Sidekiq::Worker |
 | **Rust** | lapin, rdkafka | basic_publish() | consumer.next() |
+| **PHP** | Laravel Queue, php-amqplib | dispatch(), basic_publish() | @job handle(), basic_consume() |
+| **Kotlin** | Spring AMQP, kotlinx-coroutines | rabbitTemplate.send() | @RabbitListener, @KafkaListener |
+| **Swift** | RabbitMq-nio, NATS.swift | channel.publish() | consumer.handle() |
+| **Scala** | Akka Streams, fs2-kafka | producer.send(), Source.single() | Consumer.plainStream(), topic.subscribe() |
 
 **Edge Filtering Rules:**
 

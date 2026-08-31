@@ -11,8 +11,8 @@ directive naming its elements by slug + a note per anchor, no unresolved gates).
 Run this FIRST — before the candidate sweep — and only when it earns its place: the material
 names a problem or a goal but no settled approach ("checkout abandonment is up — do
 something"). Skip it when the approach is already decided — the architect brought a settled
-change, a bound document prescribes the solution, or a promoted finding carries its own
-suggestion. Re-shaping a settled decision reads as a form.
+change, a bound document prescribes the solution, or a promoted insight carries its own
+recommendation. Re-shaping a settled decision reads as a form.
 
 - Propose **2–3 approaches, each grounded in the board**: name the spine elements and aspect
   rows it would touch by slug (from the surround pull), one line of trade-off each.
@@ -35,7 +35,7 @@ suggestion. Re-shaping a settled decision reads as a form.
 
 These answers compose the `narrative`, not the directive. Ask them when the material arrived
 *thin on reasoning* — a one-line ask, a ticket title, a verbal "we should probably…". Skip the
-dimension entirely when the reasoning is already on the record (a linked finding, a PRD passed as
+dimension entirely when the reasoning is already on the record (a linked insight, a PRD passed as
 `draftedFromSourceSlug`, an architect who just explained it at length) — re-asking reads as a form,
 and a narrative that restates the directive in longer words is worse than no narrative at all.
 

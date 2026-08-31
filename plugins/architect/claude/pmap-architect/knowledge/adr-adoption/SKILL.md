@@ -1,12 +1,12 @@
 ---
 name: adr-adoption
-description: How to adopt an architecture decision (ADR) into ProvenMap and measure the estate against it — the /adopt-adr arc. Use when the org has made a decision, standard, or policy that boards should be governed by and checked against. Key capabilities: ADR normalization, blast-radius sweep per aspect family, the decision grill, the durable decision board, compliance insight runs, federated per-app remediation intents.
+description: How to adopt an architecture decision (ADR) into ProvenMap and measure the estate against it — the /adopt-adr arc. Use when the org has made a decision, standard, or policy that boards should be governed by and checked against. Key capabilities: ADR normalization, blast-radius sweep per aspect family, the decision grill, the durable decision board, compliance insight batches, federated per-app remediation intents.
 ---
 
 # ADR Adoption
 
 An adopted decision becomes three things: a **decision board** (the durable record — where the
-ADR lives and is found), a **compliance insight run** per affected app (the _is_ — where the
+ADR lives and is found), a **compliance insight batch** per affected app (the _is_ — where the
 estate violates it today), and **remediation intents** (the _ought_, as work that can actually
 be delivered and proven). Intents are per-board and cross-board anchors are inert, so a
 cross-cutting ADR **federates**: per-app intents landed together in the working copy and
@@ -58,21 +58,22 @@ it — durable records retire in the platform.
 
 ## 5 — Record the assessment
 
-Where the sweep found violations: `create_insight` per swept app — findings anchored to the
+Where the sweep found violations: `create_insight` per swept app — insights anchored to the
 violating elements, severity from the grill (exceptions the architect accepted are recorded as
-observations, not violations), suggestions where the fix is graph-shaped. Draft runs.
+observations, not violations), a `proposal` on the insight where the fix is graph-shaped. Draft
+batches.
 
 ## 6 — Land the remediation, federated
 
 The writes join the working copy automatically. Two paths, both producing draft intents:
 
-- **From the assessment** — `promote_insight_findings` on the reviewed violation findings (one
+- **From the assessment** — `promote_insights` on the reviewed violation insights (one
   draft intent each, origin-linked, so insight coverage stays derived). This is the default
   where the sweep found concrete violations.
 - **Authored directly** — `create_intent` per affected **code-bound** app board, named
   `ADR: <title>`, description = the normalized record (identical across apps) plus that app's
   applicability, directive = that app's **enforceable consequences**, element-grounded by slug.
-  Use this where compliance requires work the sweep cannot see as a finding. Pre-flight each
+  Use this where compliance requires work the sweep cannot see as an insight. Pre-flight each
   payload with `--validate intent`.
 
 A single-app ADR degenerates to one intent. Affected but **unbound** boards: name them, skip
@@ -81,7 +82,7 @@ them, narrate the binding gate (intents need a code-bound board).
 ## 7 — Hand off
 
 Enrich each generated draft via the intents-authoring loop (anchor notes are what the implementer
-reads), then the closing move: preview → commit. Not now → `/insights` (review runs),
+reads), then the closing move: preview → commit. Not now → `/insights` (review batches),
 `/intents` (release the drafts). Every stop names the next command.
 
 The arc: _decision in → durable record + measured compliance + per-app remediation queue out_ —

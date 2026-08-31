@@ -7,7 +7,7 @@ app) in ProvenMap — never direct truth.
 
 Where the ProvenMap code plugins serve developers (analyze a codebase or document set → push
 boards → implement intents), this plugin serves **architects**: the people reasoning over boards,
-deciding what the architecture should become, and turning findings and documents into work.
+deciding what the architecture should become, and turning insights and documents into work.
 
 ## Install
 
@@ -47,8 +47,8 @@ center (hub) → Architect access**), set it as `PMAP_MCP_TOKEN` in your environ
 | `/pmap-architect:adopt-adr`                              | Adopt a decision: durable record + compliance review + per-app remediation intents             |
 | `/pmap-architect:intents`                                | Turn anything into governed, well-anchored work; manage the queue                              |
 | `/pmap-architect:ask-board <question>`                   | Ask the architecture a question — slug-grounded answer or highlighted subgraph                 |
-| `/pmap-architect:assess`                                 | Structured review: frame, sweep, defend findings, record the run                               |
-| `/pmap-architect:insights`                               | Review insight runs; promote reviewed findings into draft intents                              |
+| `/pmap-architect:assess`                                 | Structured review: frame, sweep, defend the insights, record the batch                         |
+| `/pmap-architect:insights`                               | Review insight batches; promote reviewed insights into draft intents                           |
 | `/pmap-architect:board [slug]`                           | Work a board conversationally — portfolio view on the landscape, canvas elsewhere              |
 | `/pmap-architect:hub`                                    | The command center, attention-first: what needs you, then the portfolio                        |
 | `/pmap-architect:login` `:configure` `:status` `:logout` | Connection lifecycle (MCP token)                                                               |

@@ -1,7 +1,7 @@
 ---
 name: architecture-analyzer
 description: |
-  Use this agent when the user asks to "analyze codebase structure", "map architecture", "detect tech stacks", "identify components", "create architecture diagram", or when comprehensive codebase analysis is needed for ProvenMap integration. Supports JavaScript/TypeScript, Python, Java, Go, C#, Ruby, and Rust projects. Examples:
+  Use this agent when the user asks to "analyze codebase structure", "map architecture", "detect tech stacks", "identify components", "create architecture diagram", or when comprehensive codebase analysis is needed for ProvenMap integration. Supports JavaScript/TypeScript, Python, Java, Go, C#, Ruby, Rust, PHP, Kotlin, Swift, and Scala projects. Examples:
 
   <example>
   Context: User wants to understand their project structure
@@ -122,6 +122,10 @@ When in archetypes-only mode, you may still build temporary in-memory node-slug 
 - C#/.NET (ASP.NET Core, Blazor)
 - Ruby (Rails, Sinatra, Sidekiq)
 - Rust (Actix, Axum, Rocket)
+- PHP (Laravel, Symfony)
+- Kotlin (Spring Boot, Ktor)
+- Swift (Vapor)
+- Scala (Play, Akka, ZIO)
 
 **Your Core Responsibilities:**
 
@@ -141,11 +145,14 @@ When invoked by `/analyze`, a deterministic prepass has already written the skel
    - Scan for manifest files to identify languages:
      - `package.json` → JavaScript/TypeScript
      - `requirements.txt`, `pyproject.toml` → Python
-     - `pom.xml`, `build.gradle` → Java
+     - `pom.xml`, `build.gradle`, `build.gradle.kts` → Java/Kotlin
      - `go.mod` → Go
      - `*.csproj`, `*.sln` → C#/.NET
      - `Gemfile` → Ruby
      - `Cargo.toml` → Rust
+     - `composer.json` → PHP
+     - `Package.swift` → Swift
+     - `build.sbt`, `*.scala` project root → Scala
    - Identify monorepo indicators per language
    - Carry the language on each node as `metadata.language` — **never create a language-level parent node** (see Framework Identification and Hierarchy Building: technology is metadata, not a containment level)
 
@@ -159,7 +166,11 @@ When invoked by `/analyze`, a deterministic prepass has already written the skel
      - **C#**: Microsoft.AspNetCore, Microsoft.EntityFrameworkCore
      - **Ruby**: rails, sinatra, sidekiq
      - **Rust**: actix-web, axum, rocket
-   - For each deployment boundary you do create, set its `type` to the matching framework archetype name from the fetched list — e.g. next→`nextjs`, @nestjs/core→`nestjs`, express→`express`, react→`react`, angular→`angular`, vue→`vue`, django→`django`, fastapi→`fastapi`, flask→`flask`, spring-boot→`spring-boot`, micronaut→`micronaut`, quarkus→`quarkus`, gin→`gin`, echo→`echo`, fiber→`fiber`, aspnet→`aspnet-core`, rails→`rails`, sinatra→`sinatra`, laravel→`laravel`, phoenix→`phoenix`, actix→`actix`, axum→`axum`, rocket→`rocket`. Fall back to `service` (backend) or `frontend_app` (frontend) when no framework archetype exists in the fetched list.
+     - **PHP**: laravel/framework, symfony/symfony
+     - **Kotlin**: spring-boot-starter (build.gradle.kts), io.ktor:ktor-server-core
+     - **Swift**: vapor/vapor (Package.swift)
+     - **Scala**: com.typesafe.play:play (build.sbt), com.typesafe.akka:akka-*, dev.zio:zio
+   - For each deployment boundary you do create, set its `type` to the matching framework archetype name from the fetched list — e.g. next→`nextjs`, @nestjs/core→`nestjs`, express→`express`, react→`react`, angular→`angular`, vue→`vue`, django→`django`, fastapi→`fastapi`, flask→`flask`, spring-boot→`spring-boot`, micronaut→`micronaut`, quarkus→`quarkus`, gin→`gin`, echo→`echo`, fiber→`fiber`, aspnet→`aspnet-core`, rails→`rails`, sinatra→`sinatra`, laravel→`laravel`, phoenix→`phoenix`, actix→`actix`, axum→`axum`, rocket→`rocket`, ktor→`ktor`, vapor→`vapor`, play→`play`, akka→`akka`. Fall back to `service` (backend) or `frontend_app` (frontend) when no framework archetype exists in the fetched list.
 
 3. **Component Discovery**
    - Glob for source files by language extension — or, when a skeleton is provided, start from its `nodes[]` (exclusions already applied)

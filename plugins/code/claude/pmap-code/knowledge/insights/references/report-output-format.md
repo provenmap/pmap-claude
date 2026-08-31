@@ -1,6 +1,6 @@
 # Report Output Format
 
-This document describes the `InsightDraft` schema — the v2 shape for every insight pushed to ProvenMap — and the human-facing markdown report format.
+This document describes the `InsightDraft` schema — the v2 shape for every insight pushed to ProvenMap.
 
 The v2 model is flat: the `insights` field in a push command is `InsightDraft[]`. There is no wrapping container, no `scope` dictionary, no separate `paths[]` or `suggestions[]` arrays. Traversal lives in each insight's `trail`; structural proposals live in its `proposal` field.
 
@@ -112,7 +112,7 @@ Every insight must have at least 1 stop. A single stop = a point finding. Multip
   {
     "id": "s2",
     "from": "s1",
-    "via": { "kind": "edge", "edge": "api-gateway--auth-service" },
+    "via": { "kind": "edge", "edge": "api-gateway--calls--auth-service" },
     "board": "my-project-overview",
     "node": "auth-service",
     "note": "Validates credentials — hardcoded JWT secret here"
@@ -120,7 +120,7 @@ Every insight must have at least 1 stop. A single stop = a point finding. Multip
   {
     "id": "s3",
     "from": "s2",
-    "via": { "kind": "edge", "edge": "auth-service--user-db" },
+    "via": { "kind": "edge", "edge": "auth-service--calls--user-db" },
     "board": "my-project-overview",
     "node": "user-db",
     "note": "Reads user record"
@@ -161,7 +161,7 @@ Every insight must have at least 1 stop. A single stop = a point finding. Multip
 | `{ "kind": "layer", "direction": "descend" \| "ascend" }` | Descending into a child board or ascending to a parent. |
 | `{ "kind": "jump" }` | Unrelated hop — no structural connection claimed. |
 
-Edge slugs come from the pack's `edges[]` array. If the pack doesn't carry an explicit slug, derive it from `sourceSlug--targetSlug`.
+Edge slugs are `pack.edges[].slug`, copied verbatim. Never derive one: the server names edges `<source>--<relation>--<target>`, and a made-up slug is rejected at push (and could never be highlighted on the canvas).
 
 ## Proposal
 
@@ -222,8 +222,8 @@ A structural change proposed by this finding. Set `proposal` on the finding whos
   },
   "trail": [
     { "id": "s1", "board": "my-project-overview", "node": "api-gateway", "note": "Entry — rate limited" },
-    { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "api-gateway--auth-service" }, "board": "my-project-overview", "node": "auth-service", "note": "850ms p99" },
-    { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "auth-service--user-db" }, "board": "my-project-overview", "node": "user-db", "note": "Read per request" }
+    { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "api-gateway--calls--auth-service" }, "board": "my-project-overview", "node": "auth-service", "note": "850ms p99" },
+    { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "auth-service--calls--user-db" }, "board": "my-project-overview", "node": "user-db", "note": "Read per request" }
   ]
 }
 ```
@@ -263,9 +263,9 @@ A structural change proposed by this finding. Set `proposal` on the finding whos
   },
   "trail": [
     { "id": "s1", "board": "my-project-overview", "node": "payment-service", "note": "SPOF — outage starts here" },
-    { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "order-service--payment-service" }, "board": "my-project-overview", "node": "order-service", "note": "Blocks on retries", "branchLabel": "order path" },
-    { "id": "s3", "from": "s1", "via": { "kind": "edge", "edge": "notification-service--payment-service" }, "board": "my-project-overview", "node": "notification-service", "note": "Skips confirmation", "branchLabel": "notification path" },
-    { "id": "s4", "from": "s1", "via": { "kind": "edge", "edge": "analytics--payment-service" }, "board": "my-project-overview", "node": "analytics", "note": "Misses events", "branchLabel": "analytics path" }
+    { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "order-service--calls--payment-service" }, "board": "my-project-overview", "node": "order-service", "note": "Blocks on retries", "branchLabel": "order path" },
+    { "id": "s3", "from": "s1", "via": { "kind": "edge", "edge": "notification-service--calls--payment-service" }, "board": "my-project-overview", "node": "notification-service", "note": "Skips confirmation", "branchLabel": "notification path" },
+    { "id": "s4", "from": "s1", "via": { "kind": "edge", "edge": "analytics--calls--payment-service" }, "board": "my-project-overview", "node": "analytics", "note": "Misses events", "branchLabel": "analytics path" }
   ]
 }
 ```
@@ -295,45 +295,3 @@ A structural change proposed by this finding. Set `proposal` on the finding whos
   }
 }
 ```
-
-## Markdown Report (`content` field)
-
-The `content` field is a detailed markdown report for humans. Keep it tight but informative — include file paths when the analysis identifies specific source locations.
-
-```markdown
-# <Skill Name> Report
-
-## Summary
-
-<total> findings: <critical> critical, <high> high, <medium> medium, <low> low
-Polarities: <risk> risks, <strength> strengths, <opportunity> opportunities, <observation> observations
-
-## Findings
-
-### 1. <Finding Name> (<polarity> · <priority> · confidence: <confidence>)
-
-**Board:** <board slug>
-**Node:** <node slug or "board-wide">
-**File:** <source file path if known>
-
-<insight description>
-
-<If measurement present:>
-**Measurement:** <value> <unit> (baseline <baseline>, threshold <threshold>, trend <trend>)
-
-**Trail:** <entry node> → <next node> → … (with branch labels if any)
-
-<If advice.kind === "recommendation":>
-**Recommendation:** <text> (effort: <effort>)
-
-<If advice.kind === "context":>
-**Context:** <text>
-
----
-
-### 2. <Next Finding>
-
-...
-```
-
-Don't restate the JSON — surface the *why* and *next step* for each finding.

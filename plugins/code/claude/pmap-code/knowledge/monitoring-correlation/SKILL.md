@@ -1,21 +1,21 @@
 ---
 name: monitoring-correlation
-description: How /monitor turns raw monitoring output (Sentry issues, CloudWatch alarms, cost anomalies) into normalized signals, correlates them with board elements, and shapes intent-ready findings. Use when running /monitor, normalizing vendor monitoring data, or deciding how an operational signal maps onto architecture nodes/edges. Defines the signals schema, stable-id rules, and the teach-once mapping loop.
+description: How /monitor turns raw monitoring output (Sentry issues, CloudWatch alarms, cost anomalies) into normalized signals, correlates them with board elements, and shapes intent-ready insights. Use when running /monitor, normalizing vendor monitoring data, or deciding how an operational signal maps onto architecture nodes/edges. Defines the signals schema, stable-id rules, and the teach-once mapping loop.
 user-invokable: false
 metadata:
   author: ProvenMap
   version: 0.5.8
 ---
 
-# Monitoring Correlation — Signals → Board Elements → Intent-Ready Findings
+# Monitoring Correlation — Signals → Board Elements → Intent-Ready Insights
 
 `/monitor` closes the loop between production reality and the architecture board: signals from
-monitoring tools become findings anchored to the same nodes and edges `/analyze` + `/sync` put on
+monitoring tools become insights anchored to the same nodes and edges `/analyze` + `/sync` put on
 the portal, where architects promote them to intents. The division of labour is strict:
 
 - **You (the model)**: pull vendor data via MCP tools, normalize it into the signals schema below,
-  and — after the deterministic correlation — turn each prefilled finding stub into an
-  intent-ready finding (see `references/insight-shaping.md`).
+  and — after the deterministic correlation — turn each prefilled insight stub into an
+  intent-ready insight (see `references/insight-shaping.md`).
 - **The CLI (`pmap-insights.js --correlate`)**: everything mechanical — locator→element matching,
   mapping overrides, scope/key assignment from the context pack, skeleton generation. Never
   hand-match signals to elements or generate scope keys; that is the correlator's job.
@@ -63,11 +63,11 @@ the portal, where architects promote them to intents. The division of labour is 
 Rules that make the loop work:
 
 - **Stable ids.** `id` must be the vendor's own fingerprint (Sentry issue shortId, CloudWatch alarm
-  ARN tail, cost-anomaly id). It becomes the finding id, which is what REPLACE-mode pushes and
+  ARN tail, cost-anomaly id). It becomes the skeleton's insight id, which is what REPLACE-mode pushes and
   promoted intents key on across runs. Same underlying problem ⇒ same id, every run.
 - **One primary measurement.** Pick the number that best quantifies the signal (event count, p95
-  latency, spend delta). Everything else goes in the finding's prose, not the wire.
-- **Locators in priority order.** The first locator to match becomes the finding's primary
+  latency, spend delta). Everything else goes in the insight's prose, not the wire.
+- **Locators in priority order.** The first locator to match becomes the insight's primary
   element; later matches become `relatedElements`. Lead with the most specific locator you have
   (a stack frame beats a service name).
 - **Windowing is stateless.** Use the configured window (default 7 days, or `windowDays` from
@@ -89,7 +89,7 @@ Deterministic, in priority order per locator — see the correlate output's `con
 4. **route** — a route segment that exactly equals an element's slug/name token.
 5. **tag** — element tag equals `value` or `key:value`.
 
-Unmatched signals are never dropped: they become board-level findings tagged `unmatched`.
+Unmatched signals are never dropped: they become board-level insights tagged `unmatched`.
 Proposals are the **teach-once loop**: confirm once with the user, write the mapping, and every
 future run resolves that locator deterministically.
 

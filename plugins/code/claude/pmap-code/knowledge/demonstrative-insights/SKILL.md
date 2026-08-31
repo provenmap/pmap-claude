@@ -52,7 +52,7 @@ If a focus prompt names a concern (security, performance, cost), include that sk
 `pmap-insights.js --build-context --demo` writes the pack to `.provenmap/insights/<board>.context.json` — the canonical path `--save-insight --demo` reads back for its quality gates. It gives you, without any manual indexing:
 
 - **node index** — `pack.elements[]` (`{key, board, slug, type, name, description}`); use `board` + `slug` as trail stop values
-- **edge adjacency** — `pack.edges[]` (`{board, sourceKey, targetKey, type, description}`) — the source of truth for path grounding
+- **edge adjacency** — `pack.edges[]` (`{board, slug, sourceKey, targetKey, type, description}`) — the source of truth for path grounding; `slug` is what `via.edge` carries, verbatim
 - **degree** — `pack.degree[]` (`{key, board, fanIn, fanOut}`), ranked most-connected first — your hub/chokepoint shortlist
 - **context vars** — `pack.boards[].context`
 
@@ -68,14 +68,14 @@ One push payload per chosen skill — a `PushInsightsCommand` with `insights: In
 2. **Multi-stop trail on every finding** — build it with the checklist below. Trail `board` and `node` values must be canonical slugs from the pack.
 3. **Optional: one proposal** (`action: "add"|"modify"|"remove"`, `targetType: "node"|"edge"`) on one finding, to show structural proposals render. When adding a node, mark it `proposed: true` in the trail; when adding an edge, add a `proposedEdge` via hop.
 4. Give each insight a **distinct polarity** from the others in the set (see *Visually varied*, above).
-5. Write a tight markdown `content` report and a `title` / `description`.
+5. Write a one-line `info` audit summary for the push (≤ 350 chars). There is no separate markdown report — the insights themselves are the deliverable.
 
-`--save-insight --demo` validates all of it before pushing: Zod schema (trail board/node slugs, advice mutually exclusive), the pack gates (every trail stop grounded in the pack), and the demo gates — ≥1 insight with ≥3 connected trail stops, and every same-board consecutive stop pair edge-grounded against the pack.
+`--save-insight --demo` validates all of it before pushing: Zod schema (trail board/node slugs, advice mutually exclusive), the pack gates (every stop's board and node exist, every `via.edge` is a real `pack.edges[].slug` joining its two stops — the server rejects anything else), and the demo gate — ≥1 insight with ≥3 connected trail stops.
 
 ## Building a trail (the checklist)
 
 - **Pick nodes from the pack.** Use `pack.degree` (ranked most-connected first) to identify the hub (`fanIn` for chokepoints, `fanOut` for blast-radius roots). Every stop's `board` and `node` must be canonical slugs from `pack.boards[].slug` / `pack.elements[].slug`.
-- **Main line: 3–6 stops**, each consecutive pair grounded on a real edge. Each stop after the first carries `from` (prior stop id) and `via: { kind: "edge", edge: "<edge-slug>" }`.
+- **Main line: 3–6 stops**, each consecutive pair grounded on a real edge. Each stop after the first carries `from` (prior stop id) and `via: { kind: "edge", edge: "<pack.edges[].slug, verbatim>" }` — never a slug you composed yourself.
 - **Branches for fan-out.** Add extra stops sharing the same `from` as the hub stop, each with a distinct `branchLabel`. Every branch stop must also share a real edge with the hub.
 - **No consecutive duplicates.** A node may reappear later in a genuinely different role (distinct `note`), never back-to-back.
 - **First stop is the anchor.** The `trail` field lives on the `InsightDraft` — there is no separate findingRef; the finding's polarity and priority apply to the whole trail.

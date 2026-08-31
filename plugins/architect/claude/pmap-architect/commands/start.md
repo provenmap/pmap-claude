@@ -30,7 +30,7 @@ Deterministic state first, judgment second:
      uncommitted changes across M boards — inspect on a board, then commit or discard;
      the session includes any web-app edits"), and each draft in flight ("resume the
      `payments` intent draft? → `/author-intent payments`").
-   - The attention headline from hub status (bounced intents, stale intents, findings awaiting
+   - The attention headline from hub status (bounced intents, stale intents, insights awaiting
      review → `/hub` for the full queue).
    - Init states by name, straight from the script output: a `governing · never pushed` board
      in the classify table (the attention report lists them as "Waiting for first push") →
