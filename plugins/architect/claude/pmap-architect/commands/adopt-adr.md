@@ -32,8 +32,9 @@ landing uses [`${CLAUDE_PLUGIN_ROOT}/knowledge/intents-authoring/SKILL.md`](../k
    (`--validate intent` first). Unbound affected boards named + skipped with the binding gate
    narrated. Close with the standard move: `preview_write_session_commit` → present the plan →
    title/summary (AskUserQuestion) → `commit_write_session` → narrate what was generated.
-7. **Hand off** — enrich the drafts via the intents-authoring loop, or stop; not now →
-   `/insights`, `/intents`. Every stop names the next command.
+7. **Hand off** — enrich the drafts via the intents-authoring loop, or stop.
+
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after adopt-adr` — print verbatim.
 
 ## Failure branches
 

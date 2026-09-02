@@ -6,9 +6,8 @@ allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_p
 ---
 
 Open an architect working session: orient on the board, then follow the architect's lead. First
-read `${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md` (orientation, analysis, the diagram
-contract) and `${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md` (taxonomy, scope, passive review,
-the working copy).
+read `${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md` and
+`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`.
 
 ## Workflow
 
@@ -25,7 +24,7 @@ Classify per the architect-core taxonomy; per-class detection facts and orientat
 `${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/references/orientation.md`:
 
 - **Empty root** → don't orient on nothing; offer `/setup-workspace`.
-- **Empty app board** / **empty plain layer** → don't orient on nothing; read
+- **Empty app board** / **empty plain layer** → read
   `${CLAUDE_PLUGIN_ROOT}/knowledge/board-init/SKILL.md` and run its bootstrap inline — the full one for an
   app board, the lightweight variant for a layer (or route up to the owning app board).
 - **Root / landscape** → orient as a **portfolio**, not a canvas walk; landscape edits follow
@@ -53,10 +52,12 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --group-plan --board <slug>
 Print its `display` **verbatim** (a summary); read verdicts from the JSON's `clusters`/`drift`
 and the `Grouping rationale:` override per that reference. Every move re-parents a node — apply only what the architect confirms.
 
-**Closing move (any session that wrote), per architect-core:** `preview_write_session_commit` →
-present the plan → ask for title/summary (AskUserQuestion) → `commit_write_session` → narrate the
-generated intents by slug, offer `publish: true`. To abandon instead: confirm the boards + counts
-from `get_write_session`, then `discard_write_session` — it reverts the WHOLE working copy.
+**Closing move (any session that wrote):** architect-core's standard move (preview → title/summary
+via AskUserQuestion → commit → narrate the intents, offer `publish`). To abandon instead: confirm
+the boards + counts from `get_write_session`, then `discard_write_session` — it reverts the WHOLE
+working copy.
+
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after board --facts '{"board":"<slug>"}'` — print verbatim.
 
 ## Failure branches
 

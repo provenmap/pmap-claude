@@ -78,9 +78,6 @@ cancel and keep existing.
 
 ## Next step
 
-Verified? Run the status report and relay **only its `Lifecycle:` line** — one next
-step, not the whole report:
+Verified? Close with the next-steps footer — one next step, not the whole report:
 
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --domain connect
-```
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --after configure --domain connect` — print verbatim.

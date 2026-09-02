@@ -43,6 +43,8 @@ the host's user-scope MCP server entry pinned to your endpoint. Print its `displ
 Connected → point at `/board`. Rejected → generate a fresh token (Step 1). Unreachable → check
 `PMAP_MCP_URL` / network / egress allowlist, then re-run.
 
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after configure` — print verbatim.
+
 ## Notes
 
 - Rotating or revoking: revoke on the command center → Architect access; generate a fresh token;

@@ -8,7 +8,7 @@ allowed-tools: Read, Glob, Grep, Write, Bash(node:*, git:*), AskUserQuestion, Ta
 
 Print every `display` verbatim; branch only on exit codes and named fields.
 
-**Dispatch (command argument):** `--clean` full re-analysis; `--drill <parent>/<node>` child board (add `--clean`: rebuild only it); `--all` all layers; `--auto` unattended (`--auto-plan` owns the loop; prompts become stops); no flag: incremental (full when impossible).
+**Dispatch (argument):** `--clean` full re-analysis; `--drill <parent>/<node>` child board (add `--clean`: rebuild only it); `--all` all layers; `--auto` unattended (`--auto-plan` owns the loop; prompts become stops); no flag: incremental (full when impossible).
 
 **-2 Preflight** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js` (whole-tree `--clean`: add `--no-repair`): 0 → continue; 1 → connect-now offer (--auto: stop, print `error` verbatim); 2 → print `error`, stop, name `/status`; 11 → branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md` (--auto: stop).
 
@@ -16,7 +16,7 @@ Print every `display` verbatim; branch only on exit codes and named fields.
 
 **Read `${CLAUDE_PLUGIN_ROOT}/knowledge/codebase-analysis/references/analyze-workflow.md` NOW and follow it exactly; improvise nothing.**
 
-**Step map (in order; skip none — at Steps -2, 0, 4.5, 8, 9 first: `pmap-prepass.js --spine analyze --step <n> --with-coverage`, exit 3: report drift, continue):**
+**Step map (in order — at Steps -2, 0, 4.5, 8, 9 first: `pmap-prepass.js --spine analyze --step <n> --with-coverage`, exit 3: report drift, continue):**
 
 - -0.5 `pmap-prepass.js --coverage` (exit 2 → stop)
 - 0 `pmap-archetypes.js --kind code` catalogue + role map (`--role-map`)
@@ -37,7 +37,9 @@ Print every `display` verbatim; branch only on exit codes and named fields.
 - 8.6 next area: your read + AskUserQuestion (multiSelect for 2+ drill-downs; last: Sync what I have)
 - 8.7 fan-out: architecture-analyzer agents (layer-board / incremental-refresh), one message; only the orchestrator writes manifest/coverage/parent boards; join → one 8.5
 - 9 manifest; drop mirror metadata
-- Report: re-run `--board-report`, verbatim + final dashboard; close `Run /sync to push the boards and this coverage snapshot.`
+- Report: re-run `--board-report`, verbatim + final dashboard.
+
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --after analyze --domain code` — print verbatim.
 
 ## Connect-now offer
 

@@ -2,6 +2,7 @@
 category: connect
 description: "Account · Check the ProvenMap MCP connection: endpoint, token, live probe, scope, and your working copy"
 allowed-tools: Bash(node:*)
+next-steps: none
 ---
 
 Report whether this session can reach the ProvenMap MCP server: endpoint, token presence

@@ -26,7 +26,7 @@ staleness/verification semantics.
    `/prepare-app` pointer is already in the line.
 2. **Then the portfolio** — `--classify-tree` (cached ~1h); print its table verbatim. It
    already carries class, binding flavor, and the "+N not classified" cap line.
-3. **Close with next actions ranked** — every line names a command.
+3. **Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after hub` — print verbatim.
 
 Script not configured (exit 1, no grant) → fall back to the direct reads: `get_hub_status
 (scope: 'tree')` + `list_intents(scope: 'tree')` at root, render the same queue shape.

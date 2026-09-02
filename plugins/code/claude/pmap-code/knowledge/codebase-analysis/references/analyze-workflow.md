@@ -131,8 +131,8 @@ The loop:
      advisories resolved or overridden — so progress stays visible mid-round. Then go to 3.
    - `mode: "done"` or `"stalled"` — the run is over. Print `display` verbatim (it ends with
      the full coverage dashboard and the deferred judgment calls — broad claims and pending
-     waiver decisions). On `stalled`, relay `stallReason`. Close the final report with
-     `Run /sync to push the boards and this coverage snapshot.`
+     waiver decisions). On `stalled`, relay `stallReason`. Close the final report with the
+     `--after analyze` footer (the command body's closing line).
 3. **Re-plan:** run `--auto-plan` again (no `--reset`) — it refreshes the ledger itself, so
    Step 8.5 is skipped entirely in auto mode. Print `display` verbatim and return to 2.
 
@@ -709,12 +709,15 @@ pending.
   so the rollup uses the scoped skeleton Step 4.5 wrote for this board, not the repo-wide
   one; L0 uses the default repo skeleton (no flag needed).
 
-  **You never hand-merge edges.** The script replaces the board's rollup-owned edges
-  wholesale, preserves your model-owned ones untouched, and re-runs the board integrity
-  gates before writing — so it is safe to re-run at any time and running it twice is a
-  no-op. Print the returned `display` verbatim (it ends with the merge summary: edges
-  replaced, model-owned edges preserved, fresh edges deduped, hub targets left suppressed).
-  Branch on the exit:
+  **You never hand-merge edges.** The script folds every pair the skeleton resolves into
+  the board: a new pair is added as `uses`; a pair that already has an edge (any type)
+  keeps that edge's `type` and your `detailedDescription` while its weight, class,
+  provenance and fact `description` are refreshed; a rollup-backed `uses` pair the skeleton
+  no longer resolves is removed, and a pair you re-typed keeps its edge with the rollup
+  fields stripped. Model-only edges (no `metadata.provenance`) are never touched. It re-runs
+  the board integrity gates before writing — safe to re-run at any time, and running it
+  twice is a no-op. Print the returned `display` verbatim (it ends with the merge summary:
+  added, folded, removed, unbacked, preserved). Branch on the exit:
 
   | exit | meaning                                                                 | action                                                                                                                  |
   | ---- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
@@ -726,20 +729,37 @@ pending.
   before any further edit, and never write back a copy you were holding from before the
   apply (that silently drops every edge it just merged).
 
-  For each `report.suppressedHubs` entry, stamp that node with
-  `metadata.hubInDegree = distinctSources` — the fact survives without N identical edges
-  (nodes are yours; `--apply` only ever touches `edges`). Do NOT hand-map skeleton edges
-  yourself; the script owns those rules, and it resolves imports for every supported
-  language — never re-parse them by hand.
+  The rollup classifies, it never deletes: every resolved pair is written with
+  `metadata.class` absent (**primary**, drawn), `"reserve:hub"` (inbound to a hub — its
+  fan-in is the count of those edges) or `"reserve:budget"` (over the edge budget). Reserve
+  edges are facts the canvas hides until focus; leave them alone — never delete or promote
+  one, and never count them when judging density or isolation (the gates and the ledger
+  already read only the primary set). Each rollup edge also carries `metadata.provenance`
+  (file pairs, import kinds, top symbols) and a script-written fact `description` built from
+  it — that field is the script's; your prose goes in `detailedDescription`. Do NOT hand-map
+  skeleton edges yourself; the script owns those rules, and it resolves imports for every
+  supported language — never re-parse them by hand.
 
-- **Reclassify where you know better — and take ownership when you do.** The rollup can
-  only ever say `uses`. Where reading the involved files shows the real relation, change
-  the edge's `type` **and delete its `metadata.weight`** — a weighted edge is rollup-owned
-  and the next `--apply` would replace it, silently reverting your type. The next `--apply`
-  then also regenerates a weighted `uses` twin for that pair: that is expected and
-  legitimate — leave it alone, never re-type it again, and never keep two edges of the
-  **same** type between one pair. The full edge-ownership model and the semantic edge
-  types (`db_read`/`db_write`, `api_call`, `uses`, `publishes`/`subscribes`, cross-language
+  **Boundary ports (drill-down boards):** an import whose target lies outside this board's
+  scope used to be dropped as unresolved. With the scoped skeleton, the script resolves it
+  against the parent board's other nodes and lands it on a **port** — a script-emitted ghost
+  node `port--<parent-node-slug>` (type `boundary_port`, empty `coveredFiles`,
+  `metadata.portOf`) that stands in for that parent node — and the pair is classified like
+  any other. Ports and their edges are script-owned: never author, rename, re-parent, claim
+  files on, or delete one; the next `--apply` re-derives them, and a port with no remaining
+  crossing is removed together with its edges. Re-typing a port edge is fine — the same rule
+  as any rollup edge. The display's `↗` lines count the ports and any crossing no parent
+  node claims (a parent-board coverage gap, not this board's). Ports never count toward
+  the grouping floor, the node budget, or isolation.
+
+- **Reclassify where you know better.** The rollup can only ever say `uses`. Where reading
+  the involved files shows the real relation, change the edge's `type` (`db_read`,
+  `api_call`, `publishes`, …) and put your reasoning in `detailedDescription` — nothing
+  else. Ownership is per field: the script owns `weight`, `class`, `provenance` and the
+  fact `description`; you own `type` and `detailedDescription`. The next `--apply`
+  refreshes the facts in place and keeps your type — no twin, nothing to delete. Never keep
+  two edges of the **same** type between one pair. The semantic edge types
+  (`db_read`/`db_write`, `api_call`, `uses`, `publishes`/`subscribes`, cross-language
   calls) are the codebase-analysis `SKILL.md` → "Import/Dependency Analysis".
 
 - **Semantic edges (read the relevant files):** the skeleton does not detect these — derive
@@ -768,13 +788,15 @@ pending.
 
 Scope all edges to this board's nodes only.
 
-**Incremental (edge provenance — the frozen rule both you and the script obey):** edges
-carrying `metadata.weight` are **rollup-owned**; edges without one are **model-owned**. On
-an incremental pass just re-run `--rollup <board-slug> --apply`: it discards every
-rollup-owned edge and regenerates them from the current skeleton, and preserves the
-model-owned ones byte-for-byte. Nothing to delete by hand, and nothing to re-apply — your
-reclassified types survive precisely because you dropped their weights when you made them.
-Drop a model-owned edge yourself only when an endpoint node was removed.
+**Incremental (edge ownership — per field, the script obeys the same rule):** an edge with
+`metadata.provenance` is **rollup-backed** — the script owns its weight, class, provenance
+and fact `description`; you own its `type` and `detailedDescription`. An edge without
+provenance is **model-only** and is preserved byte-for-byte. On an incremental pass just
+re-run `--rollup <board-slug> --apply`: it refreshes every rollup-backed edge in place from
+the current skeleton, removes rollup-backed `uses` pairs that no longer resolve, and keeps a
+pair you re-typed (facts stripped) so your semantic claim survives. Nothing to delete by
+hand, and nothing to re-apply. Drop a model-only edge yourself only when an endpoint node
+was removed.
 
 ## Step 7: Identify Drill-Down Candidates
 
@@ -801,8 +823,8 @@ Write analysis results to `.provenmap/boards/<board-slug>.json`.
 
 **Incremental:** Merge new/changed nodes into existing board data. Replace nodes whose
 `coveredFiles` contain a changed file. Remove nodes whose covered files were all deleted.
-Remove edges referencing removed nodes (rollup-owned edges — those with `metadata.weight` —
-were already regenerated by Step 6's `--rollup --apply`).
+Remove edges referencing removed nodes (rollup-backed edges — those with
+`metadata.provenance` — were already refreshed by Step 6's `--rollup --apply`).
 
 Always record the current git commit hash via `git rev-parse HEAD` as `analyzedAtCommit`,
 and carry the `groupingEvidence` you stamped in Step 5. Stamp `analyzedBy` truthfully:
@@ -1015,9 +1037,9 @@ is a genuine user decision:
      the field if the user applies it
    - `unknown-board` → re-run that board with the `--clean` behaviour (delete its JSON +
      store, full re-analysis)
-5. If the user picks **Sync what I have**: proceed to Step 9 and end the final report with:
-   `Run /sync to push the boards and this coverage snapshot.` If it was selected alongside
-   other areas, build those areas first, then end the loop with the same sentence.
+5. If the user picks **Sync what I have**: proceed to Step 9 and end the final report with the
+   `--after analyze` footer (the command body's closing line). If it was selected alongside
+   other areas, build those areas first, then end the loop with the same footer.
 
 ## Step 8.7: Parallel layer fan-out (multiple selections)
 

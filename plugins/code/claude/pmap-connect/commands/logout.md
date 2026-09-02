@@ -3,6 +3,7 @@ category: connect
 description: "Account · Disconnect this project from ProvenMap (clears local credentials)"
 argument-hint: "[--purge]"
 allowed-tools: Bash
+next-steps: none
 ---
 
 Disconnect this document repo from ProvenMap: the credential is revoked on

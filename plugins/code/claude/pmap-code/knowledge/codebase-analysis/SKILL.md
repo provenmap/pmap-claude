@@ -99,12 +99,22 @@ by reading the involved files:
 | `subscribes` | Message queue consume           | model  |
 | `grpc_call`  | gRPC client calls               | model  |
 
-Edges carrying `metadata.weight` are rollup-owned and regenerated every run;
-edges without it are model-owned and persist. **Reclassifying a rollup edge's
-`type` means deleting its `metadata.weight`** — otherwise the next
-`--rollup --apply` replaces the edge and reverts your type. The pair then also
-carries a regenerated weighted `uses` edge: that structural twin is expected
-and legitimate — the weighted edge states the import, yours states the meaning.
+An edge with `metadata.provenance` is rollup-backed: the script owns its
+`weight`, its display class (`metadata.class` absent = primary, drawn;
+`"reserve:hub"` = hub fan-in; `"reserve:budget"` = over the edge budget —
+reserve edges are kept facts the canvas hides until focus, never deleted),
+its `provenance` (file pairs, import kinds, top imported symbols) and the
+script-written fact `description`. You own `type` and `detailedDescription`.
+Edges without provenance are model-only and persist. **Reclassifying a rollup
+edge is just changing its `type`** (reasoning in `detailedDescription`) — the
+next `--rollup --apply` refreshes the facts in place and keeps your type;
+there is no twin.
+
+On a drill-down board, an import leaving the scope lands on a script-emitted
+**boundary port** (`port--<parent-node-slug>`, type `boundary_port`, empty
+`coveredFiles`, `metadata.portOf`) standing in for the parent-board node it
+reaches. Ports and their edges are script-owned and re-derived by every
+`--rollup --apply`; they never count toward grouping, budget, or isolation.
 
 ## Monorepo Support
 
@@ -148,7 +158,7 @@ re-glob or re-apply exclusion rules; start from the skeleton's `nodes[]`. The in
 ### Step 4: Relationship Mapping
 
 1. Run `--rollup <board-slug> --apply` — the script merges its deterministic `imports` edges into the board (never hand-merge them)
-2. Reclassify edge types where file reads show the real relation, deleting `metadata.weight` as you do
+2. Reclassify edge types where file reads show the real relation (reasoning in `detailedDescription`)
 3. Add semantic edges the rollup cannot see (db/api/queue)
 
 ### Step 5: Cross-Language Relationships

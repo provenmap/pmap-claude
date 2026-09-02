@@ -28,6 +28,8 @@ review workflow and promotion semantics live in
    scratch (org template or ad-hoc dimension, insights defended before recording), `/assess`
    is the front door — same skill, full arc.
 
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after insights` — print verbatim.
+
 ## Failure branches
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`

@@ -32,6 +32,8 @@ Method (question-scoped reading, the answer-mode heuristic) lives in
 4. **Substantial analysis** → offer to record it (`create_insight`) so it isn't lost; name
    `/assess` for a structured review.
 
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after ask-board` — print verbatim.
+
 ## Failure branches
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`

@@ -2,6 +2,7 @@
 category: connect
 description: "Account · Disconnect from ProvenMap — remove the stored architect token from this machine"
 allowed-tools: Bash(node:*)
+next-steps: none
 ---
 
 Disconnect this machine from ProvenMap: remove the stored login grant

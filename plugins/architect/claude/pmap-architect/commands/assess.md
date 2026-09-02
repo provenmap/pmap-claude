@@ -23,7 +23,9 @@ and [`${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md`](../knowledge/boar
 4. **Review in reverse** — walk the insights with the architect; keep what survives their
    challenge.
 5. **Record** — `create_insight` (draft batch), then the "Promote any of this to intents?" offer.
-   Not now → `/insights` names the batch. Every stop names the next command.
+   Not now → close.
+
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after assess` — print verbatim.
 
 ## Failure branches
 

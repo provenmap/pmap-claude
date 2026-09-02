@@ -17,20 +17,12 @@ Board-state command; the preflight gate is script-enforced — act on its exit c
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js
 ```
 
-Print the JSON's `display` field **verbatim** — do not reformat, reorder, or summarise it.
-
-| exit | meaning | action |
-| ---- | ------- | ------ |
-| 0 | Proceed | Continue; `display` already reports any `repairs.boardsRecovered` restore. |
-| 1 | Not connected, or credentials rejected | Make the **connect-now offer** (below). |
-| 2 | Binding could not be verified | Print `error` verbatim and stop; see `/status` for the full picture. |
-| 11 | Branch mismatch | Print `display` verbatim, then AskUserQuestion per the branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md`. |
+Print the JSON's `display` field **verbatim** — do not reformat, reorder, or summarise it. 0 → continue (`display` already reports any `repairs.boardsRecovered` restore) · 1 (not connected / credentials rejected) → **connect-now offer** (below) · 2 (binding unverified) → print `error` verbatim and stop; see `/status` for the full picture · 11 (branch mismatch) → print `display` verbatim, then AskUserQuestion per the branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md`.
 
 ### Step 0: Choose the mode
 
-- Default (no arguments or `--sync`): fetch composition metadata and auxiliary files,
-  download each immutable external source, apply resolved parameters, verify its tree hash,
-  route skills/rules/hooks/agents to their host folders, and write the result.
+- Default (no arguments or `--sync`): fetch, verify (tree hash), and write the composed
+  skills, rules, hooks and agents into their host folders.
 - `--status`: read-only — repo-current / platform-changed / locally-edited report; writes nothing.
 
 Read `boardSlug` from `.provenmap/config.json`.
@@ -61,9 +53,11 @@ If `withheld.count > 0`: "`<count>` external skill(s) need a newer plugin — ru
 
 CLI owns writing; never edit a skill file yourself.
 
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --after skills --domain connect` — print verbatim.
+
 ## Connect-now offer
 
-On config-missing or `errorType: "auth_invalid"`, AskUserQuestion "Connect to ProvenMap now?" (**Connect now** / **Not now**):
+Trigger: not configured, or `errorType: "auth_invalid"`. AskUserQuestion "Connect to ProvenMap now?":
 
-- **Connect now** → `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `--poll --host claude --domain connect` (250s timeout). Print each `display` verbatim. On `status: "complete"` resume; else stop.
-- **Not now** → "ProvenMap not configured — run `/login` or `/configure` first" (rejected: "run `/login` to reconnect").
+- **Connect now** → browser login: each `display` **in your reply**: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain connect` (timeout ~250s). `complete` → resume the failed step; else stop (display explains).
+- **Not now** → stop: "ProvenMap not configured — run `/login` (browser) or `/configure` (manual) first" (rejected: "Your ProvenMap credentials were rejected — run `/login` to reconnect").

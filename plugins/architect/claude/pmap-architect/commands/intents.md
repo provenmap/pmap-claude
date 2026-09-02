@@ -12,9 +12,9 @@ lifecycle. Authoring runs the **impact → attach → describe** loop from
 
 ## Workflow
 
-1. **Working-copy check** — `get_write_session`: if the session holds uncommitted changes,
-   surface them (boards+counts) before writing — this commit carries them too, so the architect
-   decides: continue (one commit) or resolve first (architect-core).
+1. **Working-copy check** — `get_write_session`: uncommitted changes are surfaced (boards +
+   counts) and the architect decides — one combined commit later, or pause first
+   (architect-core).
 2. **Resolve and route** — argument or session board; classify per architect-core taxonomy
    (intents legal only on code-bound boards — route up/split before any write).
 3. **List** — `list_intents` (`scope: 'tree'` for the subtree). Table: slug, name, state,
@@ -43,8 +43,9 @@ lifecycle. Authoring runs the **impact → attach → describe** loop from
      deletion.
 5. **Close** — if this session made board edits: `preview_write_session_commit` → present the
    plan → title/summary (AskUserQuestion) → `commit_write_session` → narrate generated intents
-   by slug, offer `publish`. Report writes from the result message, slug-first. No dead ends:
-   name the next command (`/board`, `/insights`, `/hub`).
+   by slug, offer `publish`. Report writes from the result message, slug-first.
+
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after intents` — print verbatim.
 
 ## Failure branches
 
@@ -52,5 +53,4 @@ lifecycle. Authoring runs the **impact → attach → describe** loop from
 - 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
 - Board not code-bound (400 "…code-bound board") → never surfaces raw: route per the taxonomy
   and name the binding prerequisite.
-- Write tools absent → token is read-only: say a `read_write` token is needed, and continue
-  with reads.
+- Write tools absent → read-only token: name the `read_write` need; continue with reads.

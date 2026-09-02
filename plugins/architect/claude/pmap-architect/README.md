@@ -39,7 +39,7 @@ center (hub) → Architect access**), set it as `PMAP_MCP_TOKEN` in your environ
 
 | Command                                                   | What it does                                                                                   |
 | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `/pmap-architect:start [ask]`                            | **Start here** — reads your real state and names the next step; routes any open-ended ask      |
+| `/pmap-architect:start [ask]`                            | **Start here** — the surfaces card, the ranked next step, and a menu to run it; routes any open-ended ask |
 | `/pmap-architect:setup-workspace`                        | Bootstrap an empty workspace: estate interview → landscape → app boards → binding handoff      |
 | `/pmap-architect:new-app <idea>`                         | Plan a new system on the landscape: grill, place, sketch the target, draft the founding intent |
 | `/pmap-architect:prepare-app`                            | Take a new app from placed to build-ready — spec intents + skills, resumable any time         |

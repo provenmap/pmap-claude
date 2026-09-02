@@ -52,7 +52,7 @@ If a focus prompt names a concern (security, performance, cost), include that sk
 `pmap-insights.js --build-context --demo` writes the pack to `.provenmap/insights/<board>.context.json` — the canonical path `--save-insight --demo` reads back for its quality gates. It gives you, without any manual indexing:
 
 - **node index** — `pack.elements[]` (`{key, board, slug, type, name, description}`); use `board` + `slug` as trail stop values
-- **edge adjacency** — `pack.edges[]` (`{board, slug, sourceKey, targetKey, type, description}`) — the source of truth for path grounding; `slug` is what `via.edge` carries, verbatim
+- **edge adjacency** — `pack.edges[]` (`{board, slug, sourceKey, targetKey, type, description, weight, class}`) — the source of truth for path grounding; `slug` is what `via.edge` carries, verbatim; `weight` ranks dependency strength (null on model-authored edges); a `reserve:*` class is a kept fact the canvas hides until focus — still a real edge to walk
 - **degree** — `pack.degree[]` (`{key, board, fanIn, fanOut}`), ranked most-connected first — your hub/chokepoint shortlist
 - **context vars** — `pack.boards[].context`
 

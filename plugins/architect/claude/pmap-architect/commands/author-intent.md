@@ -36,8 +36,9 @@ is the long-form entry to that workflow; `/intents` is the queue view.
    "When to write a narrative"). When a **bound** document was the material, pass its slug as
    `draftedFromSourceSlug` (from `list_source_bindings`) rather than citing it in prose.
 5. **Close + hand off** — the closing move (architect-core): `preview_write_session_commit` →
-   present the plan → title/summary (AskUserQuestion) → `commit_write_session`. Every stop names
-   the next command (`/intents` to release it, `/hub` for the queue).
+   present the plan → title/summary (AskUserQuestion) → `commit_write_session`.
+
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after author-intent --facts '{"board":"<slug>"}'` — print verbatim.
 
 ## Failure branches
 

@@ -6,8 +6,7 @@ allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_p
 ---
 
 Architecture-first inception of one system on an existing landscape. Grill first, then build.
-Read `${CLAUDE_PLUGIN_ROOT}/knowledge/landscape-modeling/SKILL.md` (grill agenda, L1 sketch,
-binding gate), `${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`,
+Read `${CLAUDE_PLUGIN_ROOT}/knowledge/landscape-modeling/SKILL.md`, `${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`,
 `${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md` and
 `${CLAUDE_PLUGIN_ROOT}/knowledge/intents-authoring/SKILL.md`.
 
@@ -19,8 +18,8 @@ At each step change, render the banner:
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --spine new-app --step <n> [--banked '<json>']
 ```
 
-`<n>` is the step number (3.5 for styling); `--banked` is a flat JSON object of facts so far.
-Print it **verbatim** as the step banner — do not reformat, reorder, or summarise.
+`<n>` is the step number; `--banked` is a flat JSON object of facts so far. Print it
+**verbatim** as the step banner.
 
 ### Step 1 — grill
 
@@ -66,7 +65,9 @@ Converted as `new_app` → one AskUserQuestion: **Prep the build now?**
 
 - **Now** → read `${CLAUDE_PLUGIN_ROOT}/knowledge/app-readiness/SKILL.md` and continue in-session;
   the drafts file carries into the spec set, then skills (architect-core's inline handoff).
-- **Later** → _"run `/prepare-app <board>` when ready — it resumes from live state."_
+- **Later** → close.
+
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after new-app --facts '{"board":"<slug>","observationType":"<observationType>"}'` — print verbatim.
 
 ## Failure branches
 

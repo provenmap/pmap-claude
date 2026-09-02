@@ -2,6 +2,7 @@
 category: connect
 description: "Account · List all pmap-architect commands with descriptions and the plugin version"
 allowed-tools: Bash(node:*)
+next-steps: none
 ---
 
 Show the user every command this plugin ships, what each one does, and the

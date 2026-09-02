@@ -38,7 +38,7 @@ JSON
 # Keep credentials out of version control once the user fills them in.
 # Only touch .gitignore inside an actual git repo.
 ensure_gitignored() {
-    [ -d "$CLAUDE_PROJECT_DIR/.git" ] || return 0
+    [ -d "$PROJECT_DIR/.git" ] || return 0
     if [ -f "$GITIGNORE_FILE" ]; then
         if ! grep -qE '^\.provenmap/?$' "$GITIGNORE_FILE"; then
             printf '\n# ProvenMap local state (contains credentials)\n.provenmap/\n' >> "$GITIGNORE_FILE"
@@ -79,5 +79,6 @@ else
     fi
 fi
 
-echo "$output"
+# Every state ends on the same door: /start reads the real state and offers the next step.
+echo "$output Run /start for the guided next step."
 exit 0

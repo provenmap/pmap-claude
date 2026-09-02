@@ -5,7 +5,7 @@ argument-hint: [--board <slug> | --all]
 allowed-tools: Read, Bash(node:*), AskUserQuestion
 ---
 
-**Print every `display` verbatim** in your reply — never reformat, reorder, or summarise; branch only on exit codes and named fields.
+Print every `display` verbatim; branch only on exit codes and named fields.
 
 **Modes** — from the command argument: `--board <slug>` = that board; `--all` = every in-scope board; none = the only board, else list them and ask which.
 
@@ -17,9 +17,11 @@ allowed-tools: Read, Bash(node:*), AskUserQuestion
 
 **`pmap-sync.js` exits** — 0 success. 1 config error → **connect-now offer**; a **branch mismatch** and an **out-of-scope board** also exit 1 — there relay `error` verbatim (it names the fix; config is fine, so no connect-now), and offer Step 2.5's cleanup for out-of-scope. 2 analysis file error → name `/analyze`. 3 validation error → relay `error` verbatim. 4 API error → relay `error` verbatim; the CLI already retries transient failures and maps HTTP errors — don't re-derive them. `errorType: "auth_invalid"` → **connect-now offer**. `errorType: "forbidden"` → surface the server's message verbatim, never offer re-login; repair per the reference's *inconsistent board tree* section.
 
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --after sync --domain code` — print verbatim.
+
 ## Connect-now offer
 
-Used whenever ProvenMap is not configured or the credentials were rejected (`errorType: "auth_invalid"`). Ask with **AskUserQuestion** — "Connect to ProvenMap now?" (**Connect now** / **Not now**):
+Trigger: not configured, or `errorType: "auth_invalid"`. AskUserQuestion "Connect to ProvenMap now?":
 
-- **Connect now** → run the browser login here, printing each JSON `display` verbatim **in your reply** (the Bash output panel is collapsed for the user): `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain code` (generous Bash timeout, e.g. 250s). On `status: "complete"`, resume this command from the step that failed; anything else — stop, the display explains.
-- **Not now** → stop with the canonical message: "ProvenMap not configured — run `/login` (browser) or `/configure` (manual) first" (or, when credentials were rejected: "Your ProvenMap credentials were rejected — run `/login` to reconnect").
+- **Connect now** → browser login: each `display` **in your reply**: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain code` (timeout ~250s). `complete` → resume the failed step; else stop (display explains).
+- **Not now** → stop: "ProvenMap not configured — run `/login` (browser) or `/configure` (manual) first" (rejected: "Your ProvenMap credentials were rejected — run `/login` to reconnect").

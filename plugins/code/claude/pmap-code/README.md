@@ -45,6 +45,8 @@ Two ways to connect this repo to a board — both write the same `.provenmap/con
 | `excludePaths` | no | Paths skipped during analysis (default `node_modules, dist, .git, coverage`). |
 | `includeTests` | no | Include test files in analysis (default `false`). |
 | `includeSourceReferences` | no | Attach file-path references to synced nodes/edges (default `true`). |
+| `analysis.minorFiles` | no | How small helper files land on drill-down boards (default `all`): a file of at most `analysis.minorMaxLines` lines that other files import and that exports no class folds into the node that uses it instead of becoming its own node. `one-host` folds only files with a single importer; `off` disables the fold. |
+| `analysis.minorMaxLines` | no | Line cap for that fold (default `100`). Files above it are always their own candidates. |
 
 Run `/configure` to validate the config, test the connection, and add `.provenmap/` to your `.gitignore`. Credentials live only in this file — never logged, and sent only to `platform.provenmap.com`.
 
@@ -52,11 +54,12 @@ Run `/configure` to validate the config, test the connection, and add `.provenma
 
 ## Quick start
 
-1. `/login` (browser) or `/configure` (manual) — connect to the portal (one-time per repo)
-2. `/analyze` — full architecture analysis (incremental — only changed files re-analyzed)
-3. `/sync` — push the analysis to your board
-4. `/insights` — run server-defined analyses (security, performance, etc.) against the board
-5. `/status` — see what's analyzed and what's synced
+1. `/start` — the guided front door: the surfaces card, the ranked next step for this repo's real state, and a menu to run it. Every command closes with the same next-steps footer.
+2. `/login` (browser) or `/configure` (manual) — connect to the portal (one-time per repo)
+3. `/analyze` — full architecture analysis (incremental — only changed files re-analyzed)
+4. `/sync` — push the analysis to your board
+5. `/insights` — run server-defined analyses (security, performance, etc.) against the board
+6. `/status` — see what's analyzed and what's synced
 
 `/analyze-archetypes` is **optional** — see [Archetypes](#archetypes-server-defined-settlement-optional).
 
@@ -80,6 +83,7 @@ Polyglot projects produce a unified board with cross-language relationships (HTT
 
 | Command | Description |
 |---|---|
+| `/start` | Start here — the surfaces card, the ranked next step, and a menu to run it |
 | `/login` | Browser sign-in: pick a workspace + bound board, writes config automatically |
 | `/configure` | Set up portal credentials manually, or switch to a different board |
 | `/analyze [path]` | Analyze codebase architecture (incremental; re-analyzes only changed files) |

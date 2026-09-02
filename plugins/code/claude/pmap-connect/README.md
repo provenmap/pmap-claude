@@ -72,7 +72,7 @@ Run `/sync` again any time the documents change — it re-mirrors, re-diffs, and
 
 | Command | Description |
 |---|---|
-| `/start` | Reads this project's real state and tells you exactly what to run next |
+| `/start` | Start here — the surfaces card, the ranked next step for this repo's real state, and a menu to run it |
 | `/login` | Browser sign-in: pick a workspace + bound board, writes config automatically |
 | `/configure` | Set up portal credentials manually, or switch to a different board |
 | `/logout [--purge]` | Disconnect this repo from ProvenMap (clears local credentials) |

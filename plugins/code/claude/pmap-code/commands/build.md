@@ -19,9 +19,11 @@ allowed-tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 **Steps 3–5 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/platform-driven-build/SKILL.md` NOW and follow it exactly; improvise nothing.** It holds every source, invocation, branch, and rule: **3** plan from the spec — **the user approves the plan** before any file is touched, and a `--plan` argument stops there · **4** implement unit by unit — intent-covered units go through the intent machinery, and **the user confirms** before any resolution · **5** close the loop — `/analyze`, then `/sync`.
 
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --after build --domain code` — print verbatim.
+
 ## Connect-now offer
 
-Used whenever ProvenMap is not configured or the credentials were rejected (`errorType: "auth_invalid"`). Ask with **AskUserQuestion** — "Connect to ProvenMap now?" (**Connect now** / **Not now**):
+Trigger: not configured, or `errorType: "auth_invalid"`. AskUserQuestion "Connect to ProvenMap now?":
 
-- **Connect now** → run the browser login here, printing each JSON `display` verbatim **in your reply** (the Bash output panel is collapsed for the user): `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --analyze-cmd analyze` (generous Bash timeout, e.g. 250s). On `status: "complete"`, resume this command from the step that failed; anything else — stop, the display explains.
-- **Not now** → stop with the canonical message: "ProvenMap not configured — run `/login` (browser) or `/configure` (manual) first" (or, when credentials were rejected: "Your ProvenMap credentials were rejected — run `/login` to reconnect").
+- **Connect now** → browser login: each `display` **in your reply**: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --analyze-cmd analyze` (timeout ~250s). `complete` → resume the failed step; else stop (display explains).
+- **Not now** → stop: "ProvenMap not configured — run `/login` (browser) or `/configure` (manual) first" (rejected: "Your ProvenMap credentials were rejected — run `/login` to reconnect").

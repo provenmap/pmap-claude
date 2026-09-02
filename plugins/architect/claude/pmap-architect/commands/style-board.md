@@ -6,9 +6,8 @@ allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_p
 ---
 
 Style one board end-to-end: signals → plan → validate → apply. Methodology and doctrine live in
-[`${CLAUDE_PLUGIN_ROOT}/knowledge/board-styling/SKILL.md`](../knowledge/board-styling/SKILL.md) — read it first. All
-writes are journaled (working copy), so the
-architect previews and commits like any board edit.
+`${CLAUDE_PLUGIN_ROOT}/knowledge/board-styling/SKILL.md` — read it first. All writes are journaled
+(working copy), so the architect previews and commits like any board edit.
 
 ## Workflow
 
@@ -34,9 +33,8 @@ stop. Respect the answer for the whole run; when restyling, present current → 
 
 Author the styling plan per the board-styling skill (composition, semantics, icons — the plan
 file shape is in its references/styling-vocabulary.md). Present the plan compactly: the
-composition line, sizes table (who is enlarged or shrunk, and why), token groups, icon choices
-(catalog hit or Lucide fallback per node). Every size carries a one-line reason, and every token
-states what it asserts that the element's archetype cannot. Say how many elements were left
+composition line, sizes table (with reasons), token groups, icon choices (catalog hit or Lucide
+fallback per node). Every size carries a one-line reason. Say how many elements were left
 untouched because their archetype already speaks for them — that number is a quality signal, not
 an omission. Get approval (AskUserQuestion: apply / adjust / stop).
 
@@ -52,11 +50,12 @@ Write the plan to a temp file. Run
 ### Step 5 — apply, preview, commit
 
 Three batched calls, in order, skipping omitted sections: `apply_composition` →
-`apply_semantic_styles` → `apply_icon_shape_styles`. Then the standard closing move:
-`preview_write_session_commit` → present the plan → ask for title/summary (AskUserQuestion) →
-`commit_write_session`. Report before/after: styled counts from Step 2 vs the applied plan
-(nodes sized, tokens applied, composition set). To abandon instead: `discard_write_session`
-(warn it reverts the WHOLE working copy).
+`apply_semantic_styles` → `apply_icon_shape_styles`. Then architect-core's standard closing move
+(preview → title/summary via AskUserQuestion → commit). Report before/after: styled counts from
+Step 2 vs the applied plan (nodes sized, tokens applied, composition set). To abandon instead:
+`discard_write_session` (warn it reverts the WHOLE working copy).
+
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after style-board --facts '{"board":"<slug>"}'` — print verbatim.
 
 ## Failure branches
 

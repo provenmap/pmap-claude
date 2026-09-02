@@ -112,7 +112,8 @@ integration decisions), confirm once, then run the sequence.
 **Inline handoffs:** commands can't invoke each other. "Create intents now?" = AskUserQuestion
 → on yes, read the target workflow's doctrine (`${CLAUDE_PLUGIN_ROOT}/knowledge/<skill>/SKILL.md` — the
 routing table above names it) and continue in-session; on no, stop naming the standalone
-command.
+command. A workflow run inline closes with `--after <the command that names it>`, facts
+included — the command body's closing line is not loaded when a skill is.
 
 ## The working copy
 
@@ -152,6 +153,12 @@ print the canonical not-configured message — relay it):
 - `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --attention` — the ranked attention queue +
   the "since your last visit" delta. Print its `display` verbatim; add judgment on top, never
   a rebuilt table.
+- `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --next` — the `/start` answer, live: the
+  ranked next-step ladder under a one-line state header. Print its `display` verbatim.
+- `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after <command> [--facts '<flat json>']` —
+  the next-steps footer every command closes with, offline (cached map, snapshots, drafts).
+  Print its `display` verbatim. A `↪ Hand off` line is another session's work (developers in
+  their repo, the web app) — never a rung to run here.
 
 ## Drafts-in-flight — resumable interviews
 
@@ -200,7 +207,7 @@ MCP results are raw JSON — you format them. Keep output stable across sessions
   🔗 link · ⚠️ needs attention. **Carve-out — script-rendered blocks:** anything a CLI hands you
   ready to print verbatim (`--spine`, `--classify-tree`, `--attention`, `--status`, the styling
   and grouping plans) carries its own marks, defined once by the plugin's script renderers:
-  `●` critical · `⚠` warning · `✓` clear · `○` pending · `◉` you are here, plus the `█▒░` bars
+  `●` critical · `⚠` warning · `✓` clear · `○` pending · `◉` you are here · `↪` hand off, plus the `█▒░` bars
   and `├─ └─ │` connectors. Those are single-width monospace so columns line up; the emoji above
   are double-width and would break every bar and table they sit in. The two vocabularies differ
   in presentation on purpose — your prose writes `⚠️`, a script block writes `⚠` — so never
@@ -221,4 +228,6 @@ MCP results are raw JSON — you format them. Keep output stable across sessions
 - No token configured: `ProvenMap not configured — run /login (browser) or /configure (manual) first`
 - MCP 401: `Your ProvenMap architect token was rejected — run /login to reconnect`
 - Every stop names the next command (`/login`, `/configure`, `/status`, `/board`). No dead ends.
+- Every completion closes with the `--after` footer, printed verbatim; a hand-off line (`↪`)
+  points to another session — never offer it as something to run here.
 - Credentials never transit the chat: tokens are shown masked or as presence only.

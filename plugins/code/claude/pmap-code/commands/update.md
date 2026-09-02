@@ -2,6 +2,7 @@
 category: connect
 description: "Account · Update this plugin to the latest published version"
 allowed-tools: Bash(node:*)
+next-steps: none
 ---
 
 Update **ProvenMap Code** (`pmap-code`) to the latest version published for

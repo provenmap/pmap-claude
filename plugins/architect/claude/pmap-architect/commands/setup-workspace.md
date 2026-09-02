@@ -66,9 +66,7 @@ Then run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --render-scaffold
 
 ### Step 6 — next steps, ranked
 
-Map: developers connect each bound repo (code plugin `/login` + `/configure`, first push) →
-`/author-intent`; `/prepare-app <board>` per `new_app`; `/new-app`; `/hub`. Found:
-`/new-app <name>`; `/board`; `/hub`. Walk away → `discard_write_session` unwinds it.
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after setup-workspace --facts '{"mode":"<map|found>"}'` — print verbatim (map mode carries the developers' hand-off). Walk away → `discard_write_session` unwinds it.
 
 ## Failure branches
 

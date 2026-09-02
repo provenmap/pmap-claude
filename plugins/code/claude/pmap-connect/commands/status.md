@@ -2,6 +2,7 @@
 category: connect
 description: "Account · Show ProvenMap sync status and analysis summary"
 allowed-tools: Bash(node:*)
+next-steps: none
 ---
 
 Show the full ProvenMap status for this project — configuration, archetype

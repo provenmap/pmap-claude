@@ -6,9 +6,8 @@ allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_p
 ---
 
 Catalogue gap analysis: hold shared material up against the org's live archetype catalogue, name
-what it can't classify, and submit proposals for admin review. This is governance, not a gate —
-no lock files, and nothing here blocks `/board`, `/new-app`, or any other command; the catalogue
-widens on its own schedule. Read [`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md) for the
+what it can't classify, and submit proposals for admin review. Governance, not a gate: nothing
+here blocks another command. Read `${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md` for the
 error vocabulary and formatting norms.
 
 ## Workflow
@@ -21,9 +20,8 @@ error vocabulary and formatting norms.
    codebases/apps; `knowledge` classify documents/knowledge material) — then `get_archetypes`
    with that `kind` and render the current vocabulary compactly: name + one-line description,
    per row.
-3. **The source gate** — the same hard rule as `/setup-workspace`'s Step 2 — the fork, the
-   source gate, then the interview: never touch the filesystem, git state, or any repository
-   unprompted. Material arrives one of three ways — **describe it in conversation** · **name
+3. **The source gate** — the same hard rule as `/setup-workspace`'s Step 2: never touch the
+   filesystem, git state, or any repository unprompted. Material arrives one of three ways — **describe it in conversation** · **name
    paths to scan** (repo inventories only, the architect names the paths first, then
    `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --scan-repos --paths <p1,p2,...>`) · **share
    documents** — scan output is interview *candidates*, never conclusions. A proposal needs
@@ -42,6 +40,8 @@ error vocabulary and formatting norms.
 6. **Report** — the tool result's accepted counts, naming any `rejected` items (duplicates of
    an existing name). Nothing to wait on locally — the admin reviews in the platform; rerun
    `/archetypes` for the next gap round whenever new material surfaces.
+
+**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after archetypes` — print verbatim.
 
 ## Failure branches
 

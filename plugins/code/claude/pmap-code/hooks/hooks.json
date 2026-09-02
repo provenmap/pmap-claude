@@ -1,5 +1,5 @@
 {
-  "description": "ProvenMap hooks: session status, display guard, intents resolve gate",
+  "description": "ProvenMap hooks: session status, display guard + turn marker, intents resolve gate, next-steps gate",
   "hooks": {
     "SessionStart": [
       {
@@ -42,6 +42,17 @@
           {
             "type": "command",
             "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-dispatch-log.js",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-next-steps-gate.js",
             "timeout": 10
           }
         ]
