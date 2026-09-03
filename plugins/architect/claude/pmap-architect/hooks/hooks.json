@@ -1,5 +1,5 @@
 {
-  "description": "ProvenMap Architect hooks: session-start pointer at /start, display guard + turn marker, next-steps gate (no .provenmap scaffold)",
+  "description": "ProvenMap Architect hooks: offline session-start state line (grant, expiry, host MCP entry), display guard + turn marker, next-steps gate (no .provenmap scaffold)",
   "hooks": {
     "SessionStart": [
       {
@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"ProvenMap Architect loaded — run /start to see where you are and what to run next.\"",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --session-start --host claude",
             "timeout": 10
           }
         ]

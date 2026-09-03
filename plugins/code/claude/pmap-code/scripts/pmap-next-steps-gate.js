@@ -76,6 +76,11 @@ function main() {
       ? input.session_id
       : null;
   if (!sessionId) return;
+  // Subagents still running (Claude Code lists them in `background_tasks`):
+  // the orchestrator ended its turn to wait, not to finish — its footer
+  // belongs at the join. Stand down WITHOUT claiming the marker, so a join
+  // that ends footerless is still nudged.
+  if (Array.isArray(input.background_tasks) && input.background_tasks.length > 0) return;
 
   const file = markerPath(sessionId);
   let marker;

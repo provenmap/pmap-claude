@@ -1,6 +1,6 @@
 ---
 name: app-readiness
-description: Take a new app from placed to build-ready — the readiness bar, the spec grill that lands sequenced intents, and skill selection. Use when a convert_node_to_app ran with observationType 'new_app', when /prepare-app runs, or when the architect asks to "prepare/spec the app", "get it ready to build", "choose its skills". Key capabilities: the three-point readiness bar (founding intent, spec set, skills), spec decomposition with afterIntentSlug sequencing, judgment-based skill proposal over the library.
+description: Take a new app from placed to build-ready — the readiness bar, the spec grill that lands sequenced intents, and skill selection. Use when a convert_node_to_app ran with observationType 'new_app', when /prepare-app runs, or when the architect asks to "prepare/spec the app", "get it ready to build", "choose its skills". Key capabilities: the three-point readiness bar (founding intent, spec set, skills), spec decomposition with dependsOnSlugs sequencing, judgment-based skill proposal over the library.
 ---
 
 # App readiness — from placed to build-ready
@@ -40,9 +40,10 @@ What this workflow adds is only the **decomposition heuristic**:
   independently — bounded set, typically 2–6 total. Not a task list: an intent still meets the
   intents-authoring bar (why worth reading later, directive naming elements by slug, notes per
   anchor).
-- **Sequence with `afterIntentSlug`** where order is real (skeleton before slices; a migration
-  before its consumers). Omit it where order does not matter — sequencing is a statement, not
-  decoration.
+- **Sequence with `dependsOnSlugs`** where order is real (skeleton before slices; a migration
+  before its consumers; a cut-over after both its dual-write and its service identity — an
+  intent may wait on several, on this board or another). Omit it where order does not
+  matter — sequencing is a statement, not decoration.
 - **Anchors ground the L1 sketch**: the board's drawn components are the anchor vocabulary; a
   slice that touches nothing on the board is a sign the sketch is missing a piece — extend the
   sketch first (working copy), then anchor.

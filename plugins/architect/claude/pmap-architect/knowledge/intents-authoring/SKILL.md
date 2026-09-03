@@ -73,13 +73,15 @@ Address intents by slug (`list_intents` → `get_intent`).
 ## Authoring a good intent
 
 `create_intent` takes `{ workBoardSlug, name, directive (10–4000 chars), description?,
-narrative?, draftedFromSourceSlug?, afterIntentSlug?, anchors[]{elementType, aspectKind?, slug,
+narrative?, draftedFromSourceSlug?, dependsOnSlugs?, anchors[]{elementType, aspectKind?, slug,
 note?}, priority?, effort? }`.
 
-**Sequencing — `afterIntentSlug`.** When the ordering matters, pass the slug of the same-board
-intent this one should land after. The server resolves it (unknown slug ⇒ the create fails,
-never a silent drop; same board only) and `get_intent` returns it resolved. Clear or
-re-sequence a draft via `update_intent` (`""` clears). Procedure: gate 3 in
+**Sequencing — `dependsOnSlugs`.** When the ordering matters, pass every intent this one
+should land after: `"<intentSlug>"` for one on the same board, `"<boardSlug>/<intentSlug>"`
+for one on another board under the same root. The plan is a DAG — an intent may wait on
+several. The server resolves each ref (unknown ref ⇒ the create fails, never a silent drop)
+and `get_intent` returns the set resolved. Re-sequence or clear at ANY status via
+`update_intent` (replace-all; `[]` clears). Procedure: gate 3 in
 [references/materialization-gates.md](references/materialization-gates.md).
 
 **Provenance — `draftedFromSourceSlug`.** When the material was a **bound document** (a PRD, an
@@ -155,8 +157,8 @@ architect-core's taxonomy — intents are legal only on code-bound boards):
    **already implemented** (terminal intents with overlapping anchors, or an aspect row that
    already carries the capability → modification, the directive verb becoming _change_ — or
    duplicate: stop, name the existing intent); **sequencing** (must this land after a related
-   open intent? → `afterIntentSlug` on the payload; a draft re-sequences or clears via
-   `update_intent`).
+   open intent, on this board or another? → `dependsOnSlugs` on the payload; any intent
+   re-sequences or clears via `update_intent`).
 5. **Propose.** Ranked table per board (≤15 rows, "+N more"): slug, type (+aspectKind),
    one-line _why affected_. AskUserQuestion multiSelect — the architect prunes and adds.
 6. **Describe — the recording session, spoken.** Per attached anchor, ask the platform's own
@@ -174,7 +176,7 @@ before submit"`. Templates and composition rules:
 9. **Read-back — the one landing gate.** Render the assembled intent once: name, description,
    directive (grouped per `composeDirective`), narrative — or the line "— omitted, reasoning
    lives on the linked insight" — anchor table (slug · type · note), the _Drafted from_
-   line when `draftedFromSourceSlug` is set, and the _After_ line when `afterIntentSlug`
+   line when `draftedFromSourceSlug` is set, and the _After_ line when `dependsOnSlugs`
    is set. One AskUserQuestion: **Land as draft** /
    **Revise**. Multi-board split → render every per-board intent, one question for the batch.
    Revise loops back to the step that owns the field, then re-renders once — the second
@@ -188,7 +190,7 @@ before submit"`. Templates and composition rules:
 
 **Enrichment and revision — `update_intent`.** An already-generated `draft` or
 `needs_clarification` intent is revised in place: name, directive, description, narrative,
-priority, effort, sequencing (`afterIntentSlug` — `""` clears), and its **context anchors**
+priority, effort, and its **context anchors**
 (replace-all — capture-owned `changed` anchors and the
 staged board diff are preserved; withdrawing staging stays an explicit act via `delete_intent`
 or transition→rejected). Null/omitted fields stay unchanged; origin is immutable; changing

@@ -52,12 +52,15 @@ From the same `list_intents` read: open intents on overlapping or adjacent eleme
 draft plausibly depends on or unblocks. Ask only when candidates exist — skip freely
 otherwise: must this land **after** one of these?
 
-Record the answer as `afterIntentSlug` on the `create_intent` payload. The server resolves
-the slug (same board only; an unknown slug fails the create rather than silently dropping the
-ordering) and `get_intent` returns it resolved — slug, name, status. On an already-generated
-draft, `update_intent` re-sequences with a new slug or clears with `afterIntentSlug: ""`.
-When the _reason_ for the ordering is worth keeping, one line in the narrative says why.
+Record the answer as `dependsOnSlugs` on the `create_intent` payload — every predecessor,
+`"<intentSlug>"` on this board or `"<boardSlug>/<intentSlug>"` on another board under the same
+root. The server resolves each ref (an unknown ref fails the create rather than silently
+dropping the ordering) and `get_intent` returns the set resolved — ref, name, status. On an
+existing intent, `update_intent` replaces the set with new refs or clears it with
+`dependsOnSlugs: []`. When the _reason_ for the ordering is worth keeping, one line in the
+narrative says why.
 
 A "this must land BEFORE `intent-y`" answer is the same fact authored from the other side:
-set `afterIntentSlug` on `intent-y` via `update_intent` — possible while `intent-y` is still
-a draft or in needs-clarification; a locked intent's ordering is the platform's to change.
+add this intent to `dependsOnSlugs` on `intent-y` via `update_intent`. Sequencing is plan
+metadata, so that edit is allowed at any status — a locked or delivered intent can still be
+re-threaded into the plan.

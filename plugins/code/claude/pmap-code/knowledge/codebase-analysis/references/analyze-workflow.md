@@ -628,6 +628,18 @@ drill-down-exempt), and root hygiene for loose leaves, are
 advisories. The `canContain` note in `references/archetype-rules.md` says why archetype
 nesting hints never override these choices.
 
+**Archetype attributes (optional, and deliberately partial).** Each node's archetype declares a
+field contract — the properties it carries in the app. While you have the area open, write onto the
+node's `attributes` map ONLY the fields you can point at evidence for in what you just read:
+`domain`, `protocol`, `apiFormat`, `authType`, `authentication`, `authorization`, `method`, `path`,
+`schemas`, `collections`, `routes`, `exposedInterfaces`, `consumedInterfaces`, `responsibilities`,
+`integrationPattern`, `businessCapability`. `/sync` fills the manifest-derived fields itself and
+folds them in without touching yours. **Never** write `owner`, `sla`, `stage`, `status`,
+`cloudProvider`, `monitoring`, `deploymentEnvironment` or the other operational fields — a codebase
+does not contain them, and an absent field is how the architect sees what still needs a human. The
+tiers, the evidence bar and the closed-vocabulary rule are
+`${CLAUDE_PLUGIN_ROOT}/knowledge/archetype-attributes/SKILL.md`.
+
 **Incremental:** Only read and analyze the changed/added files from Step 1.5. Keep existing
 nodes from unchanged files as-is. For deleted files, mark their nodes for removal.
 

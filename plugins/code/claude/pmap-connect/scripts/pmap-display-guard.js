@@ -7,8 +7,9 @@
  * script, not the model, owns user-facing rendering (see command standards
  * in the source repo):
  *   1. when the JSON output carries a `display` field: print it verbatim;
- *   2. always: when this command's workflow completes, close with its
- *      `--after <command>` next-steps footer, as the command body says.
+ *   2. for a script that does work: when this command's workflow completes,
+ *      close with its `--after <command>` next-steps footer, as the command
+ *      body says — and add no next-step suggestions of your own beside it.
  * The display body itself is NOT repeated here; it is already in the tool
  * result — this only pins the behavior.
  *
@@ -18,6 +19,21 @@
  * turn. Temp dir, never the project: the architect plugin has no .provenmap,
  * and a repo must not grow files because a hook fired. Cursor's hooks cannot
  * block a stop, so the cursor dialect writes no marker.
+ *
+ * Two things it deliberately does NOT do:
+ *   - Stamp or remind for a GUIDANCE-NEUTRAL invocation — a script that only
+ *     renders guidance or ends the session (`pmap-help`, `pmap-status` in any
+ *     mode, `--next`/`--after`, logout, update). Those are exactly what the
+ *     opted-out commands (`next-steps: none`) run; stamping there made the
+ *     gate nudge after `/start` → Not now, and the model then printed the
+ *     ladder a second time as a footer. A test pins the neutral set against
+ *     the opted-out command bodies.
+ *   - Fire for a script another installed plugin owns. With code, connect and
+ *     architect installed, every call used to inject three identical
+ *     reminders. An absolute script path is owned by the plugin whose root
+ *     contains it; a token (`${CLAUDE_PLUGIN_ROOT}/…`) or relative path
+ *     resolves to no one plugin from here, so it is owned when this plugin
+ *     ships a script of that name (the same rule the gate uses to claim).
  *
  * Dialects: Claude/Codex read `hookSpecificOutput.additionalContext`; Cursor
  * reads a top-level `additional_context` and hands the tool result over as
@@ -36,7 +52,31 @@ const path = require("path");
 const DISPLAY_REMINDER =
   "The ProvenMap CLI output above includes a `display` field of ready-to-print markdown. Print that display to the user verbatim — do not reformat, reorder, summarise, or rebuild its tables.";
 const CLOSING_REMINDER =
-  "When this command's workflow completes, close with its `--after <command>` next-steps footer as the command body says, and print that footer verbatim.";
+  "When this command's workflow completes, close with its `--after <command>` next-steps footer as the command body says, and print that footer verbatim. That footer is the only next-step guidance — add no suggestions of your own beside it.";
+
+/** This plugin's root: the guard ships at `<root>/scripts/`. */
+const PLUGIN_ROOT = path.resolve(__dirname, "..");
+
+const hasFlag = (args, flag) => new RegExp(`(^|\\s)${flag}(\\s|$)`).test(args);
+
+/**
+ * Invocations that render guidance or end the session — never work that a
+ * footer should follow. Keyed by script; the rule reads the args.
+ */
+const GUIDANCE_NEUTRAL = {
+  "pmap-help.js": () => true,
+  "pmap-status.js": () => true,
+  "pmap-update.js": () => true,
+  "pmap-preflight.js": () => true,
+  "pmap-login.js": (args) => hasFlag(args, "--logout"),
+  "pmap-architect.js": (args) =>
+    ["--next", "--after", "--status", "--logout", "--session-start"].some((flag) => hasFlag(args, flag)),
+};
+
+function isGuidanceNeutral(invocation) {
+  const rule = GUIDANCE_NEUTRAL[invocation.script];
+  return Boolean(rule) && rule(invocation.args);
+}
 
 /** Tool result shapes vary by host — accept a string or an object carrying stdout. */
 function responseText(response) {
@@ -62,20 +102,51 @@ function carriesDisplay(text) {
   }
 }
 
-function writeTurnMarker(input, command) {
+/**
+ * A ProvenMap CLI *invocation* — `node …/scripts/pmap-<name>.js <args>` — as
+ * opposed to a command that merely names a script file (`cat`, `sed`, `grep`
+ * over the hook sources matched the old bare-filename test and nudged a
+ * turn that ran nothing). Returns { path, script, args } or null.
+ */
+function matchInvocation(command) {
+  const m = command.match(/\bnode\s+((?:\S*\/)?scripts\/(pmap-[A-Za-z0-9-]+\.js))\s*([^\n|;&]*)/);
+  return m ? { path: m[1], script: m[2], args: m[3].trim().slice(0, 200) } : null;
+}
+
+/** Whether the invoked script is THIS plugin's to remind and stamp for. */
+function ownsInvocation(invocation) {
+  if (path.isAbsolute(invocation.path)) {
+    let target = path.resolve(invocation.path);
+    let root = PLUGIN_ROOT;
+    try {
+      target = fs.realpathSync(target);
+      root = fs.realpathSync(root);
+    } catch {
+      /* compare as given */
+    }
+    return target.startsWith(root + path.sep);
+  }
+  return fs.existsSync(path.join(__dirname, invocation.script));
+}
+
+function writeTurnMarker(input, invocation) {
+  // A subagent's tool calls carry the parent's session_id plus an agent_id.
+  // Its script runs are the agent's own workflow — the orchestrator's footer
+  // comes at the join — so they must not stamp the parent's turn marker
+  // (the 2026-09-02 portal run: every nudge named a --skeleton/--detail the
+  // orchestrator never ran, and the footer it then printed was stale).
+  if (typeof input.agent_id === "string" && input.agent_id !== "") return;
   // The session id names a temp file — accept only a plain token.
   const sessionId =
     typeof input.session_id === "string" && /^[A-Za-z0-9._-]+$/.test(input.session_id)
       ? input.session_id
       : null;
   if (!sessionId) return;
-  const m = command.match(/scripts\/(pmap-[A-Za-z0-9-]+\.js)\s*([^\n|;&]*)/);
-  if (!m) return;
   const record = {
     sessionId,
     at: new Date().toISOString(),
-    script: m[1],
-    args: m[2].trim().slice(0, 200),
+    script: invocation.script,
+    args: invocation.args,
   };
   try {
     fs.writeFileSync(
@@ -102,20 +173,23 @@ function main() {
     input && input.tool_input && typeof input.tool_input.command === "string"
       ? input.tool_input.command
       : "";
-  if (!command.includes("scripts/pmap-")) return;
+  const invocation = matchInvocation(command);
+  if (!invocation || !ownsInvocation(invocation)) return;
+  const neutral = isGuidanceNeutral(invocation);
 
   const reminders = [];
   if (carriesDisplay(responseText(input.tool_response !== undefined ? input.tool_response : input.tool_output))) {
     reminders.push(DISPLAY_REMINDER);
   }
-  reminders.push(CLOSING_REMINDER);
+  if (!neutral) reminders.push(CLOSING_REMINDER);
 
   if (dialect === "cursor") {
-    console.log(JSON.stringify({ additional_context: reminders.join(" ") }));
+    if (reminders.length) console.log(JSON.stringify({ additional_context: reminders.join(" ") }));
     return;
   }
 
-  writeTurnMarker(input, command);
+  if (!neutral) writeTurnMarker(input, invocation);
+  if (!reminders.length) return;
   console.log(
     JSON.stringify({
       hookSpecificOutput: {

@@ -56,6 +56,73 @@ Parse the JSON output:
   that the latest local analysis of their parent no longer drills into. A sync replaces board *data*,
   never boards — **keep the `display`** and print it verbatim at the end of Step 6.
 
+## Step 3.6: Archetype attributes — evidence the fields each archetype declares
+
+An archetype declares a **field contract** — the properties a node or edge of that type carries in
+the app (`primaryLanguage`, `version`, `protocol`, `owner`, `sla`, …). This step fills in the part
+of that contract this repository can actually prove, immediately before the push, so the values
+land in the same transaction as the elements themselves.
+
+**First, warm the field-contract cache.** It is name-scoped: the whole code catalogue is 264 KB of
+field definitions against ~23 KB for the archetypes a real board assigns, so the CLI reads the
+archetype names out of the local board files and asks only for those.
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --kind code --fields
+```
+
+Read `fieldContracts` from the JSON: `archetypesResolved` / `namesRequested` (a shortfall means the
+server's catalogue no longer has some archetype your boards use — worth naming in Step 6, not worth
+stopping for) and `cacheStatus` (`hit`, `fetched`, or `no-boards`).
+
+**Then resolve and apply, per board**, before the integrity gate below:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --attributes <board-slug> --apply
+```
+
+Print the `display` verbatim. It names how many nodes carry evidenced values, any node typed with an
+archetype the cache does not know, and every value the archetype's field vocabulary could not hold.
+
+Branches:
+
+- **exit 0** — values written onto the board's nodes. Continue.
+- **exit 1** — no cached contracts (the `--fields` call above failed or the project has no boards
+  yet), or the board/skeleton is unreadable. Report it, **keep the board in the sync**, and continue:
+  attributes are an enrichment, and a board without them is still worth pushing.
+- **exit 3** — the board would fail its integrity gates with the attributes folded in. Nothing was
+  written. Report it and continue to Step 3.8, which will surface the same failure properly.
+
+### What gets written, and what deliberately does not
+
+The script fills only what a repository can PROVE — the manifest and the file tree:
+`primaryLanguage`, `technologies`, `version`, `packageName`, `registry`, `moduleType`,
+`codeLocation`, `dependencies`, `parentModule`, `parentContainer`, `childModules`, `provider`.
+
+It writes **nothing** for the operational and organisational fields most archetypes also declare —
+`owner`, `owningTeam`, `sla`, `stage`, `status`, `cloudProvider`, `monitoring`, `logging`,
+`deploymentEnvironment`, `backupPolicy`, `failoverStrategy`, `scalability`, `orchestration`,
+`containerization`, `dataClassification`, `criticality`, `stakeholders`, `encryption`,
+`testCoverage`. Those belong to the architect, and a codebase cannot know them. Twelve of the twenty
+most frequently declared field names are of that kind, so this is most of the contract by volume.
+
+**Do not fill them yourself, and do not ask the script to.** An absent field is how an architect
+sees which properties still need a human; a plausible guess sitting in the same panel as a measured
+fact is indistinguishable from one, and destroys the signal for every other value on the board.
+
+The plugin only ever re-derives its own keys, so anything an architect typed in the app survives
+every later sync untouched.
+
+### When the vocabulary cannot hold a value
+
+Many fields declare a closed option list, and it is often narrower than what a repository contains —
+`technologies` accepts five values, `primaryLanguage` six of the twelve languages the analyser
+recognises. A value outside the list is **dropped**, and the `display` names it grouped by field.
+
+That report is a signal about the catalogue, not a defect in the analysis: a field rejecting the
+same value across many nodes is a gap worth taking to `/analyze-archetypes`, which is how the
+archetype vocabulary gets extended.
+
 ## Step 3.8: Integrity gate — validate every target board before the first push
 
 Run the tree-wide integrity check so a board tree pushes wholly or not at all:
@@ -117,6 +184,13 @@ The CLI outputs one JSON object to stdout. Branch on `success`:
 - **`success: false`** — report the `error` field. If `errorType` is `auth_invalid`, the credentials
   were rejected (revoked binding or rotated secret) — make the **connect-now offer** from the command
   rather than reporting a generic API error.
+- **`error` starting `Invalid archetypes:` (exit 3) — the catalogue gap.** The board assigns an
+  archetype this server's catalogue does not serve; the CLI validates against the live catalogue
+  before pushing, so nothing was sent. Say, verbatim: **"This ProvenMap server's archetype catalogue
+  is missing `<names>` — ask your admin to load the archetype seed data on the server, then re-run
+  `/sync`."** Then stop. Never add, edit, or insert archetypes on the server or in its database from
+  this session, whatever else is on this machine — the catalogue is the server's; `/analyze-archetypes`
+  is the only way to propose additions.
 - The CLI output may carry a `stylingReport` field (absent means the domain has no styling) — hold it
   for Step 6.
 
