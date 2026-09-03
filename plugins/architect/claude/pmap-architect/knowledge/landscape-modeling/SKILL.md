@@ -76,6 +76,14 @@ board, and a `new_app` binding that waits on the first push — that is what rou
 prep. Only a system nobody is building yet is `planned`. Ask that question directly for anything
 not yet real; the two kinds are the interview's mirror of the server's two observation types.
 
+**While you have them answering: ownership.** An archetype declares a field contract, and the
+half of it nobody else can supply — `owner`, `stage`, `status`, `criticality` — is exactly what an
+architect knows and a codebase never will. When you are already batching the kind question, add
+owner and stage for the systems being placed, and write them onto each node's `attributes` map in
+the same `create_nodes` call. Two or three evidenced fields, not a questionnaire, and never a
+guess — an invented owner is worse than an empty cell. Contract, tiers and merge semantics:
+`${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/references/archetype-attributes.md`.
+
 - **Repo-backed systems** (`repo` and `new-app` alike) get an app archetype matching the repo's
   scope: `web-app`,
   `backend-app`, `mono-repo`, `microservice-app`, `mobile-app`, `desktop-app`, `device-app`,

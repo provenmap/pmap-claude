@@ -1,6 +1,6 @@
 ---
 name: board-reading
-description: How to orient on and evolve a ProvenMap board over MCP — read the layered graph, analyze it, and make governed diagram edits. Use when exploring a board, answering architecture questions, assessing quality, or adding/updating/removing nodes and edges. Key capabilities: orientation sequence, board-class detection (landscape/app/layer), question-scoped reading and the answer-mode heuristic, cross-board navigation (layers), analysis types and assessment criteria, the diagram tool contract (slugs are the wiring), working-copy narration.
+description: How to orient on and evolve a ProvenMap board over MCP — read the layered graph, analyze it, and make governed diagram edits. Use when exploring a board, answering architecture questions, assessing quality, or adding/updating/removing nodes and edges. Key capabilities: orientation sequence, board-class detection (landscape/app/layer), question-scoped reading and the answer-mode heuristic, cross-board navigation (layers), analysis types and assessment criteria, the diagram tool contract (slugs are the wiring), archetype attributes and who owns which fields, working-copy narration.
 ---
 
 # Board Reading & Editing
@@ -118,6 +118,17 @@ The critical rules (verbatim from the platform contract):
   `primitiveType` is the semantic kind, not the shape.
 
 Full payload shapes: [references/diagram-payloads.md](references/diagram-payloads.md).
+
+**Archetype attributes.** An archetype also declares a **field contract** — the properties its
+elements carry in the app — and an `attributes` map on any create/update call fills it.
+`get_archetypes` with `includeFields` (always paired with `names`) reads the contract;
+`get_nodes` / `get_edges` return an `attributes` map on elements that have stored values. The
+split of ownership is the point: a bound app board's `/sync` resolves what a repository proves
+(language, version, dependencies) and deliberately leaves ownership, lifecycle and operational
+facts — `owner`, `stage`, `status`, `sla`, `criticality`, `cloudProvider` — absent, because only
+an architect knows them. Fill those where a workflow already has you asking; never guess one, and
+never turn the panel into a questionnaire. Merge is per key, so omitting a field never clears it.
+See [references/archetype-attributes.md](references/archetype-attributes.md).
 
 ## Operation discipline
 

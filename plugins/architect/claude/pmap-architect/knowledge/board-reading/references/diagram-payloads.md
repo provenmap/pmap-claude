@@ -16,7 +16,10 @@ When creating or updating nodes, structure the call EXACTLY as:
       "archeType": "string | null (archetype name from get_archetypes; this sets the visual shape)",
       "primitiveType": "node | container | region | axis | callout | leader_annotation | text (semantic kind, NOT the shape — 'container' for grouping boxes that hold children, 'node' for regular elements; the shape comes from archeType)",
       "parentNodeSlug": "string | null (slug of the container node this belongs to)",
-      "tags": ["string"]
+      "tags": ["string"],
+      "attributes": {
+        "fieldName": "value — only fields this archetype declares; see archetype-attributes.md"
+      }
     }
   ],
   "workBoardSlug": "string (the board to apply to)"
@@ -37,7 +40,10 @@ When creating or updating edges, structure the call EXACTLY as:
       "detailedDescription": "string | null",
       "archeType": "string | null",
       "relation": "string",
-      "tags": ["string"]
+      "tags": ["string"],
+      "attributes": {
+        "fieldName": "value — only fields this archetype declares; see archetype-attributes.md"
+      }
     }
   ],
   "workBoardSlug": "string (the board to apply to)"
@@ -54,7 +60,8 @@ becomes a staged mark (inside a reviewable intent) only when the session commits
 ## Creation order (empty or growing a board)
 
 1. Analyze: domains, components, relationships.
-2. Fetch archetypes via `get_archetypes`.
+2. Fetch archetypes via `get_archetypes` — add `includeFields: true` with `names` when you
+   intend to fill the elements' `attributes`.
 3. Plan order: containers first → nodes within containers (via `parentNodeSlug`) → standalone
    nodes → edges.
 4. Execute: single `create_nodes` call with ALL nodes, then single `create_edges` call with ALL
