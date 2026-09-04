@@ -51,6 +51,7 @@ Connected → point at `/board`. Rejected → generate a fresh token (Step 1). U
   update the env var. `/logout` covers removal.
 - The token carries the whole authorization (workspace + scope + restriction) — switching
   workspaces means generating a different token, not changing any config file.
-- **The token acts as its generating user**: writes made here join that person's one workspace
-  working copy — the same session the web app shows — so commit/discard from either surface
-  decides both. Mint your own token; a shared token would merge working copies.
+- **The token acts as its generating user** for authorization, but writes made here journal into
+  the token's **own** working copy — separate from that person's web-app session, listed in the
+  app under plugin sessions where it can also be accepted or discarded. Mint your own token; a
+  shared token would merge two people's MCP work into one session.

@@ -26,7 +26,7 @@ Method (question-scoped reading, the answer-mode heuristic) lives in
    tokens on the answer's path edges. Skip the pass entirely if the CLI is unavailable — a
    drawn answer beats a styled timeout. At the end of the session,
    clean up with `delete_context_board` for boards this conversation generated — **never**
-   `discard_write_session` (that reverts the architect's whole working copy, not just the
+   `discard_write_session` (that reverts this token's whole working copy, not just the
    canvas). Tool absent (older server) → `create_insight` with a `trail` of stops, each naming
    a board and node slug directly; never fake a board.
 4. **Substantial analysis** → offer to record it (`create_insight`) so it isn't lost; name

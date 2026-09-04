@@ -119,7 +119,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --validate diagram --file <
 Confirmation posture (the platform's own): present the plan as a table (system, kind,
 archetype, container, repo/scope), get **one** conversational go-ahead, then proceed through the batch without
 re-asking per call. The whole scaffold gathers in the working copy, so walking away mid-setup
-is recoverable — but discard reverts the WHOLE session (app-made changes included): confirm
+is recoverable — but discard reverts the WHOLE token session (every board it touched): confirm
 with the named boards + counts first (architect-core).
 
 ## App boards and the nesting rule
@@ -129,6 +129,15 @@ AND points the landscape node at it as its drill-down. The board is born **EMPTY
 `create_board` works for **root-board nodes only**. Repo-backed means `repo` **and `new-app`**
 alike: a repository that does not exist yet still gets its board, and the content arrives from
 the developer's first push.
+
+- **Never pass `type`.** A layer under the root is born a `diagram`; `root-board` is the
+  workspace's one home board and the server refuses it.
+- **One slug per system, forever.** When the slug already exists, the server tells you which of
+  two things it was: a board with **no owning node** (a deleted app, an undone layer) is
+  **adopted** back under your node with its contents intact — report that, do not treat it as a
+  failure; a board that is **another node's live drill-down** is refused and the owner is named —
+  use that node (or ask), never invent a second slug for the same system. Two boards for one
+  repo is exactly the corruption this rule prevents.
 
 **App-nesting rule:** a governing repo can never bind to a board with an app board anywhere
 above or below it. So repo-backed slots live on the root landscape; a layer under an app board

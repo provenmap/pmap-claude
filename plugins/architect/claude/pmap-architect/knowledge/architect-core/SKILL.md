@@ -32,10 +32,12 @@ judgment, sequencing, and explanation.
 
 The MCP bearer token carries the whole _authorization_: workspace, scope (`read` | `read_write`),
 and an optional board-subtree restriction. You never name a workspace — the token does. But the
-token is not its own actor: **it acts as the person who generated it**. Writes made here journal
-into that person's ONE workspace working copy — the same session the web app's indicator shows —
-so what you see in `get_write_session` may include changes they made in the app, and a commit or
-discard issued here decides those too (see The working copy). Consequences:
+token is not its own actor for _authorization_: **it acts as the person who generated it**. But
+it has its **own working copy**: writes made here journal into a session keyed by this token,
+separate from the person's web-app session. `get_write_session` shows only what this token wrote,
+and a commit or discard issued here decides only that. The web app lists the token's session under
+_plugin sessions_, where the architect can also accept or discard it (see The working copy).
+Consequences:
 
 - `read` scope: the write tools are simply absent from the tool list. Don't offer writes; say the
   token is read-only and that a `read_write` token enables authoring.
@@ -117,10 +119,11 @@ included — the command body's closing line is not loaded when a skill is.
 
 ## The working copy
 
-Every write joins the architect's **one workspace session automatically** — nothing to open, no
-id to pass, no group to choose. `get_write_session` is the sole session read: always current,
-always the whole truth (there is no local session state of any kind). The session ends only by
-`commit_write_session` or `discard_write_session` — both decide the WHOLE working copy.
+Every write joins **this token's one session automatically** — nothing to open, no id to pass,
+no group to choose. `get_write_session` is the sole session read: always current, always the
+whole truth (there is no local session state of any kind). The session ends only by
+`commit_write_session` or `discard_write_session` — both decide the WHOLE working copy of this
+token; the architect's own web-app edits live in their own session and are never touched here.
 
 - **Nothing is staged and no intent exists until commit.** On a code-bound board, commit generates
   ONE `board_diff` intent per governed root from the session's net diff — the commit message
@@ -130,12 +133,13 @@ always the whole truth (there is no local session state of any kind). The sessio
   title/summary (AskUserQuestion — a genuine decision point) → `commit_write_session` → narrate
   the generated intents by slug, offer `publish: true` (opens the intent for review immediately).
   Commit is never implicit, never automatic.
-- **The session may already contain other work** — the architect's own, made in the web app. Any
-  flow that intends to commit MUST first `get_write_session` and, if the session is non-empty
-  before the flow's own writes, surface that and ask: continue (one combined commit), or pause
-  for the architect to decide the pending work first. Commit is workspace-wide by design; your
-  job is to make that visible _before_ the verb, never after.
-- **Discard is the nuclear verb**: it reverts the whole session, app-made changes included.
+- **The session may already contain other work** — this token's, from an earlier conversation
+  that walked away without committing (or a person left it for later). Any flow that intends to
+  commit MUST first `get_write_session` and, if the session is non-empty before the flow's own
+  writes, surface that and ask: continue (one combined commit), or pause for the architect to
+  decide the pending work first. Commit decides the whole token session by design; your job is
+  to make that visible _before_ the verb, never after.
+- **Discard is the nuclear verb**: it reverts the whole token session, every board it touched.
   Always confirm with the named board list + counts from `get_write_session`, and render the
   `{reverted, conflicted, skipped}` result honestly — conflicted rows were left alone, never
   silently clobbered. For throwaway canvases (`/ask-board` context boards) the cleanup verb is

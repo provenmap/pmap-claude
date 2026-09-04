@@ -6,8 +6,8 @@ next-steps: none
 ---
 
 Report whether this session can reach the ProvenMap MCP server: endpoint, token presence
-(masked), a live `tools/list` probe, the token's scope — and the working copy (uncommitted
-changes, live from the server; shared with the web app).
+(masked), a live `tools/list` probe, the token's scope — and the working copy (this token's
+uncommitted changes, live from the server; web-app edits live in a separate session).
 
 ## Workflow
 
