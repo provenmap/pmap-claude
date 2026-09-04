@@ -99,7 +99,7 @@ Polyglot projects produce a unified board with cross-language relationships (HTT
 | `/build [--plan]` | Build the app from the platform's spec — compiled skills, intents, board design, aspect contracts (write-capable; `--plan` = plan only) |
 | `/intents` | Pull architect-authored intents (work items) for the board and pick one to implement |
 | `/intents <intentId>` | Claim, implement, verify, and resolve a specific intent (write-capable — edits project files) |
-| `/demo-insights [count] [--board <slug>]` | Seed a board with a few demonstrative, path-rich insights to showcase the insights feature |
+| `/discover [count] [--auto] [--lens …] [--board <slug>] [focus]` | Discover the insights and context boards worth showing — ranked by the graph, picked by you or chosen for you, authored in parallel, pushed to ProvenMap |
 | `/adopt [--aspect <kind> \| --db \| --api]` | Extract a code aspect (database schema, API surface, frontend pages, event catalog) onto the bound board |
 | `/monitor` · `/monitor setup` | Correlate monitoring signals (errors, logs, cloud costs) with the board and push findings as a draft insight; `setup` configures sources + a recurring run |
 | `/status` | Show the lifecycle dial, config state, analysis summary, and per-board sync status |

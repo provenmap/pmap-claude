@@ -8,6 +8,7 @@
     "./commands/author-intent.md",
     "./commands/board.md",
     "./commands/configure.md",
+    "./commands/discover.md",
     "./commands/help.md",
     "./commands/hub.md",
     "./commands/insights.md",
@@ -23,9 +24,9 @@
     "./commands/update.md"
   ],
   "displayName": "ProvenMap Architect",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "metadata": {
-    "releasedAt": "2026-09-03"
+    "releasedAt": "2026-09-04"
   },
   "description": "Architect workbench for ProvenMap boards — explore the board graph, review insights, and author intents from Claude Cowork, Claude Code, or Codex. Connects to the ProvenMap MCP server; writes gather in your working copy, and committing generates a reviewable plan (one intent per governed app).",
   "author": {

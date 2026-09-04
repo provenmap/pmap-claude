@@ -60,8 +60,8 @@ Reads are unrestricted within the token's workspace (and board restriction, if s
 acts as **you**: writes join your one workspace working copy — the same session the ProvenMap
 web app shows — where they stay undoable until you decide. **Committing** the working copy
 generates a reviewable plan: one `board_diff` intent per governed app, named by your commit
-message; **discarding** reverts everything since the last decision. Rejecting a generated intent
-reverts what it staged. Architects propose; the platform review decides.
+message; **discarding** reverts everything since the last decision. Deleting a draft intent
+removes it; the board keeps what you committed. Architects propose; the platform review decides.
 
 ## Working with documents
 

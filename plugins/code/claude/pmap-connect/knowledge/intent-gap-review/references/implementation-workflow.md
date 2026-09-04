@@ -121,7 +121,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --resolve <intentId> --kind i
 
 (`--commit-sha` / `--pr-url` are optional — omit them if there's no commit yet.)
 
-Print `display` verbatim — it explains how the loop closes (proven on a later `/sync`; local state
+Print `display` verbatim — it explains how the loop closes (confirmed on a later `/sync`; local state
 cleaned up). **Exit code 1 with `verifyRequired: true`** → evidence is missing, stale, or failing —
 go back to Step 6. The command's resolution exit-code table covers the other outcomes.
 

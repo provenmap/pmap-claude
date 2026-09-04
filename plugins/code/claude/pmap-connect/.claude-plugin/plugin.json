@@ -2,7 +2,7 @@
   "name": "pmap-connect",
   "commands": [
     "./commands/configure.md",
-    "./commands/demo-insights.md",
+    "./commands/discover.md",
     "./commands/help.md",
     "./commands/insights.md",
     "./commands/intents.md",
@@ -15,9 +15,9 @@
     "./commands/update.md"
   ],
   "displayName": "ProvenMap Connect",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "metadata": {
-    "releasedAt": "2026-09-03"
+    "releasedAt": "2026-09-04"
   },
   "description": "Grounding connector for ProvenMap. Binds a document/knowledge repo to architect-authored boards: maintains node↔document evidence links, reports drift when documents change underneath the board, runs server-defined insight analysis, and implements architect-authored intents by editing the documents. Produces no boards — the architect authors them.",
   "author": {

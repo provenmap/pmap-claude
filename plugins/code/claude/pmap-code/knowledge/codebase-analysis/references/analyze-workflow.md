@@ -710,7 +710,7 @@ pending.
 - **Rolled-up edges (script-owned, script-merged):** run the deterministic rollup with
   `--apply` — it maps the skeleton's file-level `imports` and `references` edges onto your
   Step 5 nodes, drops self-loops and containment pairs, dedupes with an import-count
-  weight, leaves platform-hub edges out of the board, **and writes the result into the
+  weight, keeps the strongest pairs per the edge budget, **and writes the result into the
   board JSON itself**:
 
   ```bash
@@ -723,7 +723,7 @@ pending.
 
   **You never hand-merge edges.** The script folds every pair the skeleton resolves into
   the board: a new pair is added as `uses`; a pair that already has an edge (any type)
-  keeps that edge's `type` and your `detailedDescription` while its weight, class,
+  keeps that edge's `type` and your `detailedDescription` while its weight,
   provenance and fact `description` are refreshed; a rollup-backed `uses` pair the skeleton
   no longer resolves is removed, and a pair you re-typed keeps its edge with the rollup
   fields stripped. Model-only edges (no `metadata.provenance`) are never touched. It re-runs
@@ -741,16 +741,22 @@ pending.
   before any further edit, and never write back a copy you were holding from before the
   apply (that silently drops every edge it just merged).
 
-  The rollup classifies, it never deletes: every resolved pair is written with
-  `metadata.class` absent (**primary**, drawn), `"reserve:hub"` (inbound to a hub — its
-  fan-in is the count of those edges) or `"reserve:budget"` (over the edge budget). Reserve
-  edges are facts the canvas hides until focus; leave them alone — never delete or promote
-  one, and never count them when judging density or isolation (the gates and the ledger
-  already read only the primary set). Each rollup edge also carries `metadata.provenance`
-  (file pairs, import kinds, top symbols) and a script-written fact `description` built from
-  it — that field is the script's; your prose goes in `detailedDescription`. Do NOT hand-map
-  skeleton edges yourself; the script owns those rules, and it resolves imports for every
-  supported language — never re-parse them by hand.
+  **The board holds only the drawn set.** The rollup ranks every resolved pair by weight
+  (import statements) and writes the strongest: a **hub** — a node more than 40% of the
+  board's nodes import — draws its strongest consumers (`analysis.hubDrawnPerHub`, default
+  3) and the rest are listed, numbered, on the hub node (`metadata.fanIn`, the node's
+  "Used by" block on the wire); every other pair is drawn while the board's budget has room
+  (`analysis.edgeBudgetPerNode` — 2 default, 1 lean, 0 draws everything), the rest are kept
+  only in the `.edges.json` diagnostic. The display says what was not drawn and why. Never
+  re-add an undrawn pair by hand, never edit `metadata.fanIn`, and never count undrawn pairs
+  for density or isolation — the report says **undrawn** (listed on a hub) for a node whose
+  relations all went that way, and **isolated** only for a node with no relation at all.
+  Each rollup edge carries `metadata.provenance` (file pairs, import kinds, top symbols) and
+  a script-written fact `description` built from it — that field is the script's, and it
+  rides the wire as the edge's short description; your prose goes in `detailedDescription`,
+  which the wire composes with a numbered file-pair list behind a marker the script owns.
+  Do NOT hand-map skeleton edges yourself; the script owns those rules, and it resolves
+  imports for every supported language — never re-parse them by hand.
 
   **Boundary ports (drill-down boards):** an import whose target lies outside this board's
   scope used to be dropped as unresolved. With the scoped skeleton, the script resolves it

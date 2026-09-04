@@ -100,11 +100,11 @@ by reading the involved files:
 | `grpc_call`  | gRPC client calls               | model  |
 
 An edge with `metadata.provenance` is rollup-backed: the script owns its
-`weight`, its display class (`metadata.class` absent = primary, drawn;
-`"reserve:hub"` = hub fan-in; `"reserve:budget"` = over the edge budget —
-reserve edges are kept facts the canvas hides until focus, never deleted),
-its `provenance` (file pairs, import kinds, top imported symbols) and the
-script-written fact `description`. You own `type` and `detailedDescription`.
+`weight` (the import statements behind the pair — the rank that decided it
+was drawn; the board holds only the drawn set, and a hub lists its undrawn
+consumers on the node's `metadata.fanIn`), its `provenance` (file pairs,
+import kinds, top imported symbols) and the script-written fact
+`description`. You own `type` and `detailedDescription`.
 Edges without provenance are model-only and persist. **Reclassifying a rollup
 edge is just changing its `type`** (reasoning in `detailedDescription`) — the
 next `--rollup --apply` refreshes the facts in place and keeps your type;

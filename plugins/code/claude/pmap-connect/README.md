@@ -82,7 +82,7 @@ Run `/sync` again any time the documents change — it re-mirrors, re-diffs, and
 | `/insights --all` | Run every available insight skill |
 | `/intents` | Pull architect-authored intents for the board and pick one to implement |
 | `/intents <intentId>` | Claim, implement, verify, and resolve a specific intent (write-capable — edits this repo's documents) |
-| `/demo-insights [count] [--board <slug>]` | Seed the board with a few demonstrative, path-rich insights |
+| `/discover [count] [--auto] [--lens …] [--board <slug>] [focus]` | Discover the insights and context boards worth showing on the mirrored board |
 | `/skills [--status]` | Compile the platform's skill bundle into the repo — never overwrites local edits |
 | `/status` | Show config state, mirrored board summary, and evidence sync status |
 | `/help` | List commands grouped by lifecycle stage, with the plugin version |

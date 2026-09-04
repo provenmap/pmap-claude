@@ -8,7 +8,7 @@ description: How to adopt an architecture decision (ADR) into ProvenMap and meas
 An adopted decision becomes three things: a **decision board** (the durable record — where the
 ADR lives and is found), a **compliance insight batch** per affected app (the _is_ — where the
 estate violates it today), and **remediation intents** (the _ought_, as work that can actually
-be delivered and proven). Intents are per-board and cross-board anchors are inert, so a
+be delivered and confirmed). Intents are per-board and cross-board anchors are inert, so a
 cross-cutting ADR **federates**: per-app intents landed together in the working copy and
 committed as one decision.
 

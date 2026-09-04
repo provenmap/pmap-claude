@@ -15,8 +15,8 @@
  *
  * It also writes the per-session TURN MARKER the Stop-hook gate
  * (pmap-next-steps-gate.js) reads: `<tmpdir>/provenmap-turn-<session_id>.json`
- * = { sessionId, at, script, args } — proof that a plugin script ran this
- * turn. Temp dir, never the project: the architect plugin has no .provenmap,
+ * = { sessionId, at, script, args, pluginRoot } — proof that a plugin script
+ * ran this turn, and whose. Temp dir, never the project: the architect plugin has no .provenmap,
  * and a repo must not grow files because a hook fired. Cursor's hooks cannot
  * block a stop, so the cursor dialect writes no marker.
  *
@@ -31,9 +31,10 @@
  *   - Fire for a script another installed plugin owns. With code, connect and
  *     architect installed, every call used to inject three identical
  *     reminders. An absolute script path is owned by the plugin whose root
- *     contains it; a token (`${CLAUDE_PLUGIN_ROOT}/…`) or relative path
- *     resolves to no one plugin from here, so it is owned when this plugin
- *     ships a script of that name (the same rule the gate uses to claim).
+ *     contains it — and that root is written into the marker so the gate of
+ *     the SAME plugin claims it; a token (`${CLAUDE_PLUGIN_ROOT}/…`) or
+ *     relative path resolves to no one plugin from here, so it is owned when
+ *     this plugin ships a script of that name (the gate's fallback rule).
  *
  * Dialects: Claude/Codex read `hookSpecificOutput.additionalContext`; Cursor
  * reads a top-level `additional_context` and hands the tool result over as
@@ -113,8 +114,15 @@ function matchInvocation(command) {
   return m ? { path: m[1], script: m[2], args: m[3].trim().slice(0, 200) } : null;
 }
 
-/** Whether the invoked script is THIS plugin's to remind and stamp for. */
-function ownsInvocation(invocation) {
+/**
+ * Whether the invoked script is THIS plugin's to remind and stamp for, and
+ * how we know: "root" when the absolute path lies under this plugin's root
+ * (Claude Code resolves the plugin-root token before the model runs it, so
+ * this is the common case there), "name" when a token or relative path
+ * cannot name an owner and this plugin ships a script of that name, null
+ * when it is not ours.
+ */
+function ownership(invocation) {
   if (path.isAbsolute(invocation.path)) {
     let target = path.resolve(invocation.path);
     let root = PLUGIN_ROOT;
@@ -124,12 +132,12 @@ function ownsInvocation(invocation) {
     } catch {
       /* compare as given */
     }
-    return target.startsWith(root + path.sep);
+    return target.startsWith(root + path.sep) ? "root" : null;
   }
-  return fs.existsSync(path.join(__dirname, invocation.script));
+  return fs.existsSync(path.join(__dirname, invocation.script)) ? "name" : null;
 }
 
-function writeTurnMarker(input, invocation) {
+function writeTurnMarker(input, invocation, owned) {
   // A subagent's tool calls carry the parent's session_id plus an agent_id.
   // Its script runs are the agent's own workflow — the orchestrator's footer
   // comes at the join — so they must not stamp the parent's turn marker
@@ -142,11 +150,17 @@ function writeTurnMarker(input, invocation) {
       ? input.session_id
       : null;
   if (!sessionId) return;
+  // `pluginRoot` tells the Stop gate WHICH plugin's turn this was — common
+  // scripts (pmap-update, pmap-insights, …) ship in every plugin, and the
+  // gate of the wrong one used to win the claim and nudge with its own CLI
+  // (an architect footer under /pmap-code:update). Null when owned by name:
+  // the gate then falls back to ships-by-name.
   const record = {
     sessionId,
     at: new Date().toISOString(),
     script: invocation.script,
     args: invocation.args,
+    pluginRoot: owned === "root" ? PLUGIN_ROOT : null,
   };
   try {
     fs.writeFileSync(
@@ -174,7 +188,8 @@ function main() {
       ? input.tool_input.command
       : "";
   const invocation = matchInvocation(command);
-  if (!invocation || !ownsInvocation(invocation)) return;
+  const owned = invocation ? ownership(invocation) : null;
+  if (!owned) return;
   const neutral = isGuidanceNeutral(invocation);
 
   const reminders = [];
@@ -188,7 +203,7 @@ function main() {
     return;
   }
 
-  if (!neutral) writeTurnMarker(input, invocation);
+  if (!neutral) writeTurnMarker(input, invocation, owned);
   if (!reminders.length) return;
   console.log(
     JSON.stringify({

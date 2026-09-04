@@ -10,11 +10,15 @@
  *
  * How it knows a plugin script ran this turn: the PostToolUse display guard
  * (pmap-display-guard.js) writes a per-session turn marker in the temp dir
- * after every `scripts/pmap-*` Bash call. The marker is CLAIMED here by an
- * atomic rename, so when two sibling plugins are installed and both Stop
- * hooks fire in parallel, exactly one wins and exactly one nudge is sent.
- * A marker naming a script this plugin does not ship belongs to a sibling
- * and is left alone.
+ * after every `scripts/pmap-*` Bash call that does work. The marker is
+ * CLAIMED here by an atomic rename, so when sibling plugins are installed
+ * and their Stop hooks fire in parallel, exactly one wins and exactly one
+ * nudge is sent. WHICH one: the marker carries the owning plugin's root when
+ * the guard could tell (an absolute script path) — a marker with another
+ * plugin's root is left alone even if this plugin ships a script of that
+ * name (common scripts ship everywhere; the architect's gate once claimed a
+ * /pmap-code:update turn and nudged with its own CLI). A root-less marker
+ * falls back to ships-by-name.
  *
  * Why the footer check is a loose /next steps/i match: the footer heading is
  * `**Next steps**` (core/reporting/next-steps.ts NEXT_STEPS_HEADING — keep the
@@ -62,6 +66,30 @@ function claimMarker(file) {
   return true;
 }
 
+/** Same root as the guard writes: realpath-tolerant, so a symlinked cache still matches. */
+function sameRoot(a, b) {
+  const real = (p) => {
+    try {
+      return fs.realpathSync(p);
+    } catch {
+      return path.resolve(p);
+    }
+  };
+  return real(a) === real(b);
+}
+
+/**
+ * Whether this marker is THIS plugin's to act on: the owner's root when the
+ * guard recorded one, else (older or by-name marker) whether this plugin
+ * ships the script — a sibling's marker is left for the sibling.
+ */
+function ownsMarker(marker) {
+  if (typeof marker.pluginRoot === "string" && marker.pluginRoot) {
+    return sameRoot(marker.pluginRoot, path.resolve(__dirname, ".."));
+  }
+  return fs.existsSync(path.join(__dirname, marker.script));
+}
+
 function main() {
   let input;
   try {
@@ -90,9 +118,7 @@ function main() {
     return;
   }
   if (!marker || typeof marker.script !== "string") return;
-  // A marker naming a script this plugin does not ship belongs to a sibling
-  // plugin — leave it for the one that does.
-  if (!fs.existsSync(path.join(__dirname, marker.script))) return;
+  if (!ownsMarker(marker)) return;
   if (!claimMarker(file)) return;
   if (FOOTER_PRESENT.test(String(input.last_assistant_message || ""))) return;
 
