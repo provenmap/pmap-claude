@@ -26,7 +26,7 @@ Scripts own the reading and the ranking; you add judgment and offer the pick.
 4. **Offer the pick** — AskUserQuestion "What next?": the lead action and the next two rungs
    (label = the command, description = its reason) plus **Not now**. Hand-off lines (`↪`) are
    never options. A pick → run that workflow inline per architect-core's routing table (load
-   its skill, then close with that command's next-steps footer). **Not now** → stop.
+   its skill, then close with that command's Outcome). **Not now** → stop.
 
 ## With free text — route the ask
 

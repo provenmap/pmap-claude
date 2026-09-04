@@ -9,7 +9,7 @@ Customize the **vocabulary**: scan the codebase for component categories, compar
 
 **Flags** — `--dry-run`: validate locally + server dry-run, never persist or POST (no lock) · `--skip-submit`: write `.provenmap/proposed-archetypes.json`, no POST (the lock records a scan, not a submission) · `--replace`: submit `mode='replace'` — duplicate-name pending rows overwritten, not rejected · `--force`: bypass the CLI's local hash guard when submitting.
 
-**-1 Preflight** — run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js` and react to its exit code; never decide yourself that the project is fine. Print `display` **verbatim**. 0 → go · 1 (not connected / credentials rejected) → **connect-now offer** below · 2 (binding unverified) → print `error` verbatim, stop, name `/status` · 11 (branch mismatch) → AskUserQuestion per the branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md`.
+**-1 Preflight** — run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js` and react to its exit code. Print `display` **verbatim**. 0 → go · 1 (not connected / credentials rejected) → **connect-now offer** below · 2 (binding unverified) → print `error` verbatim, stop, name `/status` · 11 (branch mismatch) → AskUserQuestion per the branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md`.
 
 **0 Branch guard** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-precondition.js --branch-only`: the binding pins one branch and the server rejects any other. Exit 1 → print the JSON `error` verbatim (it names both branches and the fix) and stop · 0 → continue.
 
@@ -21,7 +21,7 @@ Customize the **vocabulary**: scan the codebase for component categories, compar
 - **4 Submit** — *script* `pmap-propose-archetypes.js`, branching on `success`, `serverResult.rejected[]`, `notAvailable`, `errorCode: 3`.
 - **5 Persist lock** — *you* write `.provenmap/archetype-analysis.lock.json`, read by `pmap-precondition.js` (via `/analyze` Step -1) and `/status`. Default `gate_off`: never read. Under the opt-in `analysis.archetypeGate: "strict"` its state decides whether `/analyze` re-prompts (exit 10), warns, or proceeds.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --after analyze-archetypes --domain code` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command analyze-archetypes` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 **Connect-now offer** (preflight exit 1: not configured, or `errorType: "auth_invalid"`) — **AskUserQuestion** "Connect to ProvenMap now?":
 

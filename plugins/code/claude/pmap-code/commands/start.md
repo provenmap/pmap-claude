@@ -22,7 +22,7 @@ offer the pick.
    (label = the command, description = its reason) plus **Not now**. Hand-off lines are never
    options. A pick → run it as this plugin's own slash command where the host lets you invoke
    one; otherwise read `${CLAUDE_PLUGIN_ROOT}/commands/<name>.md` (Cursor: `skills/<name>/SKILL.md`)
-   and follow it, closing line included. **Not now** → stop. Hosts without the tool: ask in one
+   and follow it, Outcome step included. **Not now** → stop. Hosts without the tool: ask in one
    line.
 
 ## Notes

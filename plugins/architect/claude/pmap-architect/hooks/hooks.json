@@ -1,5 +1,5 @@
 {
-  "description": "ProvenMap Architect hooks: offline session-start state line (grant, expiry, host MCP entry), display guard + turn marker, next-steps gate (no .provenmap scaffold)",
+  "description": "ProvenMap Architect hooks: offline session-start state line (grant, expiry, host MCP entry) — no .provenmap scaffold",
   "hooks": {
     "SessionStart": [
       {
@@ -8,29 +8,6 @@
           {
             "type": "command",
             "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --session-start --host claude",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-display-guard.js",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-next-steps-gate.js",
             "timeout": 10
           }
         ]

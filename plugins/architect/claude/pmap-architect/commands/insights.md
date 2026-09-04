@@ -28,7 +28,7 @@ review workflow and promotion semantics live in
    scratch (org template or ad-hoc dimension, insights defended before recording), `/assess`
    is the front door — same skill, full arc.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after insights` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command insights` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Failure branches
 

@@ -61,7 +61,7 @@ Print the JSON `display` field verbatim. Then, by `status`:
   again to keep waiting (the code is still valid), or re-run `/login` if they closed the tab.
 - Non-zero exit (denied / expired): `display` explains it — offer to re-run `/login` from Step 1.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after login` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command login` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Notes
 

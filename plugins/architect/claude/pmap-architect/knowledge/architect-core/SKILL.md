@@ -114,8 +114,9 @@ integration decisions), confirm once, then run the sequence.
 **Inline handoffs:** commands can't invoke each other. "Create intents now?" = AskUserQuestion
 → on yes, read the target workflow's doctrine (`${CLAUDE_PLUGIN_ROOT}/knowledge/<skill>/SKILL.md` — the
 routing table above names it) and continue in-session; on no, stop naming the standalone
-command. A workflow run inline closes with `--after <the command that names it>`, facts
-included — the command body's closing line is not loaded when a skill is.
+command. A workflow run inline closes with the Outcome of the command that names it —
+`--brief --command <that command>`, facts included — because the command body's Outcome
+step is not loaded when a skill is.
 
 ## The working copy
 
@@ -159,9 +160,10 @@ print the canonical not-configured message — relay it):
   a rebuilt table.
 - `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --next` — the `/start` answer, live: the
   ranked next-step ladder under a one-line state header. Print its `display` verbatim.
-- `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after <command> [--facts '<flat json>']` —
-  the next-steps footer every command closes with, offline (cached map, snapshots, drafts).
-  Print its `display` verbatim. A `↪ Hand off` line is another session's work (developers in
+- `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command <name> [--facts '<flat json>']` —
+  the brief every command closes on, offline (cached map, snapshots, drafts): JSON state,
+  gates, candidates, hand-offs — never printed; you write the Outcome from it
+  (`${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`). A hand-off is another session's work (developers in
   their repo, the web app) — never a rung to run here.
 
 ## Drafts-in-flight — resumable interviews
@@ -232,6 +234,6 @@ MCP results are raw JSON — you format them. Keep output stable across sessions
 - No token configured: `ProvenMap not configured — run /login (browser) or /configure (manual) first`
 - MCP 401: `Your ProvenMap architect token was rejected — run /login to reconnect`
 - Every stop names the next command (`/login`, `/configure`, `/status`, `/board`). No dead ends.
-- Every completion closes with the `--after` footer, printed verbatim; a hand-off line (`↪`)
-  points to another session — never offer it as something to run here.
+- Every completion closes with an Outcome written from the `--brief`: Done · Left · Next; a
+  hand-off line (`↪`) points to another session — never offer it as something to run here.
 - Credentials never transit the chat: tokens are shown masked or as presence only.

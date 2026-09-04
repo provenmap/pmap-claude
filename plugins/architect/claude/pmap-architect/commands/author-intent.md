@@ -38,7 +38,7 @@ is the long-form entry to that workflow; `/intents` is the queue view.
 5. **Close + hand off** — the closing move (architect-core): `preview_write_session_commit` →
    present the plan → title/summary (AskUserQuestion) → `commit_write_session`.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after author-intent --facts '{"board":"<slug>"}'` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command author-intent --facts '{"board":"<slug>"}'` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Failure branches
 

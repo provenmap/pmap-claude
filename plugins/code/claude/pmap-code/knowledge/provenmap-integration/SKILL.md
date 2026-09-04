@@ -167,9 +167,16 @@ Credentials live in ONE place — the config file, never the chat.
   (`bindingToken` + `apiSecret` + `boardSlug`), since a different board is a different
   binding with its own secret. The `--rebind` flag is what unlocks the board picker —
   without it, a bound project's login is authentication-only:
-  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain code --plugin-version 0.18.1` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
+  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain code --plugin-version 0.19.0` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
   2. After they sign in, pick the new board, and confirm, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain code` (give the Bash call ~250s; re-run on `status: "pending"`). Print `display` verbatim.
   3. On `status: "complete"`, the config now points at the newly selected board — the `display` panel already shows it.
+  4. **Nothing analysed here is thrown away silently.** The boards analysed under the previous
+     binding stay on disk (the `display` names them as kept), and the next `/sync` asks whether to
+     **migrate** them to the new board — the root is renamed to the new bound slug, child boards
+     are re-parented, sync state is reset, and the push carries the whole tree — or to **start
+     from a clean slate**: delete that local analysed state and run a fresh analysis of the new
+     board. Only server mirrors (nothing analysed) are archived on their own. On the connect plugin the evidence links recorded against the previous board are
+     carried into the new board's store on the next `--pull`, for review before pushing.
 - **Update specific fields** — have the user edit `.provenmap/config.json`, then confirm
   and re-verify.
 - **Re-run verification** against the current file.

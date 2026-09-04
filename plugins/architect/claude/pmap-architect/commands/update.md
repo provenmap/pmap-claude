@@ -2,7 +2,6 @@
 category: connect
 description: "Account · Update this plugin to the latest published version"
 allowed-tools: Bash(node:*)
-next-steps: none
 ---
 
 Update **ProvenMap Architect** (`pmap-architect`) to the latest version published for
@@ -24,3 +23,5 @@ update). Do not reformat it, and do not state a version number yourself beyond w
 If the script exits non-zero, `display` already explains what went wrong (marketplace refresh
 failed, plugin not found under any scope, or the update command itself failed) — relay it as-is
 rather than guessing at a fix or retrying with different flags.
+
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command update` → one line, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.

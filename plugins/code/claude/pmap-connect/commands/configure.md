@@ -14,8 +14,7 @@ Config schema, credential source, and the rebind flow:
 ## Step 1: Ensure the config file exists
 
 No `.provenmap/config.json`? Create `.provenmap/` and write the skeleton from the skill
-above — empty `bindingToken`/`apiSecret`/`boardSlug` plus its documented defaults. The
-empty credential fields are intentional: the user fills them in next.
+above — empty `bindingToken`/`apiSecret`/`boardSlug` plus its documented defaults.
 
 If it exists, read it and continue — never overwrite the user's file. Either way, ensure
 `.provenmap/` is in `.gitignore` (add it if missing) so credentials aren't committed.
@@ -78,6 +77,6 @@ cancel and keep existing.
 
 ## Next step
 
-Verified? Close with the next-steps footer — one next step, not the whole report:
+Verified? Close with the Outcome — one next move with its reason, not the whole report:
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --after configure --domain connect` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain connect --command configure` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.

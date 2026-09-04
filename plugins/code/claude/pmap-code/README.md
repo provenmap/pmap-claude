@@ -54,7 +54,7 @@ Run `/configure` to validate the config, test the connection, and add `.provenma
 
 ## Quick start
 
-1. `/start` — the guided front door: the surfaces card, the ranked next step for this repo's real state, and a menu to run it. Every command closes with the same next-steps footer.
+1. `/start` — the guided front door: the surfaces card, the ranked next step for this repo's real state, and a menu to run it. Every command closes with an Outcome — what it did, what it left, the next move and why — written from a script brief of this repo's real state.
 2. `/login` (browser) or `/configure` (manual) — connect to the portal (one-time per repo)
 3. `/analyze` — full architecture analysis (incremental — only changed files re-analyzed)
 4. `/sync` — push the analysis to your board

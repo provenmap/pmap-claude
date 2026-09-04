@@ -32,7 +32,7 @@ Method (question-scoped reading, the answer-mode heuristic) lives in
 4. **Substantial analysis** → offer to record it (`create_insight`) so it isn't lost; name
    `/assess` for a structured review.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after ask-board` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command ask-board` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Failure branches
 

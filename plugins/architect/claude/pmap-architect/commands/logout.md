@@ -2,7 +2,6 @@
 category: connect
 description: "Account · Disconnect from ProvenMap — remove the stored architect token from this machine"
 allowed-tools: Bash(node:*)
-next-steps: none
 ---
 
 Disconnect this machine from ProvenMap: remove the stored login grant
@@ -23,3 +22,5 @@ entry. This is a **local** disconnect — the display explains the server-side c
    command center → Architect access), and the next command (`/login`).
 
 3. On a non-zero exit, print `display` verbatim and stop.
+
+4. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command logout` → one line, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.

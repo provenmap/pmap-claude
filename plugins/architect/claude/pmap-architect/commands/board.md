@@ -57,7 +57,7 @@ via AskUserQuestion → commit → narrate the intents, offer `publish`). To aba
 the boards + counts from `get_write_session`, then `discard_write_session` — it reverts the WHOLE
 working copy.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after board --facts '{"board":"<slug>"}'` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command board --facts '{"board":"<slug>"}'` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Failure branches
 

@@ -32,7 +32,7 @@ records the insights and draws the boards. Read
    are journal-free: `create_insight` lands a draft batch and `create_context_board` draws
    outside the tree, so nothing here waits on a commit.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after discover` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command discover` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Failure branches
 

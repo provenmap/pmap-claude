@@ -5,15 +5,14 @@ argument-hint: "[board-slug] [intent-slug]"
 allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
 ---
 
-Work a board's intent queue: list, read, author governed anchored work, and manage
-lifecycle. Authoring runs the **impact → attach → describe** loop from
+Work a board's intent queue: list, read, author governed anchored work, manage lifecycle. Authoring runs the **impact → attach → describe** loop from
 `${CLAUDE_PLUGIN_ROOT}/knowledge/intents-authoring/SKILL.md` — read it (and
 `${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`) first.
 
 ## Workflow
 
 1. **Working-copy check** — `get_write_session`: uncommitted changes are surfaced (boards +
-   counts) and the architect decides — one combined commit later, or pause first
+   counts) and the architect decides: one combined commit later, or pause first
    (architect-core).
 2. **Resolve and route** — argument or session board; classify per architect-core taxonomy
    (intents legal only on code-bound boards — route up/split before any write).
@@ -45,7 +44,7 @@ lifecycle. Authoring runs the **impact → attach → describe** loop from
    plan → title/summary (AskUserQuestion) → `commit_write_session` → narrate generated intents
    by slug, offer `publish`. Report writes from the result message, slug-first.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after intents` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command intents` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Failure branches
 

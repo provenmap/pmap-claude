@@ -19,7 +19,7 @@ Print every `display` verbatim; branch only on exit codes and named fields.
 
 **Resolution exits** — 0 recorded; 1 `verifyRequired: true` (implemented only) → evidence first, Step 6; 2 not found → re-run `--list`; 3 unresolvable status (claim first), API error, or `notAvailable: true` → say the decision was NOT recorded.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --after intents --domain code` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command intents` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Connect-now offer
 

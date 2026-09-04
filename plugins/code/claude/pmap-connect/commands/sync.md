@@ -9,7 +9,7 @@ Works from a cold start — no prior producer state, just `/login` or `/configur
 
 **0 Preflight** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js`; the gate is the script's, not yours. 0 → go (`repairs.boardsRecovered` non-empty = state just restored from the server, per its `display`); 1 (not connected / credentials rejected) → **connect-now offer**; 2 (binding unverified) → print `error`, stop, name `/status`; 11 branch mismatch → AskUserQuestion per the branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md`.
 
-**1 Pull & inventory** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-sync.js --pull --host claude --domain connect`. Exit 0 → board mirrored to `.provenmap/boards/<boardSlug>.json` (manifest updated), document corpus inventoried; say so in one line, then carry the JSON's `evidence` and `context` into Step 2.
+**1 Pull & inventory** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-sync.js --pull --host claude --domain connect`. Exit 0 → board mirrored to `.provenmap/boards/<boardSlug>.json` (manifest updated), document corpus inventoried, and after a re-bind the previous board's links carried into this board's store — `display` says so; print it, then carry the JSON's `evidence` and `context` into Step 2.
 
 **2 Propose evidence links** — **read `${CLAUDE_PLUGIN_ROOT}/knowledge/grounding/SKILL.md` NOW and follow it exactly; improvise nothing.** It owns the substantiation bar, anchor/excerpt discipline, drift handling, and how `evidence`/`context` become the link set you write to `.provenmap/evidence-links.json`.
 
@@ -19,7 +19,7 @@ Works from a cold start — no prior producer state, just `/login` or `/configur
 
 **`pmap-sync.js` exits** — 0 success. 1 config error → **connect-now offer**; **branch mismatch**, **missing board slug**, and (on `--push`) a **missing/unreadable `--links` file** also exit 1 — there relay `error` verbatim and stop; it names its own fix (switch branch, re-bind via `/login`, or the failing links path). 3 (`--push` only) links-file validation error → repair per the grounding skill, retry once, then stop and report `validationErrors[]` verbatim. 4 API error (board fetch or push rejected) — `errorType: "auth_invalid"` → **connect-now offer**; otherwise relay `error` verbatim, stop, name `/sync` as the retry.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --after sync --domain connect` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain connect --command sync` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Connect-now offer
 

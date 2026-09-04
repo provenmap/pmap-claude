@@ -34,7 +34,7 @@ landing uses [`${CLAUDE_PLUGIN_ROOT}/knowledge/intents-authoring/SKILL.md`](../k
    title/summary (AskUserQuestion) → `commit_write_session` → narrate what was generated.
 7. **Hand off** — enrich the drafts via the intents-authoring loop, or stop.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after adopt-adr` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command adopt-adr` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Failure branches
 

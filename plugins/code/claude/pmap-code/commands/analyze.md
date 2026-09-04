@@ -8,11 +8,11 @@ allowed-tools: Read, Glob, Grep, Write, Bash(node:*, git:*), AskUserQuestion, Ta
 
 Print every `display` verbatim; branch only on exit codes and named fields.
 
-**Dispatch (argument):** `--clean` full re-analysis; `--drill <parent>/<node>` child board (add `--clean`: rebuild only it); `--all` all layers; `--auto` unattended (`--auto-plan` owns the loop; prompts become stops); no flag: incremental (full when impossible).
+**Dispatch:** `--clean` full re-analysis; `--drill <parent>/<node>` child board (`--clean`: rebuild only it); `--all` all layers; `--auto` unattended (`--auto-plan` loops; prompts become stops); no flag: incremental (full when impossible).
 
 **-2 Preflight** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js` (whole-tree `--clean`: add `--no-repair`): 0 → continue; 1 → connect-now offer (--auto: stop, print `error` verbatim); 2 → print `error`, stop, name `/status`; 11 → branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md` (--auto: stop).
 
-**-1 Archetype gate** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-precondition.js --kind code`: `gate_off`/`ok` → silent proceed; `pending` → warn with `reason`; exit 10 (strict only) → AskUserQuestion per the reference (--auto: stop); 1/2 → print `error`, stop.
+**-1 Archetype gate** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-precondition.js --kind code`: `gate_off`/`ok` → proceed; `pending` → warn with `reason`; exit 10 (strict only) → AskUserQuestion per the reference (--auto: stop); 1/2 → print `error`, stop.
 
 **Read `${CLAUDE_PLUGIN_ROOT}/knowledge/codebase-analysis/references/analyze-workflow.md` NOW and follow it exactly; improvise nothing.**
 
@@ -26,7 +26,7 @@ Print every `display` verbatim; branch only on exit codes and named fields.
 - 2–4 config + stacks from the digest (script-owned)
 - 4.5 skeleton read + `--detail`; slice only inlined clusters
 - 4.6 `--group-plan --layer <n>`; evidence flip → ask first
-- 5 you author nodes: grain from plan; claim coveredFiles; write board JSON
+- 5 author nodes: grain from plan; claim coveredFiles; write board JSON
 - 5.5 `--claim-check`; exit 3 → fix double claim, re-run
 - 6 `--rollup <slug> --apply` (exit 3 → fix; re-read board) + semantic edges; 3+ groups → relationship-detector agents (read-only, max 4, one message)
 - 7 drill-down candidates: `layerBoardSlug`
@@ -39,11 +39,11 @@ Print every `display` verbatim; branch only on exit codes and named fields.
 - 9 manifest; drop mirror metadata
 - Report: re-run `--board-report`, verbatim + final dashboard.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --after analyze --domain code` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command analyze` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Connect-now offer
 
 Trigger: not configured, or `errorType: "auth_invalid"`. AskUserQuestion "Connect to ProvenMap now?":
 
-- **Connect now** → browser login: each `display` **in your reply**: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --analyze-cmd analyze` (timeout ~250s). `complete` → resume the failed step; else stop (display explains).
+- **Connect now** → browser login: each `display` **in your reply**: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `--poll --analyze-cmd analyze` (timeout ~250s). `complete` → resume the failed step; else stop (display explains).
 - **Not now** → stop: "ProvenMap not configured — run `/login` (browser) or `/configure` (manual) first" (rejected: "Your ProvenMap credentials were rejected — run `/login` to reconnect").

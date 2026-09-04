@@ -23,7 +23,7 @@ pause. Route:
 - **Sparse, unbound root** → _continue_: extend, don't restart, on the drafts file's mode.
 - **Populated or bound** → window closed: `/board` or `/new-app`; say why.
 
-### Step 2 — the fork, the source gate, then the interview
+### Step 2 — fork, source gate, interview
 
 **The fork** (AskUserQuestion): map an existing estate, or found something new?
 
@@ -48,8 +48,7 @@ recovers later.
 
 ### Step 4 — generate app boards
 
-`create_board` per repo-backed node: **never draw inside**. Found mode: **skipped entirely** —
-no boards or bindings; say why.
+`create_board` per repo-backed node: **never draw inside**. Found mode: **skipped** — no boards or bindings; say why.
 
 ### Step 5 — commit the scaffold, complete the bindings
 
@@ -64,9 +63,9 @@ Architect-core's closing move: `preview_write_session_commit` → title/summary 
 Then run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --render-scaffold --file
 <scaffold.json>` and print its output **verbatim**; delete the drafts file.
 
-### Step 6 — next steps, ranked
+### Step 6 — close
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after setup-workspace --facts '{"mode":"<map|found>"}'` — print verbatim (map mode carries the developers' hand-off). Walk away → `discard_write_session` unwinds it.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command setup-workspace --facts '{"mode":"<map|found>"}'` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md` (map mode carries the developers' hand-off). Walk away → `discard_write_session` unwinds it.
 
 ## Failure branches
 

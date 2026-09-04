@@ -11,7 +11,7 @@ Fetch this project's composed external skills and auxiliary agent-context files 
 
 ### Step -1: Preflight — binding, branch, local state
 
-Board-state command; the preflight gate is script-enforced — act on its exit code.
+Preflight gate — act on its exit code.
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js
@@ -53,7 +53,7 @@ If `withheld.count > 0`: "`<count>` external skill(s) need a newer plugin — ru
 
 CLI owns writing; never edit a skill file yourself.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --after skills --domain connect` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain connect --command skills` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Connect-now offer
 

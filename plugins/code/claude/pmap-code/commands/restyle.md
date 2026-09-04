@@ -14,7 +14,7 @@ in `${CLAUDE_PLUGIN_ROOT}/knowledge/board-styling/SKILL.md` — read it first.
 
 - Slug argument given → use it.
 - No argument → run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-sync.js --style-scan` and print its
-  `display` verbatim. Offer the least-styled boards (AskUserQuestion, up to 4 options). Rows
+  `display` verbatim. Offer the least-styled boards (AskUserQuestion, ≤4 options). Rows
   with `?` counts mean the server predates the styling read surface — say so and let the user
   name a board anyway.
 
@@ -29,8 +29,7 @@ verbatim. Note `signalsPath` from the JSON. If it fails with "No local analysis"
 Author the styling plan per the board-styling skill. Present it compactly: the composition line,
 sizes table (who is enlarged or shrunk, and why), token groups, icon choices. Every size carries
 a one-line reason, and every token states what it asserts that the element's archetype cannot.
-Say how many elements were left untouched because their archetype already speaks for them — that
-number is a quality signal, not an omission. Get approval (AskUserQuestion: apply / adjust /
+Say how many elements were left untouched because their archetype already speaks for them — a quality signal, not an omission. Get approval (AskUserQuestion: apply / adjust /
 stop).
 
 ### Step 4 — validate + save
@@ -38,7 +37,7 @@ stop).
 Write the plan to `.provenmap/styling/<slug>.plan.json`. Run
 `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --validate-styles --file .provenmap/styling/<slug>.plan.json --against <signalsPath>`.
 
-- Exit 0 → continue (mention warnings, one line each).
+- Exit 0 → continue (one line per warning).
 - Exit 3 → fix the reported issues, re-validate. After two failed rounds: stop and say
   `Styling validation keeps failing — the board structure may need work first; run /analyze on it, then /restyle.`
 
@@ -56,7 +55,7 @@ Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-sync.js --apply-styles <slug>`. Bra
 - `errorType: "auth_invalid"` → make the **connect-now offer** (below)
 - Any other error → relay the CLI's `error` field; the styling can be retried with /restyle.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --after restyle --domain code` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command restyle` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ### Connect-now offer
 

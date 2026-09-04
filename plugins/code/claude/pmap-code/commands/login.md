@@ -46,7 +46,7 @@ Requests a one-time code, opens the browser (best-effort). A bound project
 re-authenticates to its board; `--rebind` (`switch`) unlocks the full picker:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --host claude --domain code --plugin-version 0.18.1   # add --rebind only for /login switch
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --host claude --domain code --plugin-version 0.19.0   # add --rebind only for /login switch
 # add --base-url <url> when the user's argument is an http(s) URL
 ```
 
@@ -64,8 +64,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain c
 
 Print the JSON `display` field verbatim. Then, by `status`:
 
-- **`complete`**: done — `display` already confirms the connection and next
-  steps.
+- **`complete`**: done — `display` confirms the connection.
 - **`pending`**: not finished yet — re-run the same `--poll` command (the
   code is still valid), or restart `/login` if the tab closed.
 - Non-zero exit (denied / expired / board mismatch): `display` explains what
@@ -82,7 +81,7 @@ Print the JSON `display` field verbatim. Then, by `status`:
 
 ## After connecting
 
-On `status: "complete"`, close with the next-steps footer — it names the next command for this
-codebase's real state:
+On `status: "complete"`, close with the Outcome — the brief carries this codebase's
+real state, so the next move is a fact, not a guess:
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --after login --domain code` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command login` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.

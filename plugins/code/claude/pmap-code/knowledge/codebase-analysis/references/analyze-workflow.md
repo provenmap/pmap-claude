@@ -132,7 +132,7 @@ The loop:
    - `mode: "done"` or `"stalled"` — the run is over. Print `display` verbatim (it ends with
      the full coverage dashboard and the deferred judgment calls — broad claims and pending
      waiver decisions). On `stalled`, relay `stallReason`. Close the final report with the
-     `--after analyze` footer (the command body's closing line).
+     Outcome (the command body's last step: `--brief --command analyze`).
 3. **Re-plan:** run `--auto-plan` again (no `--reset`) — it refreshes the ledger itself, so
    Step 8.5 is skipped entirely in auto mode. Print `display` verbatim and return to 2.
 
@@ -1056,8 +1056,8 @@ is a genuine user decision:
    - `unknown-board` → re-run that board with the `--clean` behaviour (delete its JSON +
      store, full re-analysis)
 5. If the user picks **Sync what I have**: proceed to Step 9 and end the final report with the
-   `--after analyze` footer (the command body's closing line). If it was selected alongside
-   other areas, build those areas first, then end the loop with the same footer.
+   Outcome (the command body's last step: `--brief --command analyze`). If it was selected
+   alongside other areas, build those areas first, then end the loop with the same Outcome.
 
 ## Step 8.7: Parallel layer fan-out (multiple selections)
 

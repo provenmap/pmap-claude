@@ -3,7 +3,6 @@ category: connect
 description: "Account · Disconnect this project from ProvenMap (clears local credentials)"
 argument-hint: "[--purge]"
 allowed-tools: Bash
-next-steps: none
 ---
 
 Disconnect this codebase from ProvenMap: the credential is revoked on
@@ -26,3 +25,5 @@ and server settings are kept so a later `/login` reconnects in one confirm;
    revoke went through, and the next command (`/login`).
 
 3. On a non-zero exit, print `display` verbatim in your reply and stop.
+
+4. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command logout` → one line, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.

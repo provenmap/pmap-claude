@@ -6,8 +6,8 @@ allowed-tools: Bash(node:*), AskUserQuestion
 
 One-time manual connection setup. The plugin ships an MCP server declaration (`.mcp.json`) that
 reads the token from the `PMAP_MCP_TOKEN` environment variable — configuration is: generate a token,
-put it in the environment, verify. This manual path stays first-class (it is the only path on
-hosts we can't script, and when you lack the admin permission the `/login` approve requires).
+put it in the environment, verify. This manual path stays first-class (the only path on
+hosts we can't script, or when you lack the admin permission the `/login` approve requires).
 
 > **Faster option:** `/login` signs you in through the browser, generates the token there, and
 > stores + wires it for you — no copy-paste.
@@ -40,10 +40,10 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --connect --host claude
 
 This reads `PMAP_MCP_TOKEN`, proves it with one probe, stores the grant (owner-only), and writes
 the host's user-scope MCP server entry pinned to your endpoint. Print its `display` **verbatim**.
-Connected → point at `/board`. Rejected → generate a fresh token (Step 1). Unreachable → check
+Rejected → generate a fresh token (Step 1). Unreachable → check
 `PMAP_MCP_URL` / network / egress allowlist, then re-run.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after configure` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command configure` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Notes
 

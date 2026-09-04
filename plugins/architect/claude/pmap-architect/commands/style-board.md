@@ -15,8 +15,7 @@ Style one board end-to-end: signals → plan → validate → apply. Methodology
 
 - Slug argument given → use it.
 - No argument → run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --style-signals --scan` and
-  print its `display` verbatim. Offer the least-styled boards (AskUserQuestion, up to 4
-  options). Rows with `?` counts mean the server predates the styling read surface — say so and
+  print its `display` verbatim. Offer the least-styled boards (AskUserQuestion, ≤4 options). Rows with `?` counts mean the server predates the styling read surface — say so and
   let the architect name a board anyway.
 
 ### Step 2 — signals
@@ -34,16 +33,15 @@ stop. Respect the answer for the whole run; when restyling, present current → 
 Author the styling plan per the board-styling skill (composition, semantics, icons — the plan
 file shape is in its references/styling-vocabulary.md). Present the plan compactly: the
 composition line, sizes table (with reasons), token groups, icon choices (catalog hit or Lucide
-fallback per node). Every size carries a one-line reason. Say how many elements were left
-untouched because their archetype already speaks for them — that number is a quality signal, not
-an omission. Get approval (AskUserQuestion: apply / adjust / stop).
+fallback per node). Say how many elements were left
+untouched because their archetype already speaks for them — a quality signal, not an omission. Get approval (AskUserQuestion: apply / adjust / stop).
 
 ### Step 4 — validate
 
 Write the plan to a temp file. Run
 `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --validate styles --file <plan.json> --against <signalsPath>`.
 
-- Exit 0 → continue (mention warnings, if any, in one line each).
+- Exit 0 → continue (one line per warning).
 - Exit 3 → fix the reported issues, re-validate. After two failed rounds: stop and say
   `Styling validation keeps failing — the board structure may need work first; run /board <slug> to inspect it.`
 
@@ -55,7 +53,7 @@ Three batched calls, in order, skipping omitted sections: `apply_composition` �
 Step 2 vs the applied plan (nodes sized, tokens applied, composition set). To abandon instead:
 `discard_write_session` (warn it reverts the WHOLE working copy).
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after style-board --facts '{"board":"<slug>"}'` — print verbatim.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command style-board --facts '{"board":"<slug>"}'` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Failure branches
 

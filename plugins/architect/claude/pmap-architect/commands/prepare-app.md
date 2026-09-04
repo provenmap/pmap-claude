@@ -48,7 +48,7 @@ The architect-core closing move for the working copy (`preview_write_session_com
 title/summary via AskUserQuestion → `commit_write_session`), then re-run the Step 2 script and
 print the fresh bar verbatim — that is the session's receipt.
 
-**Close:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --after prepare-app --facts '{"board":"<slug>","ready":"<true|false>"}'` — print verbatim (ready carries the developers' hand-off).
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command prepare-app --facts '{"board":"<slug>","ready":"<true|false>"}'` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md` (ready carries the developers' hand-off).
 
 ## Failure branches
 
