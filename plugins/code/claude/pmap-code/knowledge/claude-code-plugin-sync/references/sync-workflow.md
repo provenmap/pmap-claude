@@ -85,9 +85,12 @@ Parse the JSON output:
 ## Step 3.6: Archetype attributes — evidence the fields each archetype declares
 
 An archetype declares a **field contract** — the properties a node or edge of that type carries in
-the app (`primaryLanguage`, `version`, `protocol`, `owner`, `sla`, …). This step fills in the part
-of that contract this repository can actually prove, immediately before the push, so the values
-land in the same transaction as the elements themselves.
+the app (`primaryLanguage`, `version`, `protocol`, `owner`, `sla`, …). `/analyze` already fills
+in the part of that contract this repository can prove when it finalizes each board (Step 9,
+`--finalize`), so a board normally arrives here with its attributes. This step is the
+**re-validation and fallback**: it re-resolves against the live contracts immediately before the
+push (a board finalized offline, or before its contracts were cached, gets its values here), so
+what lands is what the current archetype declares.
 
 **First, warm the field-contract cache.** It is name-scoped: the whole code catalogue is 264 KB of
 field definitions against ~23 KB for the archetypes a real board assigns, so the CLI reads the

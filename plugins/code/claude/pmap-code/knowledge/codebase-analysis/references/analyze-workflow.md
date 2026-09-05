@@ -62,8 +62,8 @@ than restating them.
    b. Remove the nodes in `impact.remove`
    c. Remove edges where source or target node was removed
    d. Re-run relationship detection for changed nodes (Step 6)
-   e. Write merged result to board JSON with updated `analyzedAt` and `analyzedAtCommit`
-   f. Update manifest
+   e. Write merged result to board JSON
+   f. Step 9 (`--finalize`) — re-stamps `analyzedAt` / `analyzedAtCommit` and the manifest
 6. **Fallback:** if the Step -0.5 script could not compute the plan (`planError` on its JSON),
    scope from a raw `git diff --name-only --diff-filter=ACMR <analyzedAtCommit> HEAD` instead
    (exclude `node_modules/`, `dist/`, `.git/`, `coverage/`, test files). If this board's nodes
@@ -81,10 +81,21 @@ notes are this mode's per-step mechanics.
 ### Clean: Full Re-Analysis (`--clean`)
 
 Ignores existing board data. Whole-tree `--clean` (no `--drill`) is the **one explicit
-re-plan**: delete `.provenmap/tree-plan.json` and `.provenmap/plan-run.json` along with every
-board's JSON and store file, then run full analysis from scratch (Steps 0–9) against a freshly
-computed plan. Use when the codebase has changed significantly or the incremental result looks
-stale.
+re-plan**. The deletion is script-owned — never delete state files by hand:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-boards.js --reset
+```
+
+It removes every analysis-derived artifact (board JSONs, the manifest, per-board stores,
+`tree-plan.json`, `plan-run.json`, `group-plan.json`, `styling/`, `coverage.json`, the insight
+context packs, the dispatch log) and keeps auth, binding, config, the role map, the archetype
+lock and proposals, the skeleton cache and everything captured by hand. Print its `display`
+verbatim, then run full analysis from scratch (Steps 0–9) against a freshly computed plan. Use
+when the codebase has changed significantly or the incremental result looks stale.
+
+`--reset --dry-run` reports what would go without deleting it — use it when the user asks what
+`--clean` will throw away.
 
 Combine with `--drill` to rebuild one child board from scratch, leaving the plan untouched:
 `/analyze --drill <parent-board-slug>/<node-slug> --clean` — this is the recovery path when a
@@ -393,8 +404,10 @@ If ProvenMap configuration exists:
 
 The worklist, merge decision, empty-worklist stop and fallbacks are the "Default:
 Incremental Analysis" mode section above — execute them here, at this point in the
-pipeline. If `--clean` was passed: delete the existing board JSON and store file, proceed
-with full analysis.
+pipeline. Whole-tree `--clean` already reset the state at the start of the run
+(`pmap-boards.js --reset`, see "Clean: Full Re-Analysis" above) — proceed with full analysis.
+For `--drill <parent>/<node> --clean`, delete just that child board's JSON and store file
+here, then proceed with full analysis of it.
 
 ## Step 2: Configuration Check
 
@@ -838,24 +851,28 @@ pending.
   `api_call`, `publishes`, …) and put your reasoning in `detailedDescription` — nothing
   else. Ownership is per field: the script owns `weight`, `class`, `provenance` and the
   fact `description`; you own `type` and `detailedDescription`. The next `--apply`
-  refreshes the facts in place and keeps your type — no twin, nothing to delete. Never keep
-  two edges of the **same** type between one pair. The semantic edge types
+  refreshes the facts in place and keeps your type — no twin, nothing to delete. Never draw
+  two edges between one pair — a second relation goes in `detailedDescription`. The semantic edge types
   (`db_read`/`db_write`, `api_call`, `uses`, `publishes`/`subscribes`, cross-language
   calls) are the codebase-analysis `SKILL.md` → "Import/Dependency Analysis".
 
 - **Semantic edges (read the relevant files):** the skeleton does not detect these — derive
-  them by reading the files of the nodes involved. **Fan this out when the board has 3+
-  domain groups.** Dispatch one `relationship-detector` agent (Task tool) per domain group,
-  **all in a single message** so they run concurrently — cap the batch at 4; with fewer
-  than 3 groups just do it inline. Give each agent its group's node slugs +
-  `coveredFiles`, the full board node list (so it can name targets outside its group), and
-  the edge archetype names. The agents are **read-only** — they return candidate edges as
-  JSON in their reply and write nothing, so there is no file-boundary risk. You merge: add
-  each candidate as a **model-owned** edge (no `metadata.weight` — never copy a weight
-  onto one), drop a candidate only when an edge of the **same** source+target+type already
-  exists, leave the rollup's weighted `uses` edge for that pair in place, apply the
-  board-scope rule, and record off-board relations in `metadata.deferredEdges[]` rather
-  than dropping them.
+  them by reading the files of the nodes involved. The worklist is the nodes the rollup left
+  without a drawn edge (the board report's isolated list — externals, actors, the context
+  ring), never the container count. **Fan out only when 5+ nodes are still isolated after
+  the rollup:** dispatch one `relationship-detector` agent (Task tool) per cohort of
+  isolated nodes, **all in a single message** so they run concurrently — cap the batch at
+  4; with fewer than 5 isolated nodes do it inline. Give each agent its cohort's node slugs,
+  the full board node list with `coveredFiles` (so it can find the code that talks to
+  them), and the edge archetype names. The agents are **read-only** — they return candidate
+  edges as JSON in their reply and write nothing, so there is no file-boundary risk. You
+  merge under **one drawn edge per node pair**: a candidate for a pair that already has an
+  edge (rollup or model) re-types that edge and extends its `detailedDescription` — never a
+  second edge; two candidates for one new pair become one **model-owned** edge (no
+  `metadata.weight` — never copy a weight onto one) whose `type` is the relation the reader
+  must see and whose `detailedDescription` names the other. Apply the board-scope rule, and
+  record off-board relations in `metadata.deferredEdges[]` rather than dropping them. Step
+  8.3 warns (`A-EDGE-PAIR`) on every pair drawn twice — settle each before styling.
 
 - **Cross-board relations:** when a real dependency's other end lives on a different board,
   append it to the board metadata's `deferredEdges[]`
@@ -908,8 +925,9 @@ Write analysis results to `.provenmap/boards/<board-slug>.json`.
 Remove edges referencing removed nodes (rollup-backed edges — those with
 `metadata.provenance` — were already refreshed by Step 6's `--rollup --apply`).
 
-Always record the current git commit hash via `git rev-parse HEAD` as `analyzedAtCommit`,
-and carry the `groupingEvidence` and `planUnitId` you stamped in Step 5. Stamp `analyzedBy`
+Carry the `groupingEvidence` and `planUnitId` you stamped in Step 5 (Step 8.3's gate reads
+them). Do **not** write `analyzedAt`, `analyzedAtCommit`, `layer` or the parent links by
+hand — Step 9's `--finalize` stamps them from the plan and git. Stamp `analyzedBy`
 truthfully: `{ "mode": "orchestrator-inline" }` when you write the board yourself in this
 conversation; dispatched agents stamp `{ "mode": "agent", "model": "…" }` per their prompt
 (Step 8.7). Never carry a previous run's `analyzedBy` forward. Every node carries
@@ -1045,7 +1063,10 @@ runs it here for the board it writes directly.
 
 ## Step 8.4: Author the styling plan
 
-After writing the board JSON, style it (methodology:
+Run this only once Step 6 has **closed** — every detector merged and the Step 8.3 gate
+re-run on the final edge set. The signals are computed from the drawn edges, so a plan
+authored while detectors are still out styles none of the edges they add (the 2026-09-05
+L0: 0 of 38). Then style the board (methodology:
 `${CLAUDE_PLUGIN_ROOT}/knowledge/board-styling/SKILL.md` — read it if not already read):
 
 1. `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --style-signals <board-slug>` — print
@@ -1192,9 +1213,9 @@ refresh is sequential there, after the parallel batch.
    board whose gate failed, whose advisories are still unresolved, or whose agent died,
    tell the user which board and why, and offer to re-run just that board — the other
    boards' results stand.
-2. Update the manifest (Step 9) with that board's entry **now, per join** — the orchestrator
-   is the only writer of `manifest.json`, and it writes after each board lands rather than
-   batching to the end.
+2. Run Step 9 (`pmap-prepass.js --finalize <board-slug>`) **now, per join** — it stamps the
+   board's plan/git metadata and writes its manifest entry; the orchestrator is the only
+   caller, after each board lands rather than batching to the end.
 
 **After the whole batch has joined:**
 
@@ -1209,43 +1230,35 @@ subagent's `--scope-unit …` read is a slice of it. Reading modes (the standard
 `--detail`) read the existing index and never walk — only `--coverage` (and `--auto-plan`)
 rebuild it.
 
-## Step 9: Update Manifest
+## Step 9: Finalize the board
 
-Update `.provenmap/boards/manifest.json` with the new/updated board entry. The manifest
-must conform to this exact structure:
-
-```json
-{
-  "version": 2,
-  "projectName": "my-project",
-  "updatedAt": "ISO-timestamp",
-  "boards": {
-    "my-project-overview": {
-      "boardSlug": "my-project-overview",
-      "name": "My Project Overview",
-      "layer": 0,
-      "parentBoardSlug": null,
-      "parentNodeSlug": null,
-      "analysisFile": ".provenmap/boards/my-project-overview.json",
-      "storeFile": ".provenmap/boards/stores/my-project-overview.store.json",
-      "lastAnalyzedAt": "ISO-timestamp",
-      "lastSyncedAt": null,
-      "nodeCount": 15,
-      "edgeCount": 12
-    }
-  }
-}
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --finalize <board-slug>
 ```
 
-When rewriting a board JSON, never carry forward `metadata.origin`, `metadata.mirroredAt`,
-`metadata.mirroredFromBinding`, or a node's `metadata.mirrored` — those mark un-analysed
-server mirrors, and the prepass/sync gates refuse them. A mirror's `layer` is never carried
-forward either: the bound board is re-stamped `layer: 0` (layering is binding-relative —
-Step 1), and only genuine drill-down child boards of this binding carry `layer` ≥ 1.
+The script closes the board: it stamps `metadata.planUnitId`, `layer`, `parentBoardSlug` /
+`parentNodeSlug`, `analyzedAt` and `analyzedAtCommit` from the plan and git, defaults
+`proposedDrillDowns` (`[]`) and `groupingEvidence`, drops the server-mirror markers a
+recovered board still carries (`metadata.origin`, `mirroredAt`, `mirroredFromBinding`, a
+node's `metadata.mirrored`), resolves the **archetype attributes** the repository can prove
+onto the nodes (offline, from the cached field contracts), and writes the board's entry in
+`.provenmap/boards/manifest.json` (`name` comes from the parent board's carrying node; the
+root's from `projectName`). Print `display` verbatim — a `🔧 Corrected` line means a value
+you wrote disagreed with the plan; a `🧬 Attributes skipped` line means no contracts were
+cached, and the next connected `/sync` fills them in. Never edit `manifest.json` by hand and
+never stamp those fields yourself: this is the only writer. Exit 1 (no board file, no plan, or
+a slug that is not a plan unit) → print `error` verbatim and fix the cause; nothing was written.
 
-**CRITICAL:** The board display name field is `name` (NOT `boardName`). The
-`--ensure-boards` CLI reads `name` to create missing child boards on the server — using
-`boardName` will cause board creation to fail with an empty name.
+**Warm the field contracts first** when connected, so finalize has them (the cache is
+name-scoped to the archetypes the local boards use, which is why it runs here — after the
+board is written — and not at Step 0):
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --kind code --fields
+```
+
+Fails or offline → continue to `--finalize` anyway; attributes are an enrichment, never a
+reason to hold a board.
 
 ## Closing report (Output Format)
 

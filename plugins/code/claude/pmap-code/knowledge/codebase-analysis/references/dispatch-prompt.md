@@ -50,9 +50,10 @@ Run every command from `{{pluginRoot}}/scripts/pmap-prepass.js` against `{{worki
    `coveredFiles` copied verbatim), your own nodes claiming every file in `ownFiles`
    (directory globs preferred), `metadata.planUnitId: "{{unitId}}"`,
    `metadata.parentBoardSlug: "{{parentBoardSlug}}"`,
-   `metadata.parentNodeSlug: "{{parentNodeSlug}}"`, `metadata.layer: {{layer}}`,
-   `analyzedAtCommit` from `git rev-parse HEAD`, and
-   `metadata.analyzedBy: { "mode": "agent", "model": "{{model}}" }`.
+   `metadata.parentNodeSlug: "{{parentNodeSlug}}"`, `metadata.layer: {{layer}}`, and
+   `metadata.analyzedBy: { "mode": "agent", "model": "{{model}}" }` — never
+   `analyzedAtCommit` or the manifest: the orchestrator stamps both with `--finalize` when
+   your board joins.
 5. `--claim-check .provenmap/boards/{{childBoardSlug}}.json --skeleton
    .provenmap/skeletons/{{childBoardSlug}}.json` — exit 3 (a file claimed twice) is the one
    hard defect; fix and re-run. An unclaimed file is debt: claim it, waive it with an exact

@@ -24,7 +24,7 @@
     "./commands/update.md"
   ],
   "displayName": "ProvenMap Architect",
-  "version": "0.20.0",
+  "version": "0.20.1",
   "metadata": {
     "releasedAt": "2026-09-05"
   },
