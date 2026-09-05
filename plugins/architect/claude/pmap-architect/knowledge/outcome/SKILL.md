@@ -34,7 +34,7 @@ Outcome is one line.
 
 `node <plugin>/scripts/pmap-status.js --brief --domain <d> --command <name>` (code, connect) or
 `pmap-architect.js --brief --command <name>` returns JSON. Some results already carry it as
-`brief` — `/sync`'s push, `/analyze`'s coverage close, `/intents`' resolution, the completed
+`brief` — `/sync`'s push, `/analyze`'s plan close, `/intents`' resolution, the completed
 `/login` — use that and skip the call.
 
 - **`gates`** — blocking conditions with their `fix`. A gate is the whole of Next, alone: "Next:
@@ -57,7 +57,7 @@ Outcome is one line.
 2. **Left is honest.** Skipped steps, waived files, undrawn nodes, a failed verification, a
    question the run could not answer.
    - Bad: (omitted, while the run skipped a board)
-   - Good: `Left: checkout was skipped — 14 files behind HEAD; a push would send stale coverage.`
+   - Good: `Left: checkout was skipped — 14 files behind HEAD; a push would send stale plan units.`
 3. **Next leads with one move and its because.** The because is a fact from the brief or from
    this run — never a description of the command (`/help` has those). Blocking gates come first
    and alone. At most two alternatives.
@@ -89,7 +89,7 @@ After `/sync` that pushed one board and skipped another:
 ```
 **Outcome**
 Done: pushed payments-overview — 12 nodes, 8 edges, verified against the server read-back.
-Left: checkout was skipped; it is 14 files behind HEAD and a push would send stale coverage.
+Left: checkout was skipped; it is 14 files behind HEAD and a push would send stale plan units.
   2 nodes on payments-overview carry the closest-fit type — the catalogue has no agent_command.
 Next: /analyze checkout, then /sync again — that brings the second board current. With both
   pushed, /insights runs the first analysis over the whole tree. The archetype gap can wait for

@@ -259,21 +259,18 @@ For each synced board, report:
   clickable link, e.g. `🔗 View board: <url>`. If it's `null` or absent, skip the link silently
   (don't surface an error — the server may be older or the link not yet resolvable).
 
-**Coverage** (the last CLI output may carry a `coverageReport` field — absent means the domain
-doesn't track coverage; skip silently):
+**Plan progress** (the last CLI output may carry a `coverageReport` field — absent means the domain
+doesn't track it; skip silently):
 
 - `sent: true` → print the response's `display` field **verbatim — do not reformat, reorder, or
-  summarise** (it carries the coverage bar, the percent, and the pending / stale counts). If
-  `pending > 0` or `staleNodes > 0`, add: `Close the gap with /analyze (incremental).`
-  `mappedOnly > 0` is **planned depth, not a gap, where a drill-down owns those files** — when it is
-  the only non-zero count, say `Planned depth remains — build the drill-down with /analyze.`
-  instead. A broad claim (a node claiming 30+ files with no drill-down) sits in that same count and
-  is real debt, never planned depth — `/status`'s broad-claim line names them.
-- `reason: "no_ledger"` → `No coverage ledger yet — run /analyze (it computes coverage) so the platform can track analysis coverage.`
-- `reason: "feature_unavailable"` → "This ProvenMap server doesn't expose analysis coverage yet — ask your admin to upgrade"
-- `reason: "branch_mismatch"` → note the snapshot was skipped because the ledger was computed on the
+  summarise** (it carries the progress bar, the percent, and the stale / incomplete counts:
+  `{ sent, percent, built, units, stale, incomplete, display }`). If `stale > 0` or
+  `incomplete > 0`, add: `Close the gap with /analyze (incremental).`
+- `reason: "no_plan"` → `No tree plan yet — run /analyze (it computes the plan) so the platform can track analysis progress.`
+- `reason: "feature_unavailable"` → "This ProvenMap server doesn't expose analysis progress yet — ask your admin to upgrade"
+- `reason: "branch_mismatch"` → note the snapshot was skipped because the plan was computed on the
   wrong branch; `/status` explains the recovery.
-- Any other `reason` → one line: coverage snapshot failed with that reason (the sync itself still
+- Any other `reason` → one line: progress snapshot failed with that reason (the sync itself still
   succeeded).
 
 **Styling** (from each board's `stylingReport` — absent or `reason: "no_pending_plan"` means nothing

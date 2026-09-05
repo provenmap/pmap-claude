@@ -167,56 +167,56 @@ re-glob or re-apply exclusion rules; start from the skeleton's `nodes[]`. The in
 2. Detect API calls between services
 3. Map message queue producers/consumers
 
-## Coverage Provenance
+## Plan units and claims
 
-Coverage is the pipeline's honesty mechanism — every emitted node carries it:
+The tree plan decides which boards exist (`.provenmap/tree-plan.json`, computed and pinned by
+`pmap-prepass.js --coverage`); claiming is the honesty mechanism **inside** each one:
 
 - **`coveredFiles`** (per node): the skeleton files the node claims, as
-  repo-relative paths or directory globs (`src/billing/**` for whole subtrees).
-  Every skeleton file belongs in exactly one node's `coveredFiles`, or in the
-  board metadata's **`waivedFiles`** (explicitly judged non-architectural —
-  exact paths, never globs), or is deliberately left unclaimed to surface as
-  *pending* in the coverage dashboard. Never drop a file silently.
+  repo-relative paths or directory globs (`src/billing/**` for whole subtrees). The
+  denominator for a board that is a plan unit is that unit's own `ownFiles` — never the whole
+  repo. Every one of a unit's files belongs in exactly one node's `coveredFiles`, or in the
+  board metadata's **`waivedFiles`** (explicitly judged non-architectural — exact paths, never
+  globs), or is deliberately left unclaimed to surface as pending in the unit's integrity
+  check. A claim reaching a file outside the unit's scope is a defect (`outOfScope`). Never
+  drop a file silently.
+- **Every child unit is carried exactly once.** The plan's `children[]` (from `--scope-unit`
+  or `--tree-plan`) names every child unit this board must carry. Each gets exactly one opaque
+  node whose `slug` equals the unit's `nodeSlug` and whose `layerBoardSlug` equals the unit's
+  `slug`; its `coveredFiles` are copied verbatim from the unit read, script-owned — never
+  re-derived, and there is **no file limit**: a child unit's size never forces a split. A
+  `layerBoardSlug` naming anything other than one of this board's child units fails
+  `--board-report` (`A-PLAN-MARK`); the board must also stamp `metadata.planUnitId` with its
+  own unit's id (`A-PLAN-UNIT` otherwise). Depth beyond what the plan carries is never marked —
+  record it in `metadata.proposedDrillDowns` (`{nodeSlug, reason}`) and let the plan decide.
 - **Minor files fold, never stand alone.** A skeleton row marked `minor` (small, imported, no
   exported class) is claimed by its host node's `coveredFiles` — the node covering its importer
   (one-host) or the node that owns its directory (shared / out-of-scope / cycle); it is never a
   node of its own and never waived. `pmap-prepass.js --claim-check <board.json>` names the exact
   host per unclaimed minor; `--board-report` warns (`A-MINOR-NODE`) when a node is one minor file.
 - **Claim by directory, not by file — that is what makes the partition
-  automatic.** The digest's directories are disjoint by construction, so a
+  automatic.** A unit's `ownFiles` are disjoint by construction, so a
   board whose nodes each claim whole directory globs (`src/billing/**`) is
   exactly-once *by construction*: there is no per-file bookkeeping to get
-  right, and no reason to enumerate 600 paths. Drop to individual file paths
+  right, and no reason to enumerate hundreds of paths. Drop to individual file paths
   **only** where a single directory genuinely splits across two nodes, and
   then claim the minority files explicitly and leave the rest to the
   directory glob. If you find yourself listing files one by one, or wanting
   to generate the list programmatically, that is the signal to move the claim
   up to directory granularity instead.
-- **The broad-claim limit is 30 files.** An analysed node may claim at most 29;
-  at 30 or more the dashboard flags it as a broad claim. A node with
-  `layerBoardSlug` is **exempt — a drill-down node has no file limit**, which
-  makes drill-down (not splitting) the normal answer for a large area.
-- **Mapped vs analysed**: a node with `layerBoardSlug` (or a broad claim)
-  counts its files as *mapped, not analysed* until the child board analyses
-  them — the dashboard excludes them from the analysed percentage. Files
-  mapped behind a **planned** drill-down are planned depth, not debt: a board
-  that plans its drill-downs reads lower on analysed-% than one that inlines
-  everything flat, and it is the better board. The percentage measures how
-  much of the tree has been visited — never whether a board has the right
-  shape.
 - **Check the partition with a script, never by hand**:
-  `pmap-prepass.js --claim-check <board.json>` reports unclaimed files, files
-  claimed twice, and nodes over the limit — before the board is written, and
-  against a draft anywhere on disk. Exit 3 means the one real defect: a file
-  claimed by two nodes. Broad claims and unclaimed files report as debt.
+  `pmap-prepass.js --claim-check <board.json>` reports unclaimed files and files
+  claimed twice — before the board is written, and against a draft anywhere on disk. Exit 3
+  means the one real defect: a file claimed by two nodes. Unclaimed files report as debt.
   Add `--changed-since auto` for the incremental merge decision (which nodes to
   re-analyse, which to remove, which changed files nothing claims) and
   `--list-all` when the unclaimed list is your worklist rather than a display.
   **Never glob-match board claims against a file diff by hand** — that is this
   script's job, and doing it in-head is how a run ends up writing its own.
-- The deterministic **coverage ledger** (`pmap-prepass.js --coverage` →
-  `.provenmap/coverage.json`) computes all of this; never hand-compute coverage
-  numbers.
+- **Progress is plan progress, not per-file coverage.** A unit is `built` only when its board
+  passes `--board-report` AND its claim integrity is clean (every member claimed exactly once
+  or waived) — `pmap-prepass.js --coverage` recomputes this for every unit and reports it in
+  the plan's progress line; never hand-compute it.
 
 These are the complete claiming rules — `/analyze`'s workflow reference
 (`references/analyze-workflow.md`, Step 4.5) points here rather than
@@ -243,7 +243,7 @@ duplicating them.
 }
 ```
 
-**Required fields:** `slug`, `name`, `type`, `description`, `detailedDescription` — plus `coveredFiles` on every non-container node (coverage provenance)
+**Required fields:** `slug`, `name`, `type`, `description`, `detailedDescription` — plus `coveredFiles` on every non-container node (the plan claim — see "Plan units and claims")
 **Optional fields:** `path`, `parentSlug`, `layerBoardSlug`, `metadata`
 
 ### Edge Format
@@ -303,12 +303,11 @@ User says: "Re-analyze the codebase"
 
 Actions:
 1. Load existing board data and `analyzedAtCommit`
-2. Take the worklist from the coverage ledger (`.provenmap/coverage.json`,
-   refreshed at the start of the run): `staleNodes[]` (covered files changed —
-   re-analyze from their `changedFiles`), `pendingFiles[]` (no node claims them
-   yet — new components to place), `orphanedFiles[]` (covered files that no
-   longer exist — remove/shrink their nodes). Git diff is only the
-   ledger-failure fallback and the deletion confirmer
+2. Take the worklist from the tree plan (`.provenmap/tree-plan.json`, refreshed at the start
+   of the run): a `stale` unit's `changed`/`staleFiles` (members moved, or a claimed file
+   changed — re-analyze from those files), an `incomplete` unit's `integrity`
+   (`unclaimed`/`doubleClaimed`/`outOfScope` — new components to place, or an overlap to fix).
+   Git diff is only the plan-failure fallback and the deletion confirmer
 3. Re-analyze only the worklist files, merge into existing board data
 4. Update `analyzedAtCommit` to current HEAD
 

@@ -57,7 +57,7 @@ Outcome is one line.
 2. **Left is honest.** Skipped steps, waived files, undrawn nodes, a failed verification, a
    question the run could not answer.
    - Bad: (omitted, while the run skipped a board)
-   - Good: `Left: checkout was skipped — 14 files behind HEAD; a push would send stale coverage.`
+   - Good: `Left: checkout was skipped — 14 files behind HEAD; a push would send stale plan units.`
 3. **Next leads with one move and its because.** The because is a fact from the brief or from
    this run — never a description of the command (`/help` has those). Blocking gates come first
    and alone. At most two alternatives.

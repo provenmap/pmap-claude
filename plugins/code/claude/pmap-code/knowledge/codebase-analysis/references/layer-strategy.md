@@ -69,14 +69,11 @@ count. But node count is a hard **floor and ceiling** pair, and drill-down nodes
   drill-down systems is a legal shape. `--board-report`, `--validate` and `/sync` all enforce
   this (exit 3).
 - **Ceiling (A-CONTAINER-CEILING, L0/L1 only, advisory):** a container with more than 8
-  inline (non-drill-down) children is one layer's detail drawn on this board. Default to
-  making it an opaque drill-down node (set `layerBoardSlug`, move the children to the child
-  board) or splitting it; keeping it inline is allowed with a `Drill-down rationale: …` line
-  in its description — the board report lists every recorded override so the user sees the
-  judgment call before `/sync`. This **warns, it does not fail the board**: at L0 the
-  ceiling, the >8-node grouping floor and the 30-file broad-claim limit all press at once,
-  and drill-down is the single move that satisfies all three — so reach for it first rather
-  than carving nodes to fit.
+  inline (non-drill-down) children is one layer's detail drawn on this board. Split it into
+  two containers by coupling, keep it inline with a `Drill-down rationale: …` line in its
+  description — the board report lists every recorded override so the user sees the judgment
+  call before `/sync` — or record the depth in `metadata.proposedDrillDowns` for the plan to
+  decide. This **warns, it does not fail the board**.
 
 Group by coupling; never leave a board over 8 non-drill-down nodes flat, and never let one
 container hold a whole layer inline without saying why.
@@ -165,13 +162,14 @@ used, once you have chosen it. Caveat: the list is parsed from `package.json`
 `dependencies` only — for a non-JS workspace, or for a service reached over plain HTTP with
 no SDK, you still read code to find it.
 
-**Drill-down is the default at L0, not a garnish.** An analysed node may claim at most 29
-files, and L0 is capped at 10-30 nodes — so a repo of any size cannot be covered by
-analysed L0 nodes alone. Any node that would claim 30 or more files gets `layerBoardSlug`
-(a proposed child-board slug); a drill-down node has no file limit and defers its detail to
-that board. Splitting a 200-file domain into seven 29-file L0 nodes is the wrong repair —
-it blows the node budget and creates an edge hairball. Reach for splitting only when a node
-is modestly over and genuinely holds two concerns.
+**Drill-down is the default at L0, not a garnish.** The plan's L1 units (`--tree-plan`'s root
+read) ARE this board's drill-down candidates — carry each one as an opaque node with
+`layerBoardSlug` and its `coveredFiles` copied verbatim, never inline its files. L0 is capped
+at 10-30 nodes, so a repo of any size cannot be covered by inline L0 nodes alone; a unit the
+plan didn't split further stays one opaque node regardless of size — a drill-down node has no
+file limit and defers its detail to that board. If you would split a unit further, record it
+in `metadata.proposedDrillDowns` rather than inventing extra L0 nodes; the plan decides on the
+next run.
 
 **L0 targets significance, not exhaustiveness.** Coverage is satisfied when every file is
 claimed by _some_ node — and a container may claim its whole subtree via `coveredFiles` and
@@ -216,20 +214,28 @@ rolled-up L0 edges — breadth here is what creates hairballs.
     my-project-auth-domain.store.json # L1 sync state
 ```
 
-## Drill-Down Candidates
+## The Plan's Units
 
-The group plan is the primary trigger: a cluster with `verdict: "drill-down"`, or one the
-layer band escalated (`escalated: …` in its evidence). The heuristics below cover what the
-plan cannot see:
+The tree plan (`.provenmap/tree-plan.json`, computed and pinned by `pmap-prepass.js
+--coverage`) decides which boards exist — the child units a board's `--scope-unit`/
+`--tree-plan` read names in `children[]` are the ONLY nodes that get `layerBoardSlug`. Carry
+each one exactly as the plan gives it: `slug` = the unit's `nodeSlug`, `layerBoardSlug` = the
+unit's `slug`, `coveredFiles` copied verbatim from the unit read.
+
+The group plan's own `verdict: "drill-down"` (a cluster too interconnected to read flat, or
+one the layer band escalated — `escalated: …` in its evidence) is evidence for depth the tree
+plan did not reach, not a mark: record it in `metadata.proposedDrillDowns`
+(`{nodeSlug, reason}`) with a one-line reason. The heuristics below are what to weigh when
+deciding whether a cluster the plan didn't reach is worth proposing:
 
 1. It represents a domain/service with 5+ internal source files
 2. It contains sub-domains or distinct internal modules
 3. The current layer's granularity hides important internal architecture
 
-Mark candidates by:
-
-- Setting `layerBoardSlug` on the node
-- Adding the node slug to `drillDownNodes` in the analysis output
+A proposal only becomes a board when it is accepted (`pmap-prepass.js --plan-accept <key>`,
+offered from the plan's `proposals[]`) — never set `layerBoardSlug` on a node the plan does
+not already carry as a child unit; `--board-report` fails the board (`A-PLAN-MARK`) on one
+that does.
 
 ## Board Slug Resolution
 
