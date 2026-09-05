@@ -33,11 +33,11 @@ Print every `display` verbatim; branch only on exit codes and named fields.
 - 8 write board: truthful `analyzedBy`
 - 8.3 gate `--board-report <slug>`; exit 3 → stop board, fix; settle every advisory
 - 8.4 styling `--style-signals` → plan → `--validate-styles` (max 2 rounds; never blocks)
+- 8.45 `--fields` (fail → go on) → `--finalize <slug>`
 - 8.5 `--coverage`; dashboard verbatim
 - 8.6 next area: your read + AskUserQuestion (multiSelect for 2+ builds; last: Sync what I have)
-- 8.7 fan-out: architecture-analyzer agents via `--dispatch-prompt`, one message; no stubs; `--finalize` per join; final `--coverage`
-- 9 `--fields` (fail → go on) → `--finalize <slug>`
-- Report: re-run `--board-report`, verbatim + final dashboard.
+- 8.7 fan-out: architecture-analyzer agents via `--dispatch-prompt`, one message; no stubs; 8.45 per join; final `--coverage`
+- 9 report: re-run `--board-report`, verbatim + final dashboard.
 
 **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command analyze` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
@@ -45,5 +45,5 @@ Print every `display` verbatim; branch only on exit codes and named fields.
 
 Trigger: not configured, or `errorType: "auth_invalid"`. AskUserQuestion "Connect to ProvenMap now?":
 
-- **Connect now** → browser login: each `display` **in your reply**: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `--poll --analyze-cmd analyze` (timeout ~250s). `complete` → resume the failed step; else stop (display explains).
+- **Connect now** → login: each `display` **in your reply**: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `--poll --host claude --analyze-cmd analyze` (~250s). `complete` → resume the failed step; else stop (display explains).
 - **Not now** → stop: "ProvenMap not configured — run `/login` (browser) or `/configure` (manual) first" (rejected: "Your ProvenMap credentials were rejected — run `/login` to reconnect").

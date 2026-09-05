@@ -63,7 +63,7 @@ than restating them.
    c. Remove edges where source or target node was removed
    d. Re-run relationship detection for changed nodes (Step 6)
    e. Write merged result to board JSON
-   f. Step 9 (`--finalize`) — re-stamps `analyzedAt` / `analyzedAtCommit` and the manifest
+   f. Step 8.45 (`--finalize`) — re-stamps `analyzedAt` / `analyzedAtCommit` and the manifest
 6. **Fallback:** if the Step -0.5 script could not compute the plan (`planError` on its JSON),
    scope from a raw `git diff --name-only --diff-filter=ACMR <analyzedAtCommit> HEAD` instead
    (exclude `node_modules/`, `dist/`, `.git/`, `coverage/`, test files). If this board's nodes
@@ -284,8 +284,8 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --coverage
 
 Print the returned `summary` line **verbatim**. It tells you whether the index was reused or
 rebuilt and why (`index.state`/`index.reason`), how many files carry role claims, the plan's
-progress (`<built>/<units> boards · <percent>% of planned scope · <stale> stale · <incomplete>
-incomplete`), and whether the role map has unmapped roles (Step 0 compiles them). **You never
+progress (`<built>/<units> boards (<percent>%) · <stale> stale · <incomplete> incomplete`), and
+whether the role map has unmapped roles (Step 0 compiles them). **You never
 rebuild the index or recompute the plan yourself — this is the only step that does either.**
 Exit 2 means the index could not be built: stop and print the `error` verbatim (it names
 `pmap-prepass.js --engine-check`). If the JSON carries `planError`, the plan could not be
@@ -925,9 +925,10 @@ Write analysis results to `.provenmap/boards/<board-slug>.json`.
 Remove edges referencing removed nodes (rollup-backed edges — those with
 `metadata.provenance` — were already refreshed by Step 6's `--rollup --apply`).
 
-Carry the `groupingEvidence` and `planUnitId` you stamped in Step 5 (Step 8.3's gate reads
-them). Do **not** write `analyzedAt`, `analyzedAtCommit`, `layer` or the parent links by
-hand — Step 9's `--finalize` stamps them from the plan and git. Stamp `analyzedBy`
+Carry the `groupingEvidence`, `planUnitId`, `layer` and the parent links from Step 5's unit
+read (Step 8.3's gate reads them; Step 8.45's `--finalize` corrects any that disagree with
+the plan). Do **not** write `analyzedAt` or `analyzedAtCommit` by hand — `--finalize` stamps
+them from git. Stamp `analyzedBy`
 truthfully: `{ "mode": "orchestrator-inline" }` when you write the board yourself in this
 conversation; dispatched agents stamp `{ "mode": "agent", "model": "…" }` per their prompt
 (Step 8.7). Never carry a previous run's `analyzedBy` forward. Every node carries
@@ -1083,9 +1084,45 @@ L0: 0 of 38). Then style the board (methodology:
 The plan is applied automatically by `/sync` after this board's push — no apply step here.
 This step runs in every mode, including `--auto`. Styling never blocks the analysis.
 
+## Step 8.45: Finalize the board
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --finalize <board-slug>
+```
+
+The script closes the board: it stamps `metadata.planUnitId`, `layer`, `parentBoardSlug` /
+`parentNodeSlug`, `analyzedAt` and `analyzedAtCommit` from the plan and git, defaults
+`proposedDrillDowns` (`[]`) and `groupingEvidence`, drops the server-mirror markers a
+recovered board still carries (`metadata.origin`, `mirroredAt`, `mirroredFromBinding`, a
+node's `metadata.mirrored`), resolves the **archetype attributes** the repository can prove
+onto the nodes (offline, from the cached field contracts), and writes the board's entry in
+`.provenmap/boards/manifest.json` (`name` comes from the parent board's carrying node; the
+root's from `projectName`). Print `display` verbatim — a `🔧 Corrected` line means a value
+you wrote disagreed with the plan; a `🧬 Attributes skipped` line means no contracts were
+cached, and the next connected `/sync` fills them in. Never edit `manifest.json` by hand and
+never stamp those fields yourself: this is the only writer. Exit 1 (no board file, no plan, or
+a slug that is not a plan unit) → print `error` verbatim and fix the cause; nothing was written.
+
+**Warm the field contracts first** when connected, so finalize has them (the cache is
+name-scoped to the archetypes the local boards use, which is why it runs here — after the
+board is written — and not at Step 0):
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --kind code --fields
+```
+
+Fails or offline → continue to `--finalize` anyway; attributes are an enrichment, never a
+reason to hold a board.
+
+This runs **per board, in every mode**, the moment the board has passed its gate and been
+styled — before the plan refresh (Step 8.5), which reads the commit it stamps. A board that
+has not been finalized has no manifest entry and no commit anchor: `/sync` cannot find it and
+the plan cannot tell when it goes stale. Fan-out agents never run it; the orchestrator does,
+per join (Step 8.7).
+
 ## Step 8.5: Refresh the plan + show the dashboard
 
-After writing the board JSON, re-run the plan gate so `/status`, the next incremental run,
+After finalizing the board (Step 8.45), re-run the plan gate so `/status`, the next incremental run,
 and `/sync` (which reports plan progress to the platform) all see this board's new status —
 built, or still incomplete if a claim slipped through:
 
@@ -1213,7 +1250,7 @@ refresh is sequential there, after the parallel batch.
    board whose gate failed, whose advisories are still unresolved, or whose agent died,
    tell the user which board and why, and offer to re-run just that board — the other
    boards' results stand.
-2. Run Step 9 (`pmap-prepass.js --finalize <board-slug>`) **now, per join** — it stamps the
+2. Run Step 8.45 (`pmap-prepass.js --finalize <board-slug>`) **now, per join** — it stamps the
    board's plan/git metadata and writes its manifest entry; the orchestrator is the only
    caller, after each board lands rather than batching to the end.
 
@@ -1230,41 +1267,11 @@ subagent's `--scope-unit …` read is a slice of it. Reading modes (the standard
 `--detail`) read the existing index and never walk — only `--coverage` (and `--auto-plan`)
 rebuild it.
 
-## Step 9: Finalize the board
+## Step 9: Closing report (Output Format)
 
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --finalize <board-slug>
-```
-
-The script closes the board: it stamps `metadata.planUnitId`, `layer`, `parentBoardSlug` /
-`parentNodeSlug`, `analyzedAt` and `analyzedAtCommit` from the plan and git, defaults
-`proposedDrillDowns` (`[]`) and `groupingEvidence`, drops the server-mirror markers a
-recovered board still carries (`metadata.origin`, `mirroredAt`, `mirroredFromBinding`, a
-node's `metadata.mirrored`), resolves the **archetype attributes** the repository can prove
-onto the nodes (offline, from the cached field contracts), and writes the board's entry in
-`.provenmap/boards/manifest.json` (`name` comes from the parent board's carrying node; the
-root's from `projectName`). Print `display` verbatim — a `🔧 Corrected` line means a value
-you wrote disagreed with the plan; a `🧬 Attributes skipped` line means no contracts were
-cached, and the next connected `/sync` fills them in. Never edit `manifest.json` by hand and
-never stamp those fields yourself: this is the only writer. Exit 1 (no board file, no plan, or
-a slug that is not a plan unit) → print `error` verbatim and fix the cause; nothing was written.
-
-**Warm the field contracts first** when connected, so finalize has them (the cache is
-name-scoped to the archetypes the local boards use, which is why it runs here — after the
-board is written — and not at Step 0):
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --kind code --fields
-```
-
-Fails or offline → continue to `--finalize` anyway; attributes are an enrichment, never a
-reason to hold a board.
-
-## Closing report (Output Format)
-
-The report is **script-rendered — never hand-assemble counts into prose.** After Step 9,
-for each board written this run: Re-run the board report now, after Step 8.5 has refreshed
-the plan:
+The report is **script-rendered — never hand-assemble counts into prose.** For each board
+written this run (finalized at Step 8.45, the plan refreshed at Step 8.5): re-run the board
+report now:
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --board-report <board-slug>
@@ -1293,10 +1300,9 @@ Then add ONLY what the script cannot know:
   themselves.) One line per board written this run: its grain (container-grade with N
   drill-downs planned, or terminal), whether the group plan's `budgetVerdict` was met, and
   that every advisory is resolved or overridden — naming the rationale where you recorded
-  one. The plan's progress percentage — planned scope built, weighted by significant files
-  — belongs in the dashboard below, never as this run's headline achievement: a board with
-  planned children reads lower on it than a flat one until those children are built, and it
-  is still the better board.
+  one. The plan's progress percentage — planned boards built — belongs in the dashboard
+  below, never as this run's headline achievement: one board is one board, whether it took
+  an hour or a minute, and the run's achievement is the board's quality, not the count.
 - Analysis mode (incremental or full); if incremental, the changed/added/deleted files
   analysed
 - Judgment calls worth flagging — max 5 bullets (rule deviations, split/merge decisions,

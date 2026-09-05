@@ -25,5 +25,5 @@ Customize the **vocabulary**: scan the codebase for component categories, compar
 
 **Connect-now offer** (preflight exit 1: not configured, or `errorType: "auth_invalid"`) — **AskUserQuestion** "Connect to ProvenMap now?":
 
-- **Connect now** → run the login here, printing each JSON `display` verbatim **in your reply**: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `--poll --analyze-cmd analyze` (Bash timeout ≥250s). Resume from the failing step on `status: "complete"`; else stop — the display explains.
+- **Connect now** → run the login here, printing each JSON `display` verbatim **in your reply**: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `--poll --host claude --analyze-cmd analyze` (Bash timeout ≥250s). Resume from the failing step on `status: "complete"`; else stop — the display explains.
 - **Not now** → stop: "ProvenMap not configured — run `/login` (browser) or `/configure` (manual) first", or when credentials were rejected "Your ProvenMap credentials were rejected — run `/login` to reconnect".

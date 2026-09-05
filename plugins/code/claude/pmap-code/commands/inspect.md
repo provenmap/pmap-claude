@@ -23,5 +23,5 @@ Print every `display` verbatim; branch only on exit codes and named fields. Capt
 
 Used when preflight (exit 1) or a server call reports config missing or `errorType: "auth_invalid"`. Ask with **AskUserQuestion** — "Connect to ProvenMap now?" (**Connect now** / **Not now**):
 
-- **Connect now** → run the browser login here, each JSON `display` printed verbatim: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --analyze-cmd analyze` (Bash timeout ≥250s). On `status: "complete"`, re-run the step that failed.
+- **Connect now** → run the browser login here, each JSON `display` printed verbatim: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --analyze-cmd analyze` (Bash timeout ≥250s). On `status: "complete"`, re-run the step that failed.
 - **Not now** → stop with: `ProvenMap not configured — run /login (browser) or /configure (manual) first` (or, for rejected credentials: `Your ProvenMap credentials were rejected — run /login to reconnect`). The session stays local; nothing is lost.

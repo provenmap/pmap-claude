@@ -140,7 +140,8 @@ Sync state is stored per-board in `.provenmap/boards/stores/<board-slug>.store.j
 | `includeSourceReferences` | No | true                  | Attach source references (file paths / document anchors) to synced nodes/edges; set `false` to omit them |
 
 `analysis.subagentModel` (optional) pins the model used for every parallel analysis
-subagent in `/analyze` drill-downs; unset = per-layer defaults.
+subagent in `/analyze` drill-downs. `/login` seeds it with this host's fast
+analysis model and never rewrites it afterwards; set it to `""` for per-layer defaults.
 
 
 ---
@@ -167,7 +168,7 @@ Credentials live in ONE place — the config file, never the chat.
   (`bindingToken` + `apiSecret` + `boardSlug`), since a different board is a different
   binding with its own secret. The `--rebind` flag is what unlocks the board picker —
   without it, a bound project's login is authentication-only:
-  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain code --plugin-version 0.20.1` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
+  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain code --plugin-version 0.20.2` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
   2. After they sign in, pick the new board, and confirm, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain code` (give the Bash call ~250s; re-run on `status: "pending"`). Print `display` verbatim.
   3. On `status: "complete"`, the config now points at the newly selected board — the `display` panel already shows it.
   4. **Nothing analysed here is thrown away silently.** The boards analysed under the previous
