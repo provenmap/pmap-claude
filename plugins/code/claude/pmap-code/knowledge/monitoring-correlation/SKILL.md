@@ -101,7 +101,7 @@ future run resolves that locator deterministically.
 | `.provenmap/monitoring/signals.json`       | you, each run    | normalized signals                    |
 | `.provenmap/monitoring/map.json`           | user-confirmed   | teach-once locator→slug pins          |
 | `.provenmap/monitoring/skeleton.json`      | correlator → you | prefilled payload you finish and push |
-| `.provenmap/insights/<board>.context.json` | correlator       | context pack (quality-gate oracle)    |
+| `.provenmap/discover/packs/<board>.context.json` | correlator       | context pack (quality-gate oracle)    |
 
 ## References
 

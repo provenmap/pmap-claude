@@ -47,7 +47,10 @@ differs: the bound board's tree for code and connect, the whole workspace for th
 ready to copy), the slice of the pack around it (its elements plus one hop, with their edges and
 boards), the archetype families it needs, the org's context-tag names, the single `output` path
 to write, and the `rules` path — [references/authoring.md](references/authoring.md), the
-agent-facing contract. `verify` says what the agent may read beyond the brief: `source` (code
+agent-facing contract. The layout keeps preparation and results apart: `discover/` holds only
+the plan, the briefs, the context packs and the ledger; an insight's output lands in
+`insights/<id>.json` and a context board's in `context-maps/<id>.json` (under `.provenmap/`
+for the code and connect plugins, under the working set for the architect). `verify` says what the agent may read beyond the brief: `source` (code
 plugin: files named in element descriptions, to confirm a number) or `pack` (connect,
 architect: nothing else).
 

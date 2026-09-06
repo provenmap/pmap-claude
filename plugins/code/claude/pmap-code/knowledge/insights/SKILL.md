@@ -61,7 +61,7 @@ Scripts read configuration from `.provenmap/config.json`.
 
 ## Local Storage
 
-Insight results are stored per-skill at `.provenmap/boards/insights/<skill-slug>.json`. Skill metadata is cached at `.provenmap/boards/insight-skills-cache.json` with a 1-hour TTL. The deterministic context pack (`--build-context --out`) is written per board to `.provenmap/insights/<board>.context.json` and recomputed each run; `--save-insight` loads it as the oracle for its quality gates.
+Insight results are stored per-skill at `.provenmap/boards/insights/<skill-slug>.json`. Skill metadata is cached at `.provenmap/boards/insight-skills-cache.json` with a 1-hour TTL. The deterministic context pack (`--build-context --out`) is written per board to `.provenmap/discover/packs/<board>.context.json` and recomputed each run; `--save-insight` loads it as the oracle for its quality gates.
 
 ## References
 

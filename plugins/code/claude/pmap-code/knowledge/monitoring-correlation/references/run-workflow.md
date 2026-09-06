@@ -42,7 +42,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --correlate .provenmap/monit
   locator), then re-run the correlate command once so the mappings take effect. In a
   non-interactive session, skip the prompt and leave the proposals in the report.
 
-The command also writes the context pack to `.provenmap/insights/<boardSlug>.context.json` — the
+The command also writes the context pack to `.provenmap/discover/packs/<boardSlug>.context.json` — the
 oracle for Step 5's quality gates.
 
 ## Step 4: Shape the insights (your judgment)

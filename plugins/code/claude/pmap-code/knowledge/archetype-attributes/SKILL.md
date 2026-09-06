@@ -21,8 +21,9 @@ you can do here is fill it anyway.
 
 ## The three tiers
 
-**Tier A — the script fills it.** `pmap-prepass.js --attributes <board> --apply` resolves these
-from the manifest and the file tree, during `/sync`. Do not author them by hand; the script is
+**Tier A — the script fills it.** `pmap-prepass.js --finalize` resolves these from the manifest
+and the file tree when `/analyze` closes the board (`--attributes <board> --apply` is `/sync`'s
+fallback for a board closed without cached contracts). Do not author them by hand; the script is
 the authority and will overwrite a hand-written value with the manifest's:
 
 `primaryLanguage` · `technologies` · `version` · `packageName` · `registry` · `moduleType` ·

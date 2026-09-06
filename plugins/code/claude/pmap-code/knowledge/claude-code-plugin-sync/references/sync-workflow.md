@@ -85,12 +85,12 @@ Parse the JSON output:
 ## Step 3.6: Archetype attributes — evidence the fields each archetype declares
 
 An archetype declares a **field contract** — the properties a node or edge of that type carries in
-the app (`primaryLanguage`, `version`, `protocol`, `owner`, `sla`, …). `/analyze` already fills
-in the part of that contract this repository can prove when it finalizes each board (Step 9,
-`--finalize`), so a board normally arrives here with its attributes. This step is the
-**re-validation and fallback**: it re-resolves against the live contracts immediately before the
-push (a board finalized offline, or before its contracts were cached, gets its values here), so
-what lands is what the current archetype declares.
+the app (`primaryLanguage`, `version`, `protocol`, `owner`, `sla`, …). `/analyze` fills in the
+part of that contract this repository can prove when it finalizes each board (Step 9,
+`--finalize`) and stamps the board (`metadata.attributesResolvedAt`), so a board normally arrives
+here with its attributes: they are an analysis product, and this step never redoes them. It is
+the **fallback only** — a board finalized offline, or before its contracts were cached, has no
+stamp and gets its values here.
 
 **First, warm the field-contract cache.** It is name-scoped: the whole code catalogue is 264 KB of
 field definitions against ~23 KB for the archetypes a real board assigns, so the CLI reads the
@@ -102,9 +102,11 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --kind code --fields
 
 Read `fieldContracts` from the JSON: `archetypesResolved` / `namesRequested` (a shortfall means the
 server's catalogue no longer has some archetype your boards use — worth naming in Step 6, not worth
-stopping for) and `cacheStatus` (`hit`, `fetched`, or `no-boards`).
+stopping for), `cacheStatus` (`hit`, `fetched`, or `no-boards`), and `boardsToResolve` — the local
+boards with no attributes stamp.
 
-**Then resolve and apply, per board**, before the integrity gate below:
+**`boardsToResolve` empty → skip to Step 3.8.** Otherwise resolve and apply **only those boards**,
+before the integrity gate below:
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --attributes <board-slug> --apply
@@ -112,6 +114,8 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --attributes <board-slug> --a
 
 Print the `display` verbatim. It names how many nodes carry evidenced values, any node typed with an
 archetype the cache does not know, and every value the archetype's field vocabulary could not hold.
+A board stamped by an earlier run is never re-resolved here, even after a rebind to another server —
+`/analyze` refreshes its values when the board is next re-analysed.
 
 Branches:
 

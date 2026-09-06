@@ -64,10 +64,10 @@ The `boardSlug` in `.provenmap/config.json` is the **primary board**, but an ins
 **Preferred:** run the context prepass once and read the pack:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --build-context --board-slug <boardSlug> --out .provenmap/insights/<boardSlug>.context.json --summary --domain connect
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --build-context --board-slug <boardSlug> --out .provenmap/discover/packs/<boardSlug>.context.json --summary --domain connect
 ```
 
-The summary prints to stdout; read the **full pack** from `.provenmap/insights/<boardSlug>.context.json`. This canonical path is also what `--save-insight` loads as the oracle for its quality gates — so if you switch the primary board later, rebuild the pack for that board too. It resolves the board universe (the start board, its full child subtree, and its siblings) and emits the skill variables, the keyed element index, the edge adjacency, and a degree table — so you don't read every board JSON or generate scope keys and board aliases by hand, which is the main source of scope-validation failures on push.
+The summary prints to stdout; read the **full pack** from `.provenmap/discover/packs/<boardSlug>.context.json`. This canonical path is also what `--save-insight` loads as the oracle for its quality gates — so if you switch the primary board later, rebuild the pack for that board too. It resolves the board universe (the start board, its full child subtree, and its siblings) and emits the skill variables, the keyed element index, the edge adjacency, and a degree table — so you don't read every board JSON or generate scope keys and board aliases by hand, which is the main source of scope-validation failures on push.
 
 - **Exit 0** → use the pack for the context variables (step 4), the scope (step 7), and the payload paths (step 9).
 - **Exit 1/2 or any error** → fall back to the manual walk below and generate keys/aliases by hand.
@@ -282,7 +282,7 @@ Notes:
 - **`tags`** — curated ContextTag names classifying the **whole** insight (risk area, domain, lifecycle). Copy names **verbatim** from `pmap-context-tags.js` output (`tagNames`); the server **drops** any name not in the vocabulary. Optional — omit or use `[]` when none fit. Distinct from the per-finding `tags` inside each InsightDraft, which are free-text keywords.
 - `info` is a short (≤ 350 char) human-readable line describing **what this run surfaced** — e.g. `"3 auth risks incl. a hardcoded JWT secret; missing rate-limit on the payment path"`. Be specific; if omitted, the CLI falls back to a generic label.
 
-Write the payload to a temp file (e.g. `/tmp/insight-<slug>.json`). **First ensure the pack exists for `{{primaryBoardSlug}}`** — if you switched the primary board, rebuild it now (`--build-context --board-slug <primaryBoardSlug> --out .provenmap/insights/<primaryBoardSlug>.context.json`). Then save with `--require-pack`:
+Write the payload to a temp file (e.g. `/tmp/insight-<slug>.json`). **First ensure the pack exists for `{{primaryBoardSlug}}`** — if you switched the primary board, rebuild it now (`--build-context --board-slug <primaryBoardSlug> --out .provenmap/discover/packs/<primaryBoardSlug>.context.json`). Then save with `--require-pack`:
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight /tmp/insight-<slug>.json --board-slug <primaryBoardSlug> --require-pack --push --host claude --domain code
