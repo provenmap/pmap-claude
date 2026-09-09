@@ -21,15 +21,25 @@ and say so in the plan's `standingDown` list.
 
 ## Context-board families (a drawn board)
 
-| Family | Question | Board content | Emphasis / flow |
+| Family | Question | Board content | Path / composition |
 |---|---|---|---|
-| `blast-radius-map` | What is the blast radius of `x`? | the hub, its dependents, their dependents (depth 2), their containers | hub / the in-edges |
-| `neighbourhood` | What surrounds `x`? | the subject and every direct neighbour, containment kept | subject / every edge to it |
-| `cross-app-flow` | How does a request cross from `a` to `b`? | a chain of apps on the landscape, each opened to the element inside that first handles it — **architect only** | first and last app / the landscape edges |
-| `external-surface` | What do we expose to the outside? | every external and everything that touches it | externals / the touching edges |
-| `data-gravity` | Where does the data live, and who reaches it? | every datastore and its accessors | the shared stores / the accessor edges |
-| `ownership-map` | Who owns what? | the busiest elements with their recorded owner in the note, only when owners exist | the unowned / none |
-| `entry-surface` | Where does work enter? | every entry point and its first hop | entry points / the first-hop edges |
+| `blast-radius-map` | What is the blast radius of `x`? | the hub, its dependents, their dependents (depth 2), their containers | the in-edges / `flow`, horizontal |
+| `neighbourhood` | What surrounds `x`? | the subject and every direct neighbour, containment kept | every edge to it / `network` |
+| `cross-app-flow` | How does a request cross from `a` to `b`? | a chain of apps on the landscape, each opened to the element inside that first handles it — **architect only** | the landscape edges / `flow`, horizontal |
+| `external-surface` | What do we expose to the outside? | every external and everything that touches it | the touching edges / `flow`, horizontal |
+| `data-gravity` | Where does the data live, and who reaches it? | every datastore and its accessors | the accessor edges / `flow`, horizontal |
+| `ownership-map` | Who owns what? | the busiest elements with their recorded owner in the note, only when owners exist | none / `hierarchy`, vertical |
+| `entry-surface` | Where does work enter? | every entry point and its first hop | the first-hop edges / `flow`, horizontal |
+
+Every drawn board is styled by one script pass (`styleBoard`) after the family has settled what
+is on it: the subject is the one `xl` and the only guaranteed `emphasis`; the family's cohort
+(the externals, the stores, the entry points) and the subject's neighbours form the first ring
+at `lg`; people and externals stay `xs`/`sm`; the path's edges are `heavy`, edges between
+context nodes `light`; each edge carries a Flow token from its relation and endpoint families;
+a hub with no fallback is `warning`, cycle members `error`, an unowned element on the ownership
+map `warning`; and `view.level` names the C4 diagram — `landscape` → context, `app` →
+container, `layer` → component. The rules are in
+[c4-reading.md](c4-reading.md).
 
 A drawn board holds at most 25 nodes; a family that would exceed it trims by degree and records
 `trimmed to N of M by degree` in its evidence lines.

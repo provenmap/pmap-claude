@@ -38,8 +38,10 @@ differs: the bound board's tree for code and connect, the whole workspace for th
   across apps on the landscape.
 - **Variety in the set** — distinct polarities across the insights, no two items on one anchor,
   every level the universe has, at most one ghost proposal.
-- **Styled context boards** — emphasis on the subject, flow on the answer's path, everything
-  else subtle. The push applies the styles the payload names.
+- **C4-shaped context boards** — the level in the reading strip; the subject the one `xl`; the
+  first ring `lg` so its notes read on the canvas; people and externals small; the answer's path
+  the heavy edges, each with its flow kind; kind left to the archetype. The script decides all
+  of it ([references/c4-reading.md](references/c4-reading.md)); the push applies it.
 
 ## What a brief is
 
@@ -74,5 +76,6 @@ architect: nothing else).
 - [references/authoring.md](references/authoring.md) — the agent contract: how to author one brief into an insight push or a context-board payload
 - [references/families.md](references/families.md) — every candidate family: the question it answers, the shape it draws, the prose that fits it
 - [references/context-board-payload.md](references/context-board-payload.md) — the context-board payload schema and its gates
+- [references/c4-reading.md](references/c4-reading.md) — how a drawn board reads as a C4 diagram: what each instrument asserts, and the note style per level
 - [references/discover-workflow.md](references/discover-workflow.md) — the command's Steps 2–7, clause by clause
 - [../insights/references/report-output-format.md](../insights/references/report-output-format.md) — InsightDraft, Trail, Stop, Proposal (shared with `/insights`)

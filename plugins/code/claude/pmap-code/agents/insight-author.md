@@ -15,7 +15,7 @@ description: |
   <example>
   Context: a context-board brief
   user: "Author the brief at .provenmap/discover/briefs/blast-radius-map-event-bus.json …"
-  assistant: "Writing the context-board payload: name, question, description and a note per node, leaving the drawn nodes, edges and styles exactly as the brief has them."
+  assistant: "Writing the context-board payload: name, question, description and a note per node, leaving the drawn nodes, edges, styles and view exactly as the brief has them."
   <commentary>
   A drawn board is copied verbatim; only the words change.
   </commentary>
@@ -49,6 +49,6 @@ how it READS: the name, the evidence prose, the advice, the notes. Nothing else.
 ## Never
 
 - Add, remove, reorder or re-point a trail stop; change a `via.edge`, `board` or `node`.
-- Add, remove or rewire a drawn node or edge; change a `source`, `parentSlug`, `subject` or `styles`.
+- Add, remove or rewire a drawn node or edge; change a `source`, `parentSlug`, `subject`, `styles` or `view`.
 - Invent a slug, an element, a number, or a tag outside `contextTags`.
 - Push anything. The orchestrator pushes, in order, after your wave.

@@ -58,9 +58,12 @@ Write a `ContextBoardPayload`: start from `candidate.draft` and change ONLY thes
 - `question` — keep the candidate's question, or sharpen it.
 - `description` — ≤500 chars: what the board shows and why it matters, with numbers.
 - `nodes[].note` — ≤300 chars per node: why THIS node is on the board, in the reader's terms.
+  The subject's and the first ring's notes show on the canvas (they are sized `xl`/`lg`), so
+  write them as a C4 reader expects — what it is, the technology if known, its responsibility in
+  this answer ([c4-reading.md](c4-reading.md)).
 
-Never change `nodes[].slug`, `type`, `parentSlug`, `source`, any `edges[]` entry, `subject` or
-`styles`. Do not add or remove nodes or edges. Copy `candidate.draft.ledger` if present.
+Never change `nodes[].slug`, `type`, `parentSlug`, `source`, any `edges[]` entry, `subject`,
+`styles` or `view`. Do not add or remove nodes or edges. Copy `candidate.draft.ledger` if present.
 
 ## Prose that fits the family
 
