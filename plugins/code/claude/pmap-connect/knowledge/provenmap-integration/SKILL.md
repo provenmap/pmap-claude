@@ -19,12 +19,24 @@ This skill provides guidance for integrating with the Claude Code Plugin API to 
 
 ## Authentication
 
-Store credentials in `.provenmap/config.json`:
+Two files under `.provenmap/`. The credential pair lives in `credentials.json`
+(owner-read-only, mode 0600, written by `/login`); settings live in `config.json`.
+Environment variables (`PMAP_BINDING_TOKEN`, `PMAP_API_SECRET`, `PMAP_BOARD_SLUG`,
+`PMAP_BRANCH`, `PMAP_BASE_URL`) override both files — headless hosts and CI need nothing else.
+
+`.provenmap/credentials.json`:
 
 ```json
 {
   "bindingToken": "YWJjMTIzLXV1aWQ6ZGVmNDU2LXV1aWQ",
-  "apiSecret": "ck_cp_live_your_api_secret_here",
+  "apiSecret": "ck_cp_live_your_api_secret_here"
+}
+```
+
+`.provenmap/config.json`:
+
+```json
+{
   "baseUrl": "https://platform.provenmap.com/api",
   "branch": "main",
   "boardSlug": "my-project-overview",
@@ -37,12 +49,13 @@ Store credentials in `.provenmap/config.json`:
 }
 ```
 
-`/configure` scaffolds the file with empty credentials and working defaults — the empty
-fields are intentional, the user fills them in:
+A `bindingToken`/`apiSecret` left in `config.json` is ignored — the install reads as not
+connected and `/status` says why. `/configure` scaffolds `config.json` with working
+defaults and an empty `boardSlug` (intentional, `/configure` fills it in):
 
 ```json
 {
-  "bindingToken": "", "apiSecret": "", "boardSlug": "",
+  "boardSlug": "",
   "baseUrl": "https://platform.provenmap.com/api", "branch": "main",
   "excludePaths": ["node_modules", "dist", ".git", "coverage"],
   "includeTests": false, "includeSourceReferences": true
@@ -128,16 +141,16 @@ Sync state is stored per-board in `.provenmap/boards/stores/<board-slug>.store.j
 
 ## Configuration Reference
 
-| Field          | Required | Default                   | Description                 |
-| -------------- | -------- | ------------------------- | --------------------------- |
-| `bindingToken` | Yes      | -                         | Combined auth token from UI — base64url-encoded `workspaceId::bindingId` |
-| `apiSecret`    | Yes      | -                         | API secret — `ck_cp_live_` followed by an alphanumeric string |
-| `baseUrl`      | No       | https://platform.provenmap.com/api | API endpoint                |
-| `branch`       | Yes      | -                         | Git branch name — must match the branch configured on the binding |
-| `boardSlug`    | Yes      | -                         | Target board — `/configure` can discover and write it for you |
-| `excludePaths` | No       | []                        | Paths to exclude            |
-| `includeTests` | No       | false                     | Include test files          |
-| `includeSourceReferences` | No | true                  | Attach source references (file paths / document anchors) to synced nodes/edges; set `false` to omit them |
+| Field          | File               | Required | Default                   | Description                 |
+| -------------- | ------------------ | -------- | ------------------------- | --------------------------- |
+| `bindingToken` | `credentials.json` | Yes      | -                         | Combined auth token from UI — base64url-encoded `workspaceId::bindingId` |
+| `apiSecret`    | `credentials.json` | Yes      | -                         | API secret — `ck_cp_live_` followed by an alphanumeric string |
+| `baseUrl`      | `config.json`      | No       | https://platform.provenmap.com/api | API endpoint                |
+| `branch`       | `config.json`      | Yes      | -                         | Git branch name — must match the branch configured on the binding |
+| `boardSlug`    | `config.json`      | Yes      | -                         | Target board — `/configure` can discover and write it for you |
+| `excludePaths` | `config.json`      | No       | []                        | Paths to exclude            |
+| `includeTests` | `config.json`      | No       | false                     | Include test files          |
+| `includeSourceReferences` | `config.json` | No | true                  | Attach source references (file paths / document anchors) to synced nodes/edges; set `false` to omit them |
 
 
 ---
@@ -147,24 +160,25 @@ Sync state is stored per-board in `.provenmap/boards/stores/<board-slug>.store.j
 ### Where the values come from
 
 A ProvenMap source must already be created and bound to a workboard (do this in the
-ProvenMap UI first if it isn't yet). Once bound, open the board's hub → the binding's
-row → **Copy credentials**. The secret is shown **once** — at binding creation or after
-"Regenerate secret & copy" (regenerating disconnects any other binding on the same
-source until it re-copies). The dialog's `.provenmap/config.json` snippet matches the
-fields in Authentication above exactly.
+ProvenMap UI first if it isn't yet). The secret is shown **once**, in the dialog that
+closes the bind — its `.provenmap/credentials.json` snippet matches the fields in
+Authentication above exactly. If that moment is gone: for the board's governing
+binding run `/login`, which issues a fresh credential and writes it for you; for a
+reference binding, open the board's hub → the binding's row → **Copy credentials**.
+Either way, credentials already on other machines keep working until revoked.
 
-Credentials live in ONE place — the config file, never the chat.
+Credentials live in ONE place — `.provenmap/credentials.json`, never the chat.
 
 ### Reconfiguring an already-configured project
 
-`/configure` offers four routes when `.provenmap/config.json` already has credentials:
+`/configure` offers four routes when `.provenmap/credentials.json` already holds the pair:
 
 - **Switch to a different board (browser)** — re-bind this project to another board
   without hand-editing credentials. This re-resolves the full credential triple
   (`bindingToken` + `apiSecret` + `boardSlug`), since a different board is a different
   binding with its own secret. The `--rebind` flag is what unlocks the board picker —
   without it, a bound project's login is authentication-only:
-  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain connect --plugin-version 0.20.4` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
+  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain connect --plugin-version 0.21.0` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
   2. After they sign in, pick the new board, and confirm, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain connect` (give the Bash call ~250s; re-run on `status: "pending"`). Print `display` verbatim.
   3. On `status: "complete"`, the config now points at the newly selected board — the `display` panel already shows it.
   4. **Nothing analysed here is thrown away silently.** The boards analysed under the previous
@@ -174,8 +188,8 @@ Credentials live in ONE place — the config file, never the chat.
      from a clean slate**: delete that local analysed state and run a fresh analysis of the new
      board. Only server mirrors (nothing analysed) are archived on their own. On the connect plugin the evidence links recorded against the previous board are
      carried into the new board's store on the next `--pull`, for review before pushing.
-- **Update specific fields** — have the user edit `.provenmap/config.json`, then confirm
-  and re-verify.
+- **Update specific fields** — have the user edit `.provenmap/config.json` (settings) or
+  `.provenmap/credentials.json` (the pair), then confirm and re-verify.
 - **Re-run verification** against the current file.
 - **Cancel** and keep the existing configuration.
 
@@ -229,7 +243,7 @@ field verbatim, then ask via **AskUserQuestion**:
 User says: "Sync my analysis to ProvenMap"
 
 Actions:
-1. Load configuration from `.provenmap/config.json`
+1. Load settings from `.provenmap/config.json` and the credential pair from `.provenmap/credentials.json`
 2. Load analysis data from `.provenmap/boards/<board-slug>.json`
 3. Transform nodes and edges to ProvenMap format
 4. Push via `POST /code-plugin/push` with smart sync (diff-based)
@@ -241,10 +255,10 @@ Result: Architecture data synced — nodes created/updated, edges linked on the 
 User says: "Connect to ProvenMap"
 
 Actions:
-1. Read credentials from `.provenmap/config.json`
+1. Read the credential pair from `.provenmap/credentials.json`
 2. Validate by fetching archetypes from API
 3. Discover root board from server
-4. Write `.provenmap/config.json` with credentials
+4. Write `boardSlug` into `.provenmap/config.json`
 
 Result: Configuration saved, connection verified, ready for `/sync`
 
@@ -252,7 +266,7 @@ Result: Configuration saved, connection verified, ready for `/sync`
 
 ### Error: 401 Invalid credentials
 **Cause:** bindingToken or apiSecret is incorrect or expired
-**Solution:** Re-run `/configure` with fresh credentials from the ProvenMap UI
+**Solution:** Run `/login` for a fresh credential, or put a new one from the ProvenMap UI in `.provenmap/credentials.json` and re-run `/configure`
 
 ### Error: 400 Branch mismatch
 **Cause:** The binding pins one git branch and you are on another — the server rejects pushes from any other branch

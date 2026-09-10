@@ -7,9 +7,9 @@
 | Code | Name | Description | Resolution |
 |------|------|-------------|------------|
 | 400 | Bad Request | Invalid request format or branch mismatch | Check JSON structure and field types |
-| 401 | Unauthorized | Invalid or missing credentials | Verify bindingToken and apiSecret |
+| 401 | Unauthorized | Invalid or missing credentials | Verify bindingToken and apiSecret in `.provenmap/credentials.json`, or run `/login` |
 | 403 | Forbidden | Access denied to resource | Check binding permissions |
-| 404 | Not Found | Binding not found | Verify bindingToken is correct |
+| 404 | Not Found | Binding not found | Verify bindingToken in `.provenmap/credentials.json` is correct |
 | 409 | Conflict | Resource conflict | Check for duplicate node slugs |
 | 422 | Unprocessable Entity | Invalid data format | Validate node/edge structure |
 | 429 | Too Many Requests | Rate limit exceeded | Implement backoff, wait and retry |
@@ -45,7 +45,7 @@ All API errors return JSON:
 
 | Code | Message | Cause | Fix |
 |------|---------|-------|-----|
-| `INVALID_CREDENTIALS` | Credentials are invalid | Wrong or expired bindingToken/apiSecret | Regenerate credentials in portal |
+| `INVALID_CREDENTIALS` | Credentials are invalid | Wrong or expired bindingToken/apiSecret | Run `/login`, or regenerate in the portal and update `.provenmap/credentials.json` |
 | `MISSING_AUTH` | Auth headers missing | No X-CodePlugin-Token or X-CodePlugin-Secret | Add required auth headers |
 
 ### Validation Errors

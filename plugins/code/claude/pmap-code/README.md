@@ -19,36 +19,43 @@ Restart Claude Code so the commands load. Scope the install with `--scope user` 
 
 ## Configure
 
-Two ways to connect this repo to a board — both write the same `.provenmap/config.json`:
+Two ways to connect this repo to a board — both end with the credential pair in `.provenmap/credentials.json` (owner-read-only) and the settings in `.provenmap/config.json`:
 
-**Browser login (fastest):** run `/login`. It signs you in through the ProvenMap portal, lets you pick a workspace and a board that already has a Code Plugin binding, and writes the config for you — no tokens to copy. Re-running `/login` while connected just confirms the connection; `/login switch` (or `/configure`'s "change board" option) binds the project to a different board, and `/logout` disconnects it (clears the local credentials).
+**Browser login (fastest):** run `/login`. It signs you in through the ProvenMap portal, lets you pick a workspace and a board that already has a Code Plugin binding, and writes both files for you — no tokens to copy. Re-running `/login` while connected just confirms the connection; `/login switch` (or `/configure`'s "change board" option) binds the project to a different board, and `/logout` disconnects it (clears the local credentials).
 
-**Manual:** get a **Binding Token** and **API Secret** from the ProvenMap Portal (**Sources → Add Source → Board Builder** — saving generates the secret), then create `.provenmap/config.json` at your repo root:
+**Manual:** get a **Binding Token** and **API Secret** from the ProvenMap Portal (**Sources → Add Source → Board Builder** — saving generates the secret), then create two files under `.provenmap/` at your repo root. `credentials.json` holds the pair (`/login` writes it with mode 0600; do the same by hand):
 
 ```json
 {
   "bindingToken": "your-base64url-binding-token",
-  "apiSecret": "ck_cp_live_your_api_secret",
+  "apiSecret": "ck_cp_live_your_api_secret"
+}
+```
+
+`config.json` holds the settings — a credential field left here is ignored:
+
+```json
+{
   "boardSlug": "my-project-overview",
   "branch": "main",
   "baseUrl": "https://platform.provenmap.com/api"
 }
 ```
 
-| Field | Required | Notes |
-|---|---|---|
-| `bindingToken` | yes | Base64url `workspaceId::bindingId` from the portal. Sent as `X-CodePlugin-Token`. |
-| `apiSecret` | yes | Must start with `ck_cp_live_`. Sent as `X-CodePlugin-Secret`. |
-| `boardSlug` | yes | Target board. `/configure` can discover and write it for you. |
-| `branch` | yes | Must match the binding, or `/sync` returns `400 Branch Mismatch`. |
-| `baseUrl` | no | Override for self-hosted (default `https://platform.provenmap.com/api`). |
-| `excludePaths` | no | Paths skipped during analysis (default `node_modules, dist, .git, coverage`). |
-| `includeTests` | no | Include test files in analysis (default `false`). |
-| `includeSourceReferences` | no | Attach file-path references to synced nodes/edges (default `true`). |
-| `analysis.minorFiles` | no | How small helper files land on drill-down boards (default `all`): a file of at most `analysis.minorMaxLines` lines that other files import and that exports no class folds into the node that uses it instead of becoming its own node. `one-host` folds only files with a single importer; `off` disables the fold. |
-| `analysis.minorMaxLines` | no | Line cap for that fold (default `100`). Files above it are always their own candidates. |
+| Field | File | Required | Notes |
+|---|---|---|---|
+| `bindingToken` | `credentials.json` | yes | Base64url `workspaceId::bindingId` from the portal. Sent as `X-CodePlugin-Token`. |
+| `apiSecret` | `credentials.json` | yes | Must start with `ck_cp_live_`. Sent as `X-CodePlugin-Secret`. |
+| `boardSlug` | `config.json` | yes | Target board. `/configure` can discover and write it for you. |
+| `branch` | `config.json` | yes | Must match the binding, or `/sync` returns `400 Branch Mismatch`. |
+| `baseUrl` | `config.json` | no | Override for self-hosted (default `https://platform.provenmap.com/api`). |
+| `excludePaths` | `config.json` | no | Paths skipped during analysis (default `node_modules, dist, .git, coverage`). |
+| `includeTests` | `config.json` | no | Include test files in analysis (default `false`). |
+| `includeSourceReferences` | `config.json` | no | Attach file-path references to synced nodes/edges (default `true`). |
+| `analysis.minorFiles` | `config.json` | no | How small helper files land on drill-down boards (default `all`): a file of at most `analysis.minorMaxLines` lines that other files import and that exports no class folds into the node that uses it instead of becoming its own node. `one-host` folds only files with a single importer; `off` disables the fold. |
+| `analysis.minorMaxLines` | `config.json` | no | Line cap for that fold (default `100`). Files above it are always their own candidates. |
 
-Run `/configure` to validate the config, test the connection, and add `.provenmap/` to your `.gitignore`. Credentials live only in this file — never logged, and sent only to `platform.provenmap.com`.
+Run `/configure` to validate both files, test the connection, and add `.provenmap/` to your `.gitignore`. Credentials live only in `credentials.json` — never logged, and sent only to `platform.provenmap.com`.
 
 > **Testing against a non-production server:** set `PMAP_BASE_URL` (or pass `--base-url` to the CLI scripts) to point every command — including `/login`'s device handshake — at a staging or local API. The browser login and app URLs then follow from that server's configuration, so nothing is pinned to production. A successful `/login` writes the URL it ran against into `.provenmap/config.json`, so the repo stays on that server without the env var; when both are set, `PMAP_BASE_URL` wins.
 

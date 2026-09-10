@@ -297,7 +297,7 @@ these, and each Step 8.5 refresh re-derives them from the same gate.
 
 ## Step 0: Fetch Available Archetypes (ProvenMap only)
 
-If ProvenMap configuration exists (`.provenmap/config.json` with `bindingToken`):
+If ProvenMap configuration exists (`.provenmap/config.json` plus `.provenmap/credentials.json`, or the `PMAP_*` env):
 
 1. Run the archetypes CLI to fetch available archetypes from the server:
 

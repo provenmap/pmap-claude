@@ -6,7 +6,7 @@ allowed-tools: Bash
 ---
 
 Sign in to ProvenMap for this codebase through the browser —
-credentials land straight in `.provenmap/config.json`, no copy-paste.
+credentials land straight in `.provenmap/credentials.json`, no copy-paste.
 `/login` is **idempotent** (Step 0); `/login switch` rebinds to a different
 workspace/board (`/configure` too), and `/logout` disconnects.
 
@@ -46,7 +46,7 @@ Requests a one-time code, opens the browser (best-effort). A bound project
 re-authenticates to its board; `--rebind` (`switch`) unlocks the full picker:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --host claude --domain code --plugin-version 0.20.4   # add --rebind only for /login switch
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --host claude --domain code --plugin-version 0.21.0   # add --rebind only for /login switch
 # add --base-url <url> when the user's argument is an http(s) URL
 ```
 

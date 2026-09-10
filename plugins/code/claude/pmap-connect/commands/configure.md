@@ -13,31 +13,31 @@ Config schema, credential source, and the rebind flow:
 
 ## Step 1: Ensure the config file exists
 
-No `.provenmap/config.json`? Create `.provenmap/` and write the skeleton from the skill
-above — empty `bindingToken`/`apiSecret`/`boardSlug` plus its documented defaults.
+No `.provenmap/config.json`? Create `.provenmap/` and write the settings skeleton from
+the skill above (empty `boardSlug`, no credential fields).
 
 If it exists, read it and continue — never overwrite the user's file. Either way, ensure
 `.provenmap/` is in `.gitignore` (add it if missing) so credentials aren't committed.
 
 ## Step 2: Detect current state
 
-`bindingToken` and `apiSecret` both non-empty → display the config with secrets masked
-(`ck_cp_live_****`) and skip to Step 4. Either empty or missing → Step 3.
+`.provenmap/credentials.json` has both fields (or `PMAP_BINDING_TOKEN`/`PMAP_API_SECRET`
+are set) → show the settings, secret masked (`ck_cp_live_****`), skip to Step 4. Else
+Step 3 — and if `config.json` still carries `bindingToken`/`apiSecret`, say they are
+ignored (credentials live in `credentials.json`) and to remove them.
 
 ## Step 3: Fill in credentials (in the file, not the chat)
 
-Precondition: a ProvenMap source must already be created and bound to a workboard (do
-this in the ProvenMap UI first).
+Precondition: a source bound to a workboard in the ProvenMap UI.
 
-Have the user fill `bindingToken`, `apiSecret` and `branch` (must match the binding's
-configured branch, default `main`) into `.provenmap/config.json`; the other fields
-already default sanely. Then **AskUserQuestion** to confirm — e.g. "Saved both in
-`.provenmap/config.json`?", options **"Yes — verify now"** / **"Not yet"**.
+Have the user write `.provenmap/credentials.json` (`bindingToken` + `apiSecret`, per the
+skill) and set `branch` in `config.json` (must match the binding, default `main`). Then
+**AskUserQuestion** to confirm — e.g. "Saved `.provenmap/credentials.json`?", options
+**"Yes — verify now"** / **"Not yet"**.
 
 - **Not yet**: stop — they can re-run `/configure` when ready.
-- **Yes**: re-read the file. Still empty or malformed (`apiSecret` must start with
-  `ck_cp_live_`)? Name the exact field that is missing or wrong and re-prompt. Else
-  Step 4.
+- **Yes**: re-read it. Missing, empty or malformed (`apiSecret` must start with
+  `ck_cp_live_`)? Name the field that is wrong and re-prompt. Else Step 4.
 
 ## Step 4: Verify credentials
 
@@ -46,8 +46,8 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --no-cache
 ```
 
 - **Exit 0** → connection works; report the archetype count as confirmation.
-- **Exit 1** → config file problem; report the JSON `error` field, name the field to fix
-  in `.provenmap/config.json`, re-verify.
+- **Exit 1** → file problem; report the JSON `error` field, name the file and field to
+  fix, re-verify.
 - **Other non-zero** → API/auth failure; report the JSON `error` field. `errorType`
   `auth_invalid` means the credentials were rejected — have the user re-check
   `bindingToken`/`apiSecret` (or run `/login`), then re-verify.
@@ -66,8 +66,8 @@ ProvenMap UI first (config can still be saved, but `/sync` won't work until a ro
 
 ## Step 6: Confirmation
 
-Report complete: config file location, connection details (URL, branch, root board
-slug) with secrets masked, the test result, and that `.provenmap/` is gitignored.
+Report complete: both file locations, connection details (URL, branch, root board
+slug) with the secret masked, the test result, and that `.provenmap/` is gitignored.
 
 ## Reconfiguration
 
