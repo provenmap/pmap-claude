@@ -492,7 +492,13 @@ The `digest` field contains:
   (edges genuinely missed — worth filling from file reads); `externalImports` counts
   imports that leave it (third-party packages — not a gap, and the evidence behind
   external-system nodes). The two are kept apart deliberately: an unresolved internal
-  import is never laundered into "external". `zeroInDegree` lists dead-file candidates
+  import is never laundered into "external". The `display` prints the unresolved share;
+  `stats.unresolvedByNamespace` names the namespaces behind it, most statements first —
+  read it before filling any edge by hand: a namespace this repo does not declare is an
+  external artifact to name on the board, not a gap to fill; one it does declare under a
+  directory no manifest names (an sbt sub-project, a bespoke layout) is a root to declare in
+  `analysis.roots` in `.provenmap/config.json` — the index rebuilds on the next `--coverage`.
+  `zeroInDegree` lists dead-file candidates
   (entry points legitimately appear there); `skippedExtensions` names stacks outside the
   denominator (`(none)` counts extensionless files).
 - `stats.parsePartialFiles` / `parseFailedFiles` / `unreadableFiles` — **parse health**
@@ -589,8 +595,9 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --group-plan --layer <this bo
 For the **L0 board**, run `--group-plan --layer 0`: it rolls the file-granular clusters up
 to workspace / top-level-directory granularity, which is the granularity the L0 board
 actually uses (Step 5 targets 10–30 nodes). A monorepo rolls up to its declared workspaces;
-a single-package repo rolls up to its **top-level directories** instead (the plan names the
-grain it used). Without it the plan proposes dozens of candidate groups you would only
+a single-package repo rolls up to its **top-level directories** instead, and so does a repo
+whose declared workspaces own under half of its files (stub manifests, sample apps — the
+plan names the grain it used and says when declarations were set aside). Without it the plan proposes dozens of candidate groups you would only
 re-aggregate by hand. It rolls up candidate *groups* only — root-level elements stay
 file-granular, so their count is not reduced by `--layer 0` (the display's row cap keeps
 them readable regardless).
@@ -636,9 +643,10 @@ the plan is the only thing that turns a proposal into a board.
   reading of the code, and **do not invent coupling** — never write a `Grouping rationale:`
   or an edge that claims a relationship the topology never showed you. `cohesion`/`density`
   come back `null` here (on the payload — nothing measured them), and every group comes back
-  `verdict: "container"` regardless of size — this path has no size demotion — so **judge an
-  oversized bucket's depth yourself and record it in `metadata.proposedDrillDowns`**: a
-  directory holding dozens of files is a proposed child board, not one flat container.
+  `verdict: "container"` regardless of size. Depth is not yours to add here: the tree plan
+  already cut this board's over-band directories into child units (they arrive as opaque
+  drill-down nodes), so propose in `metadata.proposedDrillDowns` only cohesive structure the
+  plan left inline — never a directory the plan could have cut and did not.
 
 **Stamp what you used.** When you write the board (Step 5), copy this plan's `evidence`
 value verbatim into the board's `metadata.groupingEvidence` (`"coupling"` or

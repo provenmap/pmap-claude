@@ -215,7 +215,7 @@ the plan reached.
 
 - `"coupling"` — the clusters came from the import graph; work the `container`/`dissolve`
   fields below as proposals.
-- `"directory-fallback"` — resolved-edge density was too low to trust, so this is a **structural directory partition, not coupling-derived**. Verify each group against an actual reading of the code, **do not invent coupling** (no `Grouping rationale:` and no edge asserting a relationship the topology never showed), and record depth for an oversized bucket in `metadata.proposedDrillDowns` — the fallback path proposes `container` for every group regardless of size.
+- `"directory-fallback"` — resolved-edge density was too low to trust, so this is a **structural directory partition, not coupling-derived**. Verify each group against an actual reading of the code, **do not invent coupling** (no `Grouping rationale:` and no edge asserting a relationship the topology never showed), and propose depth in `metadata.proposedDrillDowns` only for cohesive structure the plan left inline — the tree plan already cut this board's over-band directories into child units.
 - Either way, copy the value verbatim into the board's `metadata.groupingEvidence` (`"coupling"` or `"directory-fallback"`). It stays local and the board report reads it.
 - If the board already exists and its stamped evidence differs from this plan's, that flip churns slugs and containment — report it in your summary and keep the existing grouping rather than re-parenting on your own authority.
 

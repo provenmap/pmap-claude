@@ -194,12 +194,14 @@ rolled-up L0 edges — breadth here is what creates hairballs.
 - **Grouping**: From the grouping plan. A small board with real coupling still earns containers; a large uncoupled one does not.
 - **When**: User drills into an L1 node
 
-### L3 — Detail (opt-in)
+### L3 and deeper — Detail
 
 - **Scope**: Deep internals of a single component
-- **Target**: 5-15 nodes per board
+- **Target**: 5-15 nodes per board (every deeper layer is judged against this band)
 - **Node types**: Methods, internal flows, data transformations
-- **When**: User explicitly requests deep analysis
+- **When**: The tree plan goes as deep as the code demands — a unit that overshoots its band is
+  split (by coupling, else by its own directories) until its children fit or fall under the floor.
+  `analysis.plan.maxDepth` caps it only when set.
 
 ## File Organization
 
