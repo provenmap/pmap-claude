@@ -126,7 +126,7 @@ For non-trivial codebases, `/analyze` produces a hierarchy of boards so you can 
 | **L0** | System Context | This system's deployables + the outside systems they talk to | 10–30 |
 | **L1** | Domain | Domain or workspace drill-down | 10–40 per board |
 | **L2** | Component | Service or module drill-down | 5–20 per board |
-| **L3+** | Detail | Deep internals, as deep as the code demands | 5–15 per board |
+| **L3+** | Detail | Deep internals, as deep as the code demands — to L4 by default (`analysis.plan.maxDepth`) | 5–15 per board |
 
 Board hierarchy and per-board sync state live in `.provenmap/boards/`:
 

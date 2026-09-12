@@ -200,8 +200,9 @@ rolled-up L0 edges — breadth here is what creates hairballs.
 - **Target**: 5-15 nodes per board (every deeper layer is judged against this band)
 - **Node types**: Methods, internal flows, data transformations
 - **When**: The tree plan goes as deep as the code demands — a unit that overshoots its band is
-  split (by coupling, else by its own directories) until its children fit or fall under the floor.
-  `analysis.plan.maxDepth` caps it only when set.
+  split (by coupling, else by its own directories) until its children fit or fall under the floor —
+  down to `analysis.plan.maxDepth` (L4 by default; `null` lifts the cap). Clusters below the cap
+  are proposals, never boards, until accepted.
 
 ## File Organization
 

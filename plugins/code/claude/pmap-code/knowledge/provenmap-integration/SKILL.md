@@ -148,20 +148,27 @@ Sync state is stored per-board in `.provenmap/boards/stores/<board-slug>.store.j
 | `baseUrl`      | `config.json`      | No       | https://platform.provenmap.com/api | API endpoint                |
 | `branch`       | `config.json`      | Yes      | -                         | Git branch name — must match the branch configured on the binding |
 | `boardSlug`    | `config.json`      | Yes      | -                         | Target board — `/configure` can discover and write it for you |
-| `excludePaths` | `config.json`      | No       | []                        | Repo-relative directories the walk never enters (a path and everything under it) |
+| `excludePaths` | `config.json`      | No       | `node_modules`, `dist`, `.git`, `coverage` (written by `/login`) | Repo-relative directories the walk never enters (a path and everything under it) |
 | `includeTests` | `config.json`      | No       | false                     | Off: test-named files and test trees (`test/`, `tests/`, `spec/`, `__tests__/`, `e2e/`, `*-tests/`, `*.Tests/`) are not indexed |
 | `includeSourceReferences` | `config.json` | No | true                  | Attach source references (file paths / document anchors) to synced nodes/edges; set `false` to omit them |
 
-`/login` writes every setting below into `config.json` with its default, adding only
-the keys the file lacks — a value already set is never rewritten, and a re-auth adds
-any setting a newer plugin introduced. Tune a knob by editing its value in place:
+`/login` writes the project settings above plus `analysis.subagentModel`, adding only
+the keys the file lacks — a value already set is never rewritten. It also writes
+`"$schema": "./config.schema.json"`; that file (kept current by the board commands) lists every
+setting with its default, so the user's editor completes each key. The settings below
+stay out of `config.json` until the user wants a different value: add the key to
+override it, delete it to return to the default. Never write one at its default — a
+written value is a pin, and the project would stop following a retuned default.
 
 - `analysis.subagentModel` pins the model used for every parallel analysis subagent in
   `/analyze` drill-downs — seeded with this host's fast analysis model (none on
   Cursor); set it to `""` for per-layer defaults.
-- `analysis.plan` holds the tree plan's knobs: `maxDepth` (`null` — as deep as the code
-  demands; a number caps the layers), `unitFloor` (12 significant files to be a board),
-  `maxParallel` (4) and `maxBoardsPerRun` (25) for `--auto`.
+- `analysis.plan` holds the tree plan's knobs: `maxDepth` (4 — the deepest layer planned,
+  L0 being the bound board; `null` plans as deep as the code demands), `unitFloor` (12 significant files to be a board),
+  `maxParallel` (4) and `maxBoardsPerRun` (25) for `--auto`. `maxDepth` and `unitFloor`
+  shape the plan only when it is first computed: changed later, planned boards stay
+  planned (a lower cap removes none; a higher one adds boards only as proposals to
+  accept) — to apply them to an existing plan, re-plan with `/analyze --clean`.
 - `analysis.edgeBudgetPerNode` (2 drawn edges per node; 1 lean, 0 everything),
   `analysis.hubDrawnPerHub` (3 consumers a hub draws), `analysis.minorFiles` (`all`,
   `one-host` or `off`), `analysis.minorMaxLines` (100), `analysis.archetypeGate` (`off`;
@@ -198,7 +205,7 @@ Credentials live in ONE place — `.provenmap/credentials.json`, never the chat.
   (`bindingToken` + `apiSecret` + `boardSlug`), since a different board is a different
   binding with its own secret. The `--rebind` flag is what unlocks the board picker —
   without it, a bound project's login is authentication-only:
-  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain code --plugin-version 0.22.0` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
+  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain code --plugin-version 0.23.0` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
   2. After they sign in, pick the new board, and confirm, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain code` (give the Bash call ~250s; re-run on `status: "pending"`). Print `display` verbatim.
   3. On `status: "complete"`, the config now points at the newly selected board — the `display` panel already shows it.
   4. **Nothing analysed here is thrown away silently.** The boards analysed under the previous
