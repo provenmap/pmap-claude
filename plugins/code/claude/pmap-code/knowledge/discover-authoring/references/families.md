@@ -10,14 +10,15 @@ and say so in the plan's `standingDown` list.
 
 | Family | Question | Signal | Trail shape | Polarity |
 |---|---|---|---|---|
-| `chokepoint` | Why does everything run through `x`? | fan-in ≥ 3 and ≥ 2× the median of family peers (≥ 5 with no family) | one dependent → the hub → the other dependents as branches | risk; observation for a gateway, datastore, channel, endpoint or infra element |
-| `cascade` | What breaks if `x` goes down? | ≥ 3 dependents with no alternative element of the hub's family | what the hub leans on → the hub → ring 1 as branches → one ring-2 element | risk; critical at ≥ 5 |
-| `journey` | How does `entry` reach `leaf`? | a source (nothing depends on it) whose family is ui, endpoint, channel, actor or gateway — or any source when no family is known | 3–6 stops along the heaviest out-edges; descends into a drill-down the pack has; one branch from the entry | observation |
+| `chokepoint` | Why does everything run through `x`? | fan-in ≥ 3 and ≥ 2× the median of family peers (≥ 5 with no family) | one dependent → the hub → the other dependents as branches; when that dependent drills down, a last stop descends into it onto the element whose port edge makes the call | risk; observation for a gateway, datastore, channel, endpoint or infra element |
+| `cascade` | What breaks if `x` goes down? | ≥ 3 dependents with no alternative element of the hub's family | what the hub leans on → the hub → ring 1 as branches (one fewer when descending) → a descent into the first dependent onto the element whose port edge fails first → one ring-2 element | risk; critical at ≥ 5 |
+| `journey` | How does `entry` reach `leaf`? | a source (nothing depends on it) whose family is ui, endpoint, channel, actor or gateway — or any source when no family is known | 3–7 stops along the heaviest out-edges; descends into each drill-down it reaches, and when the walk inside meets a boundary port it climbs back onto the owning node and takes the parent-board edge; one branch from the entry | observation |
 | `cycle` | Where do `a`, `b` and `c` depend on each other? | a strongly connected component of 2–6 elements | the cycle walked once, the last note pointing back | risk; high at ≥ 3 |
 | `boundary` | Which edges cross the `p` boundary? | ≥ 3 primary edges leaving a top-level container | the inner element with most crossings → each other container as a branch | risk |
 | `shared-store` | Who reaches `db`? | a datastore reached from ≥ 2 top-level containers | one accessor → the store → the other accessors as branches, labelled by container | risk at ≥ 3 containers, else observation |
 | `unowned-hub` | Who owns `x`, the busiest thing here? | fan-in ≥ 3 and no `owner` attribute, only when some element declares one | the hub → up to 3 dependents as branches; `measurement` = dependents | opportunity |
 | `seam` | Where would `x` split cleanly? | fan-in ≥ 5 and fan-out ≥ 5 (one per plan) | the element → a `proposed` ghost node via `proposedEdge` → two dependents | opportunity, with a `proposal` |
+| `handoff` | Where does `x` hand off to the rest of the system? | a drill-down board with at least one boundary port whose parent-board edge is drawn (one per board, ranked by crossings) | the inner element with most port crossings → ascends onto the owning node on the parent board → each parent-board node it reaches as a branch; `measurement` = crossing edges | strength when that element makes every crossing (a single seam); observation otherwise |
 
 ## Context-board families (a drawn board)
 
@@ -47,13 +48,27 @@ A drawn board holds at most 25 nodes; a family that would exceed it trims by deg
 ## Scoring and the set
 
 Per candidate: 30 for a readable size (3–8 stops, 6–20 nodes; 12 otherwise), up to 30 for the
-anchor's degree, +15 for crossing a board, +10 for a layer descent, a small shape bonus
+anchor's degree, +15 for crossing a board, +10 for a layer hop, a small shape bonus
 (cross-app-flow 10, cascade 8, journey 6, blast-radius-map 6, chokepoint 4), +20 per lens
 whose family list contains the family. The lens lists: reliability → cascade, chokepoint,
 blast-radius-map, cycle, shared-store; onboarding → journey, entry-surface, neighbourhood,
-cross-app-flow; ownership → unowned-hub, ownership-map, external-surface, data-gravity, boundary.
+cross-app-flow; ownership → unowned-hub, ownership-map, external-surface, data-gravity, boundary,
+handoff.
 
 The recommended set (★): greedy by score under variety — distinct polarities across the
-insights before any repeats, no two items on one anchor, at most one seam; then two repairs
-that swap the weakest duplicate out: one board-crossing item when the universe has any, and one
-item per level present in the universe.
+insights before any repeats, no two items on one anchor, at most one seam; then three repairs
+that swap the weakest duplicate out: at least half the insights (rounded up) crossing a layer
+when the tree has a drill-down, one board-crossing item when the universe has any, and one item
+per level present in the universe.
+
+## Layer crossings
+
+A trail crosses layers only where the graph proves the crossing, in the two shapes the server
+accepts: a **descent** leaves the node that drills into the board and lands on an element of
+that board; an **ascent** leaves a drill-down and lands on the node that owns it. A boundary
+port (`port--<parent node>`) is the evidence and never a stop: the port edge inside the
+drill-down and the parent-board edge it rolled up into are one crossing, walked as ascend onto
+the owner then that parent edge (journey, handoff), or as a descent onto the element that holds
+the port edge (chokepoint, cascade). The menu marks such a trail `crosses layers`; on the
+platform it is filed under its entry board and listed as "Runs through" on every board it
+visits, with the drill-down affordance on the node it descends from.

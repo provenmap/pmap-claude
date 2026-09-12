@@ -33,9 +33,13 @@ differs: the bound board's tree for code and connect, the whole workspace for th
 ## The wow levers (the script enforces them; the agent keeps them)
 
 - **The trail is the demo.** Every insight ships a multi-stop trail; a fan-out from a hub
-  (branch stops sharing one `from`) reads instantly; a `layer` descent makes the camera fly.
-- **A crossing when the tree has one** — a journey that descends into a drill-down, a flow
-  across apps on the landscape.
+  (branch stops sharing one `from`) reads instantly; a `layer` hop makes the camera fly.
+- **Half the insights cross a layer when the tree has one** — and every crossing means
+  something: a chokepoint or cascade descends into the dependent onto the code that makes the
+  call, a journey climbs back through a boundary port onto the owner and across the parent
+  edge, a hand-off names the one element inside a drill-down that talks to its siblings. The
+  script proves each hop the way the server does ([references/families.md](references/families.md),
+  "Layer crossings"); on the landscape, a flow across apps.
 - **Variety in the set** — distinct polarities across the insights, no two items on one anchor,
   every level the universe has, at most one ghost proposal.
 - **C4-shaped context boards** — the level in the reading strip; the subject the one `xl`; the

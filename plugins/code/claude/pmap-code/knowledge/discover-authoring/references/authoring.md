@@ -43,7 +43,10 @@ The first `InsightDraft`:
   "context", text }` for observation. One object, never both.
 - `trail` — **copy `candidate.trail` verbatim.** You may edit a stop's `note` (≤200 chars) to
   make it read better; never add, remove, reorder or re-point a stop, and never change a
-  `via.edge`, `board` or `node` value.
+  `via.edge`, `via.direction`, `board` or `node` value. A `layer` stop's note says what the
+  crossing shows the reader (the code inside the dependent that makes the call; the climb back
+  onto the owner before the parent edge) — the camera changes board there, so the note is what
+  they read on arrival.
 - `proposal` — copy when present.
 
 Up to two more `InsightDraft`s are allowed, each a single-stop point finding on the same
@@ -76,6 +79,8 @@ Never change `nodes[].slug`, `type`, `parentSlug`, `source`, any `edges[]` entry
 - **shared-store** — which containers reach the store; the coupling a schema change travels.
 - **unowned-hub** — the fan-in, then the gap: nobody recorded as owner.
 - **seam** — what strains, and what the proposed split would take with it.
+- **handoff** — the one element inside the drill-down that reaches out, which parent-board nodes
+  it reaches, and whether it is the whole seam (a strength) or one of several.
 - **blast-radius-map / neighbourhood / entry-surface / external-surface / data-gravity /
   ownership-map / cross-app-flow** — the description says what is drawn, the notes say why each
   element is there.
