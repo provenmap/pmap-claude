@@ -1,5 +1,5 @@
 {
-  "description": "ProvenMap Architect hooks: offline session-start state line (grant, expiry, host MCP entry) — no .provenmap scaffold",
+  "description": "ProvenMap Architect hooks: offline session-start state line (grant, expiry, host MCP entry) — reads no .provenmap",
   "hooks": {
     "SessionStart": [
       {

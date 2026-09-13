@@ -1,8 +1,9 @@
 #!/bin/bash
 # ProvenMap - Session Start Hook
-# Scaffolds .provenmap/config.json (settings skeleton) on first run, then
-# reports configuration status. The credential pair lives in
-# .provenmap/credentials.json, written by /login (never by this hook).
+# Reports configuration status. It never creates anything: `.provenmap/` is
+# written by /login (or by hand for /configure) once a board is bound, so a
+# repo that has not connected carries no ProvenMap files at all. The
+# credential pair lives in .provenmap/credentials.json, written by /login.
 
 set -euo pipefail
 
@@ -15,38 +16,8 @@ CONFIG_FILE="$PMAP_DIR/config.json"
 CREDENTIALS_FILE="$PMAP_DIR/credentials.json"
 BOARDS_DIR="$PMAP_DIR/boards"
 MANIFEST_FILE="$BOARDS_DIR/manifest.json"
-GITIGNORE_FILE="$PROJECT_DIR/.gitignore"
 
 output=""
-
-# Write a settings skeleton with sane defaults. An empty boardSlug is treated
-# as "not configured" by the config reader, so the skeleton never masquerades
-# as a real config; credentials never live in this file.
-write_skeleton() {
-    mkdir -p "$PMAP_DIR"
-    cat > "$CONFIG_FILE" <<'JSON'
-{
-  "baseUrl": "https://platform.provenmap.com/api",
-  "branch": "",
-  "boardSlug": "",
-  "excludePaths": ["node_modules", "dist", ".git", "coverage"],
-  "includeTests": false
-}
-JSON
-}
-
-# Keep credentials out of version control once the user fills them in.
-# Only touch .gitignore inside an actual git repo.
-ensure_gitignored() {
-    [ -d "$PROJECT_DIR/.git" ] || return 0
-    if [ -f "$GITIGNORE_FILE" ]; then
-        if ! grep -qE '^\.provenmap/?$' "$GITIGNORE_FILE"; then
-            printf '\n# ProvenMap local state (contains credentials)\n.provenmap/\n' >> "$GITIGNORE_FILE"
-        fi
-    else
-        printf '# ProvenMap local state (contains credentials)\n.provenmap/\n' > "$GITIGNORE_FILE"
-    fi
-}
 
 # True only when credentials.json holds both fields, non-empty. config.json is
 # never consulted: the config reader ignores credential fields there.
@@ -70,10 +41,8 @@ has_legacy_credential_fields() {
 }
 
 if [ ! -f "$CONFIG_FILE" ]; then
-    # First run in this project: scaffold a skeleton the user can fill in.
-    write_skeleton
-    ensure_gitignored
-    output="Created .provenmap/config.json. Run /login to connect in your browser, or put your ProvenMap credentials in .provenmap/credentials.json manually and run /configure to verify."
+    # Not connected yet: nothing is written here — /login creates .provenmap/ when it binds a board.
+    output="ProvenMap is not connected in this project (no .provenmap/config.json). Run /login to connect in your browser and bind a board, or write .provenmap/credentials.json and config.json by hand and run /configure to verify."
 elif ! has_credentials; then
     output="ProvenMap config.json found but credentials are empty. Run /login to connect in your browser, or put bindingToken and apiSecret in .provenmap/credentials.json and run /configure to verify."
     if has_legacy_credential_fields; then
