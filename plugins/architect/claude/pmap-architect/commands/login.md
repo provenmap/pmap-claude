@@ -41,8 +41,9 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --login-start --host claude
 # add --base-url <url> when the user's argument is an http(s) URL
 ```
 
-Print the JSON `display` field verbatim, then wait for the user to finish in the browser before
-continuing. On a non-zero exit, print `display` verbatim and stop.
+Send the JSON `display` field verbatim as a message **before** starting Step 2 — the poll blocks
+for minutes, and the user needs the code to check against the browser now. On a non-zero exit,
+print `display` verbatim and stop.
 
 ### Step 2: Wait for approval
 
