@@ -28,7 +28,7 @@ Two ways to connect this document repo to a board — both end with the credenti
 ```json
 {
   "bindingToken": "your-base64url-binding-token",
-  "apiSecret": "ck_cp_live_your_api_secret"
+  "apiSecret": "pmap_cp_live_your_api_secret"
 }
 ```
 
@@ -45,7 +45,7 @@ Two ways to connect this document repo to a board — both end with the credenti
 | Field | File | Required | Notes |
 |---|---|---|---|
 | `bindingToken` | `credentials.json` | yes | Base64url `workspaceId::bindingId` from the portal. Sent as `X-CodePlugin-Token`. |
-| `apiSecret` | `credentials.json` | yes | Must start with `ck_cp_live_`. Sent as `X-CodePlugin-Secret`. |
+| `apiSecret` | `credentials.json` | yes | Starts with `pmap_cp_live_` (`pmap_cp_test_` from a non-production platform; secrets issued earlier start `ck_cp_live_` and keep working). Sent as `X-CodePlugin-Secret`. |
 | `boardSlug` | `config.json` | yes | Target knowledge board. `/configure` can discover and write it for you. |
 | `branch` | `config.json` | yes | For git-tracked docs, must match the binding (or `/sync` returns `400 Branch Mismatch`). |
 | `baseUrl` | `config.json` | no | Override for self-hosted (default `https://platform.provenmap.com/api`). |

@@ -29,7 +29,7 @@ Environment variables (`PMAP_BINDING_TOKEN`, `PMAP_API_SECRET`, `PMAP_BOARD_SLUG
 ```json
 {
   "bindingToken": "YWJjMTIzLXV1aWQ6ZGVmNDU2LXV1aWQ",
-  "apiSecret": "ck_cp_live_your_api_secret_here"
+  "apiSecret": "pmap_cp_live_your_api_secret_here"
 }
 ```
 
@@ -144,7 +144,7 @@ Sync state is stored per-board in `.provenmap/boards/stores/<board-slug>.store.j
 | Field          | File               | Required | Default                   | Description                 |
 | -------------- | ------------------ | -------- | ------------------------- | --------------------------- |
 | `bindingToken` | `credentials.json` | Yes      | -                         | Combined auth token from UI — base64url-encoded `workspaceId::bindingId` |
-| `apiSecret`    | `credentials.json` | Yes      | -                         | API secret — `ck_cp_live_` followed by an alphanumeric string |
+| `apiSecret`    | `credentials.json` | Yes      | -                         | API secret — `pmap_cp_live_` (or `pmap_cp_test_` from a non-production platform; older secrets start `ck_cp_live_`) followed by an alphanumeric string |
 | `baseUrl`      | `config.json`      | No       | https://platform.provenmap.com/api | API endpoint                |
 | `branch`       | `config.json`      | Yes      | -                         | Git branch name — must match the branch configured on the binding |
 | `boardSlug`    | `config.json`      | Yes      | -                         | Target board — `/configure` can discover and write it for you |
@@ -178,7 +178,7 @@ Credentials live in ONE place — `.provenmap/credentials.json`, never the chat.
   (`bindingToken` + `apiSecret` + `boardSlug`), since a different board is a different
   binding with its own secret. The `--rebind` flag is what unlocks the board picker —
   without it, a bound project's login is authentication-only:
-  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain connect --plugin-version 0.25.0` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
+  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain connect --plugin-version 0.25.1` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
   2. After they sign in, pick the new board, and confirm, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain connect` (give the Bash call ~250s; re-run on `status: "pending"`). Print `display` verbatim.
   3. On `status: "complete"`, the config now points at the newly selected board — the `display` panel already shows it.
   4. **Nothing analysed here is thrown away silently.** The boards analysed under the previous

@@ -23,7 +23,7 @@ Restart Claude Code so the commands load. Scope the install with `--scope user` 
 ## Connect
 
 The plugin talks to the ProvenMap **MCP server** with a workspace-scoped bearer token
-(`ck_mcp_live_…`) — no repo binding, no project files:
+(`pmap_mcp_live_…`) — no repo binding, no project files:
 
 1. Run `/pmap-architect:login` — sign in through the browser, pick workspace, scope
    (`read` or `read_write`) and an optional board-subtree restriction there. The token is stored

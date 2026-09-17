@@ -29,7 +29,7 @@ token — and its ready-made setup snippets — are shown **exactly once** at ge
 | Where you run | What to do |
 |---|---|
 | **claude.ai / Cowork** | Paste the **connector URL snippet** (`…/api/mcp/k/<token>`) as a claude.ai custom connector: Settings → Connectors → Add custom connector → "Remote MCP server URL", OAuth fields empty. No env vars, no egress config — done, skip Step 3. |
-| **Claude Code / Codex (this host)** | Set the env var, then persist + verify: the user runs `export PMAP_MCP_TOKEN="ck_mcp_live_…"` (plus `export PMAP_MCP_URL=…` for self-hosted platforms) in the environment the host runs in, then restarts the session. |
+| **Claude Code / Codex (this host)** | Set the env var, then persist + verify: the user runs `export PMAP_MCP_TOKEN="pmap_mcp_live_…"` (plus `export PMAP_MCP_URL=…` for self-hosted platforms) in the environment the host runs in, then restarts the session. |
 | **Cloud IDE / CI** | Set `PMAP_MCP_TOKEN` (and `PMAP_MCP_URL` if self-hosted) in the environment/secrets configuration. The sandbox must allowlist the ProvenMap host in its network egress settings. On **Codex**, `PMAP_MCP_URL` does not redirect the MCP server — its shipped URL is literal, so a self-hosted endpoint reaches the tools only once Step 3 pins it. |
 
 ### Step 3 — verify and persist (Claude Code / Codex only)

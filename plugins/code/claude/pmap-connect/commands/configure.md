@@ -22,7 +22,7 @@ If it exists, read it and continue — never overwrite the user's file. Either w
 ## Step 2: Detect current state
 
 `.provenmap/credentials.json` has both fields (or `PMAP_BINDING_TOKEN`/`PMAP_API_SECRET`
-are set) → show the settings, secret masked (`ck_cp_live_****`), skip to Step 4. Else
+are set) → show the settings, secret masked (`pmap_cp_live_****`), skip to Step 4. Else
 Step 3 — and if `config.json` still carries `bindingToken`/`apiSecret`, say they are
 ignored (credentials live in `credentials.json`) and to remove them.
 
@@ -37,7 +37,7 @@ skill) and set `branch` in `config.json` (must match the binding, default `main`
 
 - **Not yet**: stop — they can re-run `/configure` when ready.
 - **Yes**: re-read it. Missing, empty or malformed (`apiSecret` must start with
-  `ck_cp_live_`)? Name the field that is wrong and re-prompt. Else Step 4.
+  `pmap_cp_live_`, `pmap_cp_test_`, or the older `ck_cp_live_`)? Name the field that is wrong and re-prompt. Else Step 4.
 
 ## Step 4: Verify credentials
 
