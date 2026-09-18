@@ -27,9 +27,11 @@ verbatim. Note `signalsPath` from the JSON. If it fails with "No local analysis"
 ### Step 3 — plan
 
 Author the styling plan per the board-styling skill. Present it compactly: the composition line,
-sizes table (who is enlarged or shrunk, and why), token groups, icon choices. Every size carries
-a one-line reason, and every token states what it asserts that the element's archetype cannot.
-Say how many elements were left untouched because their archetype already speaks for them — a quality signal, not an omission. Get approval (AskUserQuestion: apply / adjust /
+sizes table (who is enlarged or shrunk, and why), the few tokens, icon choices. Every size
+carries a one-line reason, and every token states what it asserts that neither the element's
+archetype nor its neighbours already say. Say how many nodes and edges carry **no token** — a
+quality signal, not an omission; a plan that tokens most of either is over-styled, so cut it
+before presenting. Get approval (AskUserQuestion: apply / adjust /
 stop).
 
 ### Step 4 — validate + save
@@ -37,7 +39,8 @@ stop).
 Write the plan to `.provenmap/styling/<slug>.plan.json`. Run
 `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --validate-styles --file .provenmap/styling/<slug>.plan.json --against <signalsPath>`.
 
-- Exit 0 → continue (one line per warning).
+- Exit 0 → continue (one line per warning) — except a coverage or saturation warning, which
+  means the plan over-styled: cut the excess tokens and re-validate.
 - Exit 3 → fix the reported issues, re-validate. After two failed rounds: stop and say
   `Styling validation keeps failing — the board structure may need work first; run /analyze on it, then /restyle.`
 

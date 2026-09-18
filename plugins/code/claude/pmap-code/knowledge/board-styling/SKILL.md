@@ -1,13 +1,14 @@
 ---
 name: board-styling
-description: Author a styling plan for an analyzed board — deterministic signals, model judgment, offline validation. Use when /analyze finishes a board, when running /restyle, or when the user asks to beautify a board or diagram. Covers semantic tokens, size presets, composition, and icons.
+description: Author a styling plan for an analyzed board — deterministic signals, model judgment, offline validation. Use when /analyze finishes a board, when running /restyle, or when the user asks to beautify a board or diagram. Covers composition, size presets and icons, and the sparing use of semantic tokens.
 ---
 
 # Board styling (code domain)
 
-Styling makes an analyzed board read professionally: semantics where they add something
-(Role/State/Severity tokens), size to build hierarchy, composition (arrangement + orientation +
-density per board/container), then icons. The full vocabulary tables and six worked examples
+Styling makes an analyzed board read professionally: composition (arrangement + orientation +
+density per board/container), size to build hierarchy, then icons — and semantic tokens
+(Role/State/Severity/Flow) only as the exception. Tokened nodes stay a minority of the nodes,
+tokened edges a minority of the edges, and a plan with no tokens at all is normal. The full vocabulary tables and six worked examples
 live in [references/styling-vocabulary.md](references/styling-vocabulary.md) and
 [references/styling-examples.md](references/styling-examples.md) — the plan-file shape there is
 exactly what this domain uses.
@@ -22,13 +23,21 @@ palette for a duplicate. Per element, in order:
    treatment from its peers? Most don't.
 2. **Read the archetype's `styling`** in the signals view's `archetypeStyling` map.
    `assertsKind` true → it already says what kind of thing this is; don't spend a Role token
-   saying it again. `styling: null` → style-less archetype, so a Role token is the only thing
-   that will state its role: send it. Archetype missing from the map → the catalogue isn't
+   saying it again. `styling: null` → style-less archetype, so a Role token is *allowed* — but
+   only while the elements taking it are a small minority (about a quarter of the board at
+   most). An analyzed board is often mostly one style-less archetype; one token on all of them
+   tells nothing apart, so leave them untokened and name the catalogue gap
+   (/analyze-archetypes). Archetype missing from the map → the catalogue isn't
    known here (no cached archetypes); judge on the description alone.
 3. **Only then pick the category.** **Role** is for style-less archetypes. **State**/**Severity**
    carry instance facts no archetype can (`legacy`, `degraded`, `failing`) — the same token on
-   half the board asserts nothing. **Emphasis** is attention, never identity; `neutral` asserts
+   half the board asserts nothing, and the default state (`active`, `healthy`) is not worth a
+   token. **Emphasis** is attention, never identity; `neutral` asserts
    nothing at all, so omit the element instead of styling it neutral.
+
+**Edges: token the deviation, never the norm.** Read the board's dominant flow; only edges
+that differ from it take a Flow token. When every edge flows the same way, none is tokened —
+the board description says it once.
 
 **Size is the instrument.** It is its own style type — it never overwrites archetype identity —
 so use it freely to make the diagram explain itself, with or without a token: key components
@@ -52,7 +61,8 @@ node takes `sm`.
    existing styling, and the apply endpoint replaces same-category styling (last writer wins).
 3. **Validate** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --validate-styles --file
    <plan.json> --against <signalsPath>`. Exit 3 → fix and re-validate, max 2 rounds, then
-   continue unstyled and point at `/restyle`.
+   continue unstyled and point at `/restyle`. A coverage or saturation warning means the plan
+   over-styled — cut the excess tokens and re-validate rather than saving it.
 4. **Save** — write the validated plan to `.provenmap/styling/<board-slug>.plan.json`. `/sync`
    applies it automatically after that board's next successful push and deletes it; `/restyle`
    applies on demand via `pmap-sync.js --apply-styles <slug>`.

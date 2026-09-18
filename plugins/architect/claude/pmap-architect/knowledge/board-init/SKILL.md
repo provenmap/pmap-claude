@@ -46,7 +46,7 @@ rich-metadata discipline:
   restatement of its name.
 - **The board description** states purpose + stack intent (`apply_diagram_info`).
 - Style the finished board per the **board-styling** skill (signals → plan → validate → apply)
-  — semantics that carry meaning, never decoration.
+  — composition and size first; semantic tokens only where an element must be told apart.
 
 Narrate the reconciliation truth: when the repo binds and pushes, analysis reconciles against
 this sketch — expect intents where reality disagrees.

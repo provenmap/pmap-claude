@@ -185,9 +185,12 @@ At the **first step of each phase** — Steps -2, 0, 4.5, 8, and 9 — run:
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --spine analyze --step <this step's number> --with-coverage
 ```
 
-Print the returned `display` verbatim. It carries the phase chain, the current phase's steps,
-and the coverage bar. Do not run it at every step — once per phase is the intent; more is
-noise.
+Run it **alone — its own Bash call, never chained** with the step's other commands — and make
+the returned `display` the next text of your reply, verbatim, before the step's own work. A
+shell-side `print` of `display` is not a relay: the Bash output panel is collapsed, so a spine
+that stays there is a spine the user never sees. It carries the phase chain, the current
+phase's steps, and the coverage bar. Do not run it at every step — once per phase is the
+intent; more is noise.
 
 Exit codes: `1` bad usage (fix the call), `3` the step is not registered (the pipeline
 registry has drifted from the step headings — report it and continue; the spine is display,
@@ -1088,6 +1091,8 @@ L0: 0 of 38). Then style the board (methodology:
 .provenmap/styling/<board-slug>.plan.json --against <signalsPath>` — exit 3 → fix and
    re-validate, **max 2 rounds**; still failing → delete the plan file, continue unstyled,
    and note `Styling skipped — run /restyle <board-slug> later.`
+   A coverage or saturation **warning** exits 0 but means the plan over-styled — cut the
+   excess tokens and re-validate rather than saving it.
 
 The plan is applied automatically by `/sync` after this board's push — no apply step here.
 This step runs in every mode, including `--auto`. Styling never blocks the analysis.

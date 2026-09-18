@@ -40,13 +40,31 @@ one entry (`elementRequests` / `nodeApplications`) — an empty one is rejected,
 | Role | presentation, application, domain, infrastructure, integration, gateway, cache, queue, store, security_boundary, domain_boundary, public_api, private_api | architectural responsibility |
 
 `semanticToken` and `size` are independent — send either, or both. A request naming neither is
-rejected.
+rejected. Most requests on a good plan are **size only**, and most elements appear in no request
+at all: tokens are a minority of the nodes, and one Role token never reaches past about a quarter
+of them (the validator warns on both).
 
 ### What the archetype already asserts
 
-Every archetype ships its own styles, and applying a node token **replaces them by style type**:
-each node token writes fill + stroke + text, so the question is never *does this overwrite?* (it
-always does) but *is what it says worth overwriting what was there?*
+Every archetype ships its own styles, and a token paints over them **only in its category's
+channel** — one token per category, and categories layer:
+
+| Category | Paints | Leaves alone |
+| --- | --- | --- |
+| Role | fill tint + stroke colour (boundaries add a dash) | pattern, effects, text |
+| State — lifecycle (`inactive`, `experimental`, `planned`, `legacy`) | dash, fill pattern, fade | every colour |
+| State — health (`active`, `healthy`, `degraded`, `failing`) | stroke colour (+ dash on `degraded`) | fill |
+| Severity | stroke colour; `error` alone also tints the fill and lifts | everything else |
+| Emphasis | ink rim + lift (`emphasis`), fade (`subtle`); `neutral` paints nothing | hue |
+| Flow (edges) | dash, width, markers | the edge's colour |
+
+No token touches text colour, corners, shape or icon. Where two categories name the same field
+the later one wins, in this order: Role → Flow → Emphasis → State → Severity — so a `store` that
+is `legacy` and carries a `warning` shows all three, with the warning owning the rim's colour.
+Red is status only (`failing`, `error`); no Role token uses it.
+
+So the archetype question is a **Role** question: a Role token takes exactly the channel an
+archetype uses to assert kind. *Is what it says worth overwriting what was there?*
 
 The archetype catalogue answers that, and the **signals already carry it** — both domains put
 every archetype in use, and what it asserts, on `signals.archetypeProfiles` (the printed summary
@@ -60,8 +78,10 @@ fetch a catalogue during styling; the signals step did it once. Each profile car
 | `icon` | the icon it already carries — a lucide name or a catalog path |
 | `sizePreset` | set only when the archetype pins a size; normally null |
 
-`styling: null` means a **style-less** archetype: nothing to collide with, so a Role token is the
-only thing that will say what the element is — send it. A **missing** archetype (no entry at all)
+`styling: null` means a **style-less** archetype: nothing to collide with, so a Role token is
+*allowed* — while the elements taking it stay a small minority of the board. A style-less
+archetype that covers much of the board is a catalogue gap (/archetypes), not a reason to token
+every element of it. A **missing** archetype (no entry at all)
 means the catalogue is unknown here; judge on the description alone.
 
 The digest is deliberately absent from the catalogue that analysis and board authoring read:
@@ -87,8 +107,13 @@ is `subtle`, at any size.
 ## Edge tokens
 
 State, Emphasis, Severity as above, plus Flow: `synchronous` (solid, blocking), `asynchronous`
-(dashed), `stream` (thick, animated), `bidirectional` (double arrow). Edges take NO size and NO
+(dashed), `stream` (thick), `bidirectional` (double arrow). Edges take NO size and NO
 Role token.
+
+Token only the edges that **differ from the board's dominant flow**. The dominant flow stays
+untokened; when every edge flows the same way, no edge takes a Flow token and the board
+description states it once. The validator warns when more than half the edges carry a token (an
+`emphasis` path is attention, not flow, and is not counted).
 
 ## Composition (apply_composition)
 

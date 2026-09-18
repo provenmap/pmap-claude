@@ -6,7 +6,7 @@ argument-hint:
 allowed-tools: Read, Glob, Grep, Write, Bash(node:*, git:*), AskUserQuestion, Task
 ---
 
-Print every `display` verbatim; branch only on exit codes and named fields.
+Every `display` verbatim in your reply; branch only on exit codes and named fields.
 
 **Dispatch:** `--clean` full re-plan+re-analysis; `--drill <parent>/<node>` child board (`--clean`: only it); `--board <slug>` refresh stale/incomplete; `--all` all layers; `--auto` unattended (`--auto-plan` loop; prompts stop); no flag: incremental (else full).
 
@@ -16,11 +16,11 @@ Print every `display` verbatim; branch only on exit codes and named fields.
 
 **Read `${CLAUDE_PLUGIN_ROOT}/knowledge/codebase-analysis/references/analyze-workflow.md` NOW and follow it exactly; improvise nothing.**
 
-**Step map (in order — at Steps -2, 0, 4.5, 8, 9 first: `pmap-prepass.js --spine analyze --step <n> --with-coverage`, exit 3: report drift, continue):**
+**Step map (ordered; at Steps -2, 0, 4.5, 8, 9 first, alone: `pmap-prepass.js --spine analyze --step <n> --with-coverage`, exit 3: report drift, go on):**
 
 - -0.5 `pmap-prepass.js --coverage` (exit 2 → stop)
 - 0 `pmap-archetypes.js --kind code` catalogue + role map (`--role-map`)
-- 0.5 server boards `pmap-boards.js` (fail → warn, continue)
+- 0.5 server boards `pmap-boards.js` (fail → warn, go on)
 - 1 manifest + board slug (none → connect-now)
 - 1.5 worklist: plan + `--claim-check --changed-since auto`; empty → up to date, stop
 - 2–4 config + stacks from the digest (script-owned)

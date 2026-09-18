@@ -32,16 +32,18 @@ stop. Respect the answer for the whole run; when restyling, present current → 
 
 Author the styling plan per the board-styling skill (composition, semantics, icons — the plan
 file shape is in its references/styling-vocabulary.md). Present the plan compactly: the
-composition line, sizes table (with reasons), token groups, icon choices (catalog hit or Lucide
-fallback per node). Say how many elements were left
-untouched because their archetype already speaks for them — a quality signal, not an omission. Get approval (AskUserQuestion: apply / adjust / stop).
+composition line, sizes table (with reasons), the few tokens (each with what it asserts that
+its neighbours don't share), icon choices (catalog hit or Lucide fallback per node). Say how
+many nodes and edges carry **no token** — a quality signal, not an omission; a plan that tokens
+most of either is over-styled, so cut it before presenting. Get approval (AskUserQuestion: apply / adjust / stop).
 
 ### Step 4 — validate
 
 Write the plan to a temp file. Run
 `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --validate styles --file <plan.json> --against <signalsPath>`.
 
-- Exit 0 → continue (one line per warning).
+- Exit 0 → continue (one line per warning) — except a coverage or saturation warning, which
+  means the plan over-styled: cut the excess tokens and re-validate.
 - Exit 3 → fix the reported issues, re-validate. After two failed rounds: stop and say
   `Styling validation keeps failing — the board structure may need work first; run /board <slug> to inspect it.`
 

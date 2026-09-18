@@ -74,10 +74,14 @@ Run every command from `{{pluginRoot}}/scripts/pmap-prepass.js` against `{{worki
    depth in `metadata.proposedDrillDowns`; `A-BUDGET` → a `metadata.gateOverrides` rationale,
    or split/merge containers; `A-CONTAINER-DENSITY` → restructure the container's children or
    propose the depth. This board is not done at any nonzero `unresolvedAdvisories`.
-9. Author this board's styling: `--style-signals {{childBoardSlug}}` → write
-   `.provenmap/styling/{{childBoardSlug}}.plan.json` from the signals → `--validate-styles
-   --file .provenmap/styling/{{childBoardSlug}}.plan.json --against <signalsPath>` (max 2
-   rounds; on repeated failure delete the plan and continue unstyled).
+9. Author this board's styling — read `${CLAUDE_PLUGIN_ROOT}/knowledge/board-styling/SKILL.md` first;
+   it is the doctrine, and the signals alone do not carry it (composition, size and icons do
+   the styling; semantic tokens are the exception). Then `--style-signals {{childBoardSlug}}`
+   → write `.provenmap/styling/{{childBoardSlug}}.plan.json` from the signals →
+   `--validate-styles --file .provenmap/styling/{{childBoardSlug}}.plan.json --against
+   <signalsPath>` (max 2 rounds; on repeated failure delete the plan and continue unstyled).
+   A coverage or saturation **warning** exits 0 but means the plan over-styled — cut the
+   excess tokens and re-validate rather than saving it.
 
 ## Hard boundaries
 

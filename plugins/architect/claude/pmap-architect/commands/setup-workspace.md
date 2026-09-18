@@ -43,7 +43,8 @@ Then work landscape-modeling's agenda; its one-line opener is the root board des
 ### Step 3.5 — style the landscape
 
 Run board-styling's pipeline on the new board: `--style-signals --board <slug>` → plan →
-`--validate styles` → `apply_*`. Two failed rounds → skip, say so, continue; /style-board
+`--validate styles` → `apply_*`. Composition and size do the work; tokens are the exception —
+say how many elements carry none. Two failed rounds → skip, say so, continue; /style-board
 recovers later.
 
 ### Step 4 — generate app boards

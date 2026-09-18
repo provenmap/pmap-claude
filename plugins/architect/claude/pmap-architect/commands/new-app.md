@@ -43,7 +43,9 @@ title/summary (AskUserQuestion) → `commit_write_session` → offer `publish`.
 
 Style the fresh L1 sketch — read `${CLAUDE_PLUGIN_ROOT}/knowledge/board-styling/SKILL.md` and run
 its pipeline (`--style-signals --board <slug>` → plan → `--validate styles` → `apply_*`
-calls). Two failed rounds → skip, note it, continue; /style-board recovers later.
+calls). Composition and size do the work; tokens are the exception — say in the closing line
+how many elements carry none. Two failed rounds → skip, note it, continue; /style-board
+recovers later.
 
 ### Step 4 — binding gate, then founding intent
 
