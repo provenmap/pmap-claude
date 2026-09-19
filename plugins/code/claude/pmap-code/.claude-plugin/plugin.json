@@ -23,7 +23,7 @@
     "./commands/update.md"
   ],
   "displayName": "ProvenMap Code",
-  "version": "0.26.0",
+  "version": "0.26.1",
   "metadata": {
     "releasedAt": "2026-09-19"
   },

@@ -36,8 +36,8 @@ differs: the bound board's tree for code and connect, the whole workspace for th
   (branch stops sharing one `from`) reads instantly; a `layer` hop makes the camera fly.
 - **Half the insights cross a layer when the tree has one** — and every crossing means
   something: a chokepoint or cascade descends into the dependent onto the code that makes the
-  call, a journey climbs back through a boundary port onto the owner and across the parent
-  edge, a hand-off names the one element inside a drill-down that talks to its siblings. The
+  call, a journey walks a boundary port's edge and climbs from it onto the node it stands
+  for, a hand-off names the one element inside a drill-down that talks to its siblings. The
   script proves each hop the way the server does ([references/families.md](references/families.md),
   "Layer crossings"); on the landscape, a flow across apps.
 - **Variety in the set** — distinct polarities across the insights, no two items on one anchor,
