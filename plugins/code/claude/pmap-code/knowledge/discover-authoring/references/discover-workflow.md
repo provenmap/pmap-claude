@@ -77,13 +77,16 @@ lands results as it goes.
 For each output of the wave, in plan order:
 
 - an **insight** brief's output — Code / Connect:
-  `node <cli> --save-insight <output> --board-slug <entry board> --require-pack --push --host claude --domain code` (the entry board is the payload's `boardSlug`); Architect:
+  `node <cli> --save-insight <output> --require-pack --push --host claude --domain code`; Architect:
   `node <cli> --push-insight <output> --require-pack --push [--board <slug>]`.
 - a **context-board** brief's output — Code / Connect:
   `node <cli> --push-context-board <output> --require-pack --push --host claude --domain code`; Architect:
   `node <cli> --push-context-board <output> --require-pack --push [--board <slug>]`.
 - `--board <slug>` on the Architect CLI names the subtree the plan was built for when it was not
   the whole tree; the pack it validates against is the one `--discover` cached for that root.
+  The Code and Connect CLI reads that root from the run's ledger — never pass `--board-slug` on
+  a push, and never build a pack for an insight's own board: a trail crosses boards, and only
+  the run's pack holds all of them.
 
 Exit 0 → print the one-line outcome (pushed, or `notAvailable` with its message). Exit 3 with
 `validationErrors[]` → fix the listed fields in the output file yourself (copy any "did you mean"
