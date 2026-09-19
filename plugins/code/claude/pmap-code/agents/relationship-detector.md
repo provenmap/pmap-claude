@@ -59,7 +59,7 @@ You are a relationship detection specialist focused on identifying connections b
 
 **`imports` edges come from the prepass skeleton.**
 
-When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`repo.json`, or `<board-slug>.json` for a drill-down) already contains the resolved `imports` graph for **every supported language** (JS/TS via tsconfig aliases, workspace package names and barrel follow; Python/Go/Java/Ruby/Rust/C# via each one's module→path convention). Duplicates are collapsed into `count`, with `kinds` breaking that down by import kind (`static`, `type`, `reexport`, `export-star`, `dynamic`, `side-effect`): **type-only imports are kept and tagged, not dropped**, and edges into popular hubs are **kept and tagged `hubTarget: true`**, never deleted. The skeleton also carries deterministic `references` edges from agent-native markdown artifacts (a command naming the script it runs, a skill naming a doc — emit these as `uses`). Use those edges directly; do **NOT** re-parse imports in any language. Your job is the **semantic** edge types that require reading code — `db_read`/`db_write`, `api_call`, `uses`, `publishes`/`subscribes`, `grpc_call`, and cross-language calls. The import-pattern table below is the fallback for standalone invocation only, when no skeleton exists.
+When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`repo.json`, or `<board-slug>.json` for a drill-down) already contains the resolved `imports` graph for **every supported language** (JS/TS via tsconfig aliases, workspace package names and barrel follow; Python/Go/Java/Ruby/Rust/C# via each one's module→path convention). Duplicates are collapsed into `count`, with `kinds` breaking that down by import kind (`static`, `type`, `reexport`, `export-star`, `dynamic`, `side-effect`): **type-only imports are kept and tagged, not dropped**, and edges into popular hubs are **kept and tagged `hubTarget: true`**, never deleted. The skeleton also carries deterministic `references` edges from agent-native markdown artifacts (a command naming the script it runs, a skill naming a doc — emit these as `uses`). Use those edges directly; do **NOT** re-parse imports in any language. Your job is the **semantic** edge types that require reading code — `reads_from`/`writes_to`, `sync_call`, `async_message`, `data_flow`, and cross-language calls. The import-pattern table below is the fallback for standalone invocation only, when no skeleton exists.
 
 **Relationship Detection by Language:**
 
@@ -135,34 +135,33 @@ When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`re
 
 1. **Skip type-only imports**: TypeScript `import type { X } from '...'`, Python `from typing import`, Java type-only imports — these have no runtime effect and must not produce edges
 2. **Skip barrel/re-export files**: If the target is an `index.ts`/`index.js` that only re-exports, resolve through to the actual source module and create the edge there instead
-3. **Deduplicate**: If component A imports from component B in multiple places, create ONE edge (`A → B`, type: `imports`), not multiple. One edge per unique source-target-type combination
+3. **Deduplicate**: If component A imports from component B in multiple places, create ONE edge (`A → B`, type: `uses`), not multiple. One edge per unique source-target-type combination
 4. **Skip excluded file targets**: If the import target is a type definition, constants, enums, or DTO file (excluded from nodes), do NOT create an edge to it
 5. **Target grouped containers (L0/L1)**: If the import target is a database entity/model/repository file grouped under `database-layer`, the edge target should be `"database-layer"`, not the individual file slug. At the component layer (L2/L3) where each data-access class is its own `repository_component` node, target that individual node instead.
-6. **Hub suppression**: If a shared utility node would accumulate more than 15 inbound `imports` edges, it likely represents a popular helper, not meaningful architecture. Mention hub nodes in the analysis summary but suppress individual `imports` edges to them. Higher-value edge types (`uses`, `api_call`, `db_read`, `db_write`) are always kept regardless of fan-in count
+6. **Hub suppression**: If a shared utility node would accumulate more than 15 inbound `imports` edges, it likely represents a popular helper, not meaningful architecture. Mention hub nodes in the analysis summary but suppress individual `imports` edges to them. Higher-value edge types (`sync_call`, `reads_from`, `writes_to`, `async_message`) are always kept regardless of fan-in count
 7. **Skip internal re-exports**: Edges to barrel/index files that only re-export should be resolved to the actual implementation target
 
 **Detection Process:**
 
 1. **Import Analysis**
    - **With a skeleton (every supported language):** take `imports` edges from the skeleton's `edges[]` (already resolved, deduped, kind-tagged) — map `fromTempId`/`toTempId` file paths to board-node slugs; do not re-parse in any language. Skip to step 2.
-   - **No skeleton (standalone invocation only):** identify file language from extension, apply language-specific import regex patterns, resolve import paths to node IDs, apply the edge filtering rules above, and create `imports` edges only between actual architectural nodes.
+   - **No skeleton (standalone invocation only):** identify file language from extension, apply language-specific import regex patterns, resolve import paths to node IDs, apply the edge filtering rules above, and create `uses` edges only between actual architectural nodes.
 
 2. **Database Operation Detection**
    - Scan for ORM/database library imports
-   - Find read method calls → `db_read` edges
-   - Find write method calls → `db_write` edges
+   - Find read method calls → `reads_from` edges
+   - Find write method calls → `writes_to` edges (one edge per pair: a component that does both gets `writes_to`)
    - Link calling component to database entity
 
 3. **HTTP Client Detection**
    - Find HTTP client library usage
    - Determine target: internal service vs external API
-   - Create `api_call` edges for external
-   - Create `uses` edges for internal service calls
+   - Create `sync_call` edges for request/response calls, internal or external
 
 4. **Queue Pattern Detection**
    - Find message queue library usage
-   - Identify publish operations → `publishes` edges
-   - Identify consume operations → `subscribes` edges
+   - Identify publish operations → `async_message` edges (publisher → queue)
+   - Identify consume operations → `async_message` edges (queue → consumer)
 
 5. **Cross-Language Relationships**
    - Detect API URLs pointing to other services
@@ -171,16 +170,18 @@ When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`re
 
 **Edge Types:**
 
-| Type | Description |
-|------|-------------|
-| `imports` | Direct code import/use |
-| `db_read` | Database read operation |
-| `db_write` | Database write operation |
-| `api_call` | HTTP API call (external or cross-service) |
-| `publishes` | Message queue publish |
-| `subscribes` | Message queue subscribe |
-| `grpc_call` | gRPC service call |
-| `uses` | Generic internal usage |
+Edge `type` is a server edge archetype name — an unknown name fails the sync — and the archetype decides the edge's arrowhead, so a specific type is what makes one relationship read differently from another.
+
+| Type | Description | Draws as |
+|------|-------------|----------|
+| `uses` | Direct code import / generic internal usage | plain arrow |
+| `sync_call` | HTTP, gRPC or RPC request/response call | plain arrow |
+| `reads_from` | Database/cache read operation | plain arrow |
+| `writes_to` | Database/cache/storage write operation | closed arrow |
+| `async_message` | Message queue/topic publish or consume | dotted arrow |
+| `data_flow` | Bulk data movement (ETL, sync job, pipeline) | double arrow, both ends |
+| `dependency` | Build- or type-level coupling, no runtime call | dotted arrow |
+| `implements` / `extends` | Interface implementation / inheritance | triangle |
 
 **Output Format:**
 

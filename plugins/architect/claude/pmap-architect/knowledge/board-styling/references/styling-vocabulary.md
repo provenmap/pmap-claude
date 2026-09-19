@@ -56,7 +56,7 @@ channel** — one token per category, and categories layer:
 | State — health (`active`, `healthy`, `degraded`, `failing`) | stroke colour (+ dash on `degraded`) | fill |
 | Severity | stroke colour; `error` alone also tints the fill and lifts | everything else |
 | Emphasis | ink rim + lift (`emphasis`), fade (`subtle`); `neutral` paints nothing | hue |
-| Flow (edges) | dash, width, markers | the edge's colour |
+| Flow (edges) | dash, width; `bidirectional` repeats the edge's own arrowhead at the start | the edge's colour and arrowhead |
 
 No token touches text colour, corners, shape or icon. Where two categories name the same field
 the later one wins, in this order: Role → Flow → Emphasis → State → Severity — so a `store` that

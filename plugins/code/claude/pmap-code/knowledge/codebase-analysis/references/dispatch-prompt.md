@@ -61,7 +61,7 @@ Run every command from `{{pluginRoot}}/scripts/pmap-prepass.js` against `{{worki
 6. `--rollup {{childBoardSlug}} --apply --skeleton
    .provenmap/skeletons/{{childBoardSlug}}.json` — the script merges the deterministic
    `imports` edges; re-read the board JSON afterward (the script rewrote it). Add the semantic
-   edges the rollup cannot see (`db_read`, `api_call`, `publishes`, cross-service calls) by
+   edges the rollup cannot see (`reads_from`/`writes_to`, `sync_call`, `async_message`, `data_flow`) by
    reading the files involved, and reclassify a rollup edge's `type` where your reading shows
    the real relation.
 7. **No new marks — propose instead.** Never set `layerBoardSlug` on a node that is not one of

@@ -422,11 +422,11 @@ Generic utilities (`utils.ts`, `helpers.ts`) that contain meaningful business lo
 | Source Category | Target Category | Likely Relationship |
 |-----------------|-----------------|---------------------|
 | api | service | `uses` |
-| service | database | `db_read` or `db_write` |
-| service | queue | `publishes` |
-| queue | service | `invokes` |
-| service | external | `api_call` |
+| service | database | `reads_from` or `writes_to` |
+| service | queue | `async_message` |
+| queue | service | `async_message` |
+| service | external | `sync_call` |
 | component | service | `uses` |
-| component | api | `api_call` |
+| component | api | `sync_call` |
 
-**Note:** Edge `type` values must also use valid server archetype names for edges (fetched from the archetypes CLI).
+**Note:** Edge `type` values must be server edge archetype names (fetched from the archetypes CLI) — an unknown name fails the sync. The full table, with what each draws as, is in `SKILL.md` → "Import/Dependency Analysis".

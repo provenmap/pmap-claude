@@ -83,21 +83,34 @@ Each language has specific component file patterns and import syntax. See `refer
 
 ### Relationship Detection
 
-Structural `imports` edges are **script-owned**: the prepass skeleton
+Structural import edges are **script-owned**: the prepass skeleton
 (`pmap-prepass.js`) resolves them deterministically and the rollup
-(`--rollup <board-slug>`) maps them onto board nodes — never re-parse what the
-skeleton already resolved. The model owns the **semantic** edge types, derived
-by reading the involved files:
+(`--rollup <board-slug>`) maps them onto board nodes as `uses` — never re-parse
+what the skeleton already resolved. The model owns the **semantic** edge types,
+derived by reading the involved files.
 
-| Relationship | Detection Pattern               | Owner  |
-| ------------ | ------------------------------- | ------ |
-| `imports`    | Direct file/module imports      | script (skeleton + rollup) |
-| `db_read`    | ORM/repository read operations  | model  |
-| `db_write`   | ORM/repository write operations | model  |
-| `api_call`   | HTTP client usage               | model  |
-| `publishes`  | Message queue publish           | model  |
-| `subscribes` | Message queue consume           | model  |
-| `grpc_call`  | gRPC client calls               | model  |
+An edge's `type` is its server edge archetype, and the archetype decides how the
+edge is drawn — its line and its arrowhead. A board where every edge stays `uses`
+draws every relationship with the same plain arrow, so re-type every edge your
+reading can justify. Use only names from the server's edge archetype list (the
+dispatch prompt carries it); an unknown name fails the sync. The defaults:
+
+| `type`           | Use for                                                            | Draws as            | Owner  |
+| ---------------- | ------------------------------------------------------------------ | ------------------- | ------ |
+| `uses`           | Direct import / runtime use with no more specific reading          | plain arrow         | script (skeleton + rollup) |
+| `sync_call`      | Request/response across a boundary: HTTP, gRPC, RPC client calls   | plain arrow         | model  |
+| `reads_from`     | ORM/repository/cache reads                                         | plain arrow         | model  |
+| `writes_to`      | ORM/repository/cache/storage writes                                | closed arrow        | model  |
+| `async_message`  | Queue/topic publish; for a consumer, draw queue → consumer         | dotted arrow        | model  |
+| `domain_event`   | A domain event raised by one component and handled by another      | dotted arrow        | model  |
+| `data_flow`      | Bulk data movement: ETL, sync jobs, pipelines, exports             | double arrow, both ends | model  |
+| `dependency`     | Build- or type-level coupling with no runtime call                 | dotted arrow        | model  |
+| `implements`     | A class/module implementing an interface or contract               | triangle            | model  |
+| `extends`        | Inheritance / specialisation                                       | triangle            | model  |
+
+A component that both reads and writes the same store gets one `writes_to` edge
+(the stronger claim) with the reads named in `detailedDescription` — never two
+edges between one pair.
 
 An edge with `metadata.provenance` is rollup-backed: the script owns its
 `weight` (the import statements behind the pair — the rank that decided it

@@ -858,14 +858,14 @@ pending.
   the grouping floor, the node budget, or isolation.
 
 - **Reclassify where you know better.** The rollup can only ever say `uses`. Where reading
-  the involved files shows the real relation, change the edge's `type` (`db_read`,
-  `api_call`, `publishes`, …) and put your reasoning in `detailedDescription` — nothing
+  the involved files shows the real relation, change the edge's `type` (`reads_from`,
+  `writes_to`, `sync_call`, `async_message`, `data_flow`, …) and put your reasoning in `detailedDescription` — nothing
   else. Ownership is per field: the script owns `weight`, `class`, `provenance` and the
   fact `description`; you own `type` and `detailedDescription`. The next `--apply`
   refreshes the facts in place and keeps your type — no twin, nothing to delete. Never draw
-  two edges between one pair — a second relation goes in `detailedDescription`. The semantic edge types
-  (`db_read`/`db_write`, `api_call`, `uses`, `publishes`/`subscribes`, cross-language
-  calls) are the codebase-analysis `SKILL.md` → "Import/Dependency Analysis".
+  two edges between one pair — a second relation goes in `detailedDescription`. The semantic edge types —
+  server edge archetype names only, each drawn with its own arrowhead — are the
+  codebase-analysis `SKILL.md` → "Import/Dependency Analysis".
 
 - **Semantic edges (read the relevant files):** the skeleton does not detect these — derive
   them by reading the files of the nodes involved. The worklist is the nodes the rollup left
@@ -989,7 +989,7 @@ conversation; dispatched agents stamp `{ "mode": "agent", "model": "…" }` per 
     {
       "sourceSlug": "api-service",
       "targetSlug": "database",
-      "type": "db_read",
+      "type": "reads_from",
       "description": "Reads user data via repository pattern.",
       "metadata": {}
     }

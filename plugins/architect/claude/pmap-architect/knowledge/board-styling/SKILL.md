@@ -93,7 +93,7 @@ Styling is judgment guided by facts. The pipeline is always the same four moves:
   externals surround it; flows are labelled edges.
 - **Edges: token the deviation, never the norm.** Read the board's dominant flow first. Only
   edges that differ from it take a Flow token (synchronous = solid, asynchronous = dashed,
-  stream = thick) — line grammar only, the edge keeps its archetype's colour; the dominant flow stays untokened, and a board whose edges all flow the
+  stream = thick) — line grammar only, the edge keeps its archetype's colour and arrowhead; the dominant flow stays untokened, and a board whose edges all flow the
   same way takes **no Flow tokens** — say it once in the board description
   (`apply_diagram_info`) instead. Edges carry Flow/State/Severity tokens only — no sizes, no
   Role.
