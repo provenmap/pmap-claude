@@ -17,6 +17,7 @@
     "./commands/logout.md",
     "./commands/new-app.md",
     "./commands/prepare-app.md",
+    "./commands/report-bug.md",
     "./commands/setup-workspace.md",
     "./commands/start.md",
     "./commands/status.md",
@@ -24,7 +25,7 @@
     "./commands/update.md"
   ],
   "displayName": "ProvenMap Architect",
-  "version": "0.25.4",
+  "version": "0.26.0",
   "metadata": {
     "releasedAt": "2026-09-19"
   },

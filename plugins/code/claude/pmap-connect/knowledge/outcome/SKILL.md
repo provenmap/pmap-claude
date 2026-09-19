@@ -27,8 +27,8 @@ Next: <one move and why> <up to two alternatives, each with its why>
 ```
 
 Three to eight lines. `Left` is omitted only when there is genuinely nothing. Hand-offs sit on
-their own `↪` line, never numbered, never inside Next. For `/update` and `/logout` the whole
-Outcome is one line.
+their own `↪` line, never numbered, never inside Next. For `/update`, `/logout` and `/report-bug`
+the whole Outcome is one line.
 
 ## Reading the brief
 
@@ -68,6 +68,9 @@ Outcome is one line.
    Another plugin's command is never a move — that is a hand-off.
    - Bad: `Next: /intents --force` (no such flag) · `Next: /pmap-architect:insights` (another session)
    - Good: `↪ The architect can review payments-overview in ProvenMap now.`
+   - The one move no brief carries: when a script failed in a way the run could neither explain
+     nor work around, `/report-bug` may follow the fix-or-retry move — it drafts a report with
+     the project's names removed.
 5. **Tie back to the user.** If they asked a question or named a goal this session, the Outcome
    answers it or says where it stands.
    - Good: `You asked whether the review can go ahead tomorrow — yes: both boards are pushed.`

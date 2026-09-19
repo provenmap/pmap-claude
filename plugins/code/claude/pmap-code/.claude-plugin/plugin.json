@@ -14,6 +14,7 @@
     "./commands/login.md",
     "./commands/logout.md",
     "./commands/monitor.md",
+    "./commands/report-bug.md",
     "./commands/restyle.md",
     "./commands/skills.md",
     "./commands/start.md",
@@ -22,7 +23,7 @@
     "./commands/update.md"
   ],
   "displayName": "ProvenMap Code",
-  "version": "0.25.4",
+  "version": "0.26.0",
   "metadata": {
     "releasedAt": "2026-09-19"
   },

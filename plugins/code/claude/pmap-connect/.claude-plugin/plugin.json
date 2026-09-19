@@ -8,6 +8,7 @@
     "./commands/intents.md",
     "./commands/login.md",
     "./commands/logout.md",
+    "./commands/report-bug.md",
     "./commands/skills.md",
     "./commands/start.md",
     "./commands/status.md",
@@ -15,7 +16,7 @@
     "./commands/update.md"
   ],
   "displayName": "ProvenMap Connect",
-  "version": "0.25.4",
+  "version": "0.26.0",
   "metadata": {
     "releasedAt": "2026-09-19"
   },
