@@ -60,7 +60,7 @@ session analysis as a draft batch.
    (older server) fall back to description-guided + house criteria, and say so. Scope: one
    board or `tree`.
 2. **Sweep.** Read per the frame (spine, aspects, layers as relevant); apply the criteria;
-   build the insights as `InsightDraft[]` — element-anchored by slug (trail with real board+node slugs), severity + polarity, a recommendation each. When the fix is a diagram change (add/remove/modify a node or edge), set `proposal` on the insight rather than creating a separate object.
+   build the insights as `InsightDraft[]` — each trail anchored on real board+node slugs, severity + polarity, a recommendation each; the words per `${CLAUDE_PLUGIN_ROOT}/knowledge/insight-writing/SKILL.md` (plain text, display names, the finding — never the walk). When the fix is a diagram change (add/remove/modify a node or edge), set `proposal` on the insight rather than creating a separate object.
 3. **Review with the architect — the grill in reverse.** Walk the insights; they challenge, you
    defend or drop. Keep only what survives.
 4. **Record.** `create_insight` with the surviving `InsightDraft[]` — a draft batch, visible in

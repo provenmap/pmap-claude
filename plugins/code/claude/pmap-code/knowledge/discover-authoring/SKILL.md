@@ -82,4 +82,4 @@ architect: nothing else).
 - [references/context-board-payload.md](references/context-board-payload.md) — the context-board payload schema and its gates
 - [references/c4-reading.md](references/c4-reading.md) — how a drawn board reads as a C4 diagram: what each instrument asserts, and the note style per level
 - [references/discover-workflow.md](references/discover-workflow.md) — the command's Steps 2–7, clause by clause
-- [../insights/references/report-output-format.md](../insights/references/report-output-format.md) — InsightDraft, Trail, Stop, Proposal (shared with `/insights`)
+- `${CLAUDE_PLUGIN_ROOT}/knowledge/insight-writing/SKILL.md` — how every insight and context-board word is written (shared with `/insights`)

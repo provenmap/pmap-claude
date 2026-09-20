@@ -45,7 +45,7 @@ its responsibility in this answer. Keep the rest of the note for the inspector.
 |---|---|---|
 | Context | the system's job for the person or system beside it | "Takes every order from the storefront; the only path to fulfilment." |
 | Container | the unit's responsibility and how it is reached | "Node.js / Fastify. Every checkout and refund passes here; 4 dependents, no fallback." |
-| Component | the part's role inside its container | "Validates the cart before `orders` writes it; called on every checkout." |
+| Component | the part's role inside its container | "Validates the cart before Orders writes it; called on every checkout." |
 
-Name elements by slug in backticks, cite the numbers the brief gives, and never describe a
-colour, a size or a line weight — the canvas shows those.
+The words follow `${CLAUDE_PLUGIN_ROOT}/knowledge/insight-writing/SKILL.md`; on top of it, never describe
+a colour, a size or a line weight — the canvas shows those.

@@ -3,6 +3,11 @@
 You have ONE brief (a JSON file) and must write ONE output file at `brief.output`. This is the
 whole contract. Read the brief first; everything you need is inside it.
 
+**How the words read is one shared contract — read `knowledge/insight-writing/SKILL.md` before
+you write any** (from this file's folder: `../../insight-writing/SKILL.md`). It governs every text
+field below (insight and context board alike): the reader, the five rules, the limits. This file
+adds only what is particular to a brief.
+
 ## The brief
 
 | Field | What it is |
@@ -32,22 +37,15 @@ Write a `PushInsightsCommand`:
 
 The first `InsightDraft`:
 
-- `name` — the candidate's `title`, or a sharper one (≤100 chars, a claim, not a question).
-- `insight` — 5–500 chars of EVIDENCE: what the graph shows, with the numbers from `why[]`
-  and `measurement`, naming elements by slug. No opinions here.
-- `polarity`, `priority` — copy from the candidate.
+- `name`, `insight`, `impact`, `advice` — written per insight-writing. Start `name` from the
+  candidate's `title`; draw the evidence from `packSlice` descriptions, `why[]` and `measurement`.
+- `polarity`, `priority`, `measurement`, `proposal` — copy from the candidate when present.
 - `confidence` — `verified` only if `verify: "source"` and you read the file; else `inferred`.
-- `impact` — one sentence on the consequence (optional, ≤300 chars).
-- `measurement` — copy from the candidate when present.
-- `advice` — `{ kind: "recommendation", text, effort }` for risk/opportunity; `{ kind:
-  "context", text }` for observation. One object, never both.
 - `trail` — **copy `candidate.trail` verbatim.** You may edit a stop's `note` (≤200 chars) to
   make it read better; never add, remove, reorder or re-point a stop, and never change a
-  `via.edge`, `via.direction`, `board` or `node` value. A `layer` stop's note says what the
-  crossing shows the reader (the code inside the dependent that makes the call; the climb back
-  onto the owner before the parent edge) — the camera changes board there, so the note is what
-  they read on arrival.
-- `proposal` — copy when present.
+  `via.edge`, `via.direction`, `board` or `node` value. A note says what THIS part does in the
+  story (the code inside the dependent that makes the call; the module that receives it) — never
+  how the view got there.
 
 Up to two more `InsightDraft`s are allowed, each a single-stop point finding on the same
 anchor (`trail: [{ id: "s1", board, node }]`) that the slice supports — a consumer a hub lists
@@ -57,27 +55,24 @@ instead of drawing, an unowned hub, a missing description. Skip them unless they
 
 Write a `ContextBoardPayload`: start from `candidate.draft` and change ONLY these:
 
-- `name` — ≤100 chars; the question's answer as a title ("Blast radius of Event Bus").
-- `question` — keep the candidate's question, or sharpen it.
-- `description` — ≤500 chars: what the board shows and why it matters, with numbers.
-- `nodes[].note` — ≤300 chars per node: why THIS node is on the board, in the reader's terms.
-  The subject's and the first ring's notes show on the canvas (they are sized `xl`/`lg`), so
-  write them as a C4 reader expects — what it is, the technology if known, its responsibility in
-  this answer ([c4-reading.md](c4-reading.md)).
+- `name`, `question`, `description`, `nodes[].note` — written per insight-writing; keep the
+  candidate's question or sharpen it. The subject's and the first ring's notes show on the canvas
+  (they are sized `xl`/`lg`), so write them as a C4 reader expects — what it is, the technology if
+  known, its responsibility in this answer ([c4-reading.md](c4-reading.md)).
 
 Never change `nodes[].slug`, `type`, `parentSlug`, `source`, any `edges[]` entry, `subject`,
 `styles` or `view`. Do not add or remove nodes or edges. Copy `candidate.draft.ledger` if present.
 
 ## Prose that fits the family
 
-- **chokepoint** — "N things run through `x`; K of them have no alternative." Risk unless the
+- **chokepoint** — "N things run through X; K of them have no alternative." Risk unless the
   family is one that is supposed to be busy (gateway, datastore, channel, endpoint).
 - **cascade** — outage narrative, ring by ring: the hub, the direct dependents, the downstream.
 - **journey** — plain steps in order: where work enters, who does the work, where it ends.
 - **cycle** — name the loop; the consequence is that no member can change alone.
 - **boundary** — what leaves the container, and into which containers.
 - **shared-store** — which containers reach the store; the coupling a schema change travels.
-- **unowned-hub** — the fan-in, then the gap: nobody recorded as owner.
+- **unowned-hub** — how much depends on it, then the gap: nobody recorded as owner.
 - **seam** — what strains, and what the proposed split would take with it.
 - **handoff** — the one element inside the drill-down that reaches out, which parent-board nodes
   it reaches, and whether it is the whole seam (a strength) or one of several.

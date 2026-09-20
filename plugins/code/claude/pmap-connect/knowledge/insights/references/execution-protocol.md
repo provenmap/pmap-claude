@@ -182,19 +182,14 @@ For each finding, create an `InsightDraft` with a trail grounded on pack slugs:
 }
 ```
 
-Field guide:
+Two references own this shape — read both before drafting, and restate neither:
 
-- **`name`** — short label (≤ 100 chars), imperative.
-- **`insight`** — evidence-driven description (5–500 chars). State _what_ you found and _why_ it matters. Opinions live in `advice.text`.
-- **`polarity`** — one of `risk`, `strength`, `opportunity`, `observation`.
-- **`priority`** — one of `critical`, `high`, `medium`, `low`.
-- **`confidence`** — one of `verified` (read the code), `likely` (strong evidence), `inferred` (derived from patterns), `speculative` (pattern-match guess). Be honest; the renderer surfaces this.
-- **`impact`** — optional. Consequence if unaddressed (risk/opportunity) or gained by leveraging (strength). Max 300 chars.
-- **`measurement`** — optional. Attach quantitative data to any polarity: `{ value, unit, baseline?, threshold?, trend? }`.
-- **`tags`** — free-text classification keywords (max 10).
-- **`advice`** — one object: `{ kind: "recommendation", text, effort }` when there is a concrete action; `{ kind: "context", text }` for background only. Never both. `effort` (`trivial`|`small`|`medium`|`large`|`epic`) is required for recommendations, omitted for context.
-- **`trail`** — minimum 1 stop. See [report-output-format.md](report-output-format.md#trail) for the full Stop schema.
-- **`proposal`** — optional. Set when the finding proposes a structural board change. See [report-output-format.md](report-output-format.md#proposal).
+- **The words** (`name`, `insight`, `impact`, `advice.text`, every stop `note`, the push's `info`):
+  `${CLAUDE_PLUGIN_ROOT}/knowledge/insight-writing/SKILL.md` — the reader, the five writing rules, the
+  limits. The text renders as plain text beside the trail: no markdown, display names not slugs,
+  and never a description of the trail itself.
+- **The schema** (enums, `measurement`, `advice`, `trail`/Stop/`via`, `proposal`):
+  [report-output-format.md](report-output-format.md).
 
 #### Multi-stop trail example
 

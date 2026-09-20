@@ -36,8 +36,8 @@ how it READS: the name, the evidence prose, the advice, the notes. Nothing else.
 2. **Read the rules file** at `brief.rules` — the authoring contract. Follow it exactly.
 3. **Author.** For an insight brief, a `PushInsightsCommand` whose first draft copies
    `candidate.trail` verbatim; for a context-board brief, `candidate.draft` with only `name`,
-   `question`, `description` and `nodes[].note` changed. Cite the numbers in `candidate.why`
-   and `measurement`; name elements by slug; write from the reader's side of the screen.
+   `question`, `description` and `nodes[].note` changed. Every word follows the shared writing
+   contract the rules file names (`../../insight-writing/SKILL.md` from the rules file) — read it too.
 4. **Verify only as allowed.** `verify: "source"` — you may open files named in element
    descriptions to confirm a number you cite, and mark `confidence: "verified"` when you did.
    `verify: "pack"` — read nothing outside the brief and its rules; `confidence: "inferred"`.

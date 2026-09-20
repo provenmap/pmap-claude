@@ -11,7 +11,7 @@ Each finding is one `InsightDraft`:
 ```json
 {
   "name": "Short title ≤100 chars",
-  "insight": "What was found and why it matters. Evidence only. 5–500 chars.",
+  "insight": "The finding and its evidence, plain text. 5–500 chars.",
   "polarity": "risk | strength | opportunity | observation",
   "priority": "critical | high | medium | low",
   "confidence": "verified | likely | inferred | speculative",
@@ -24,12 +24,16 @@ Each finding is one `InsightDraft`:
 }
 ```
 
+This file is the schema. How the text fields are WRITTEN — `name`, `insight`, `impact`,
+`advice.text`, stop `note`s — is `${CLAUDE_PLUGIN_ROOT}/knowledge/insight-writing/SKILL.md`, the one
+contract every insight flow shares.
+
 ### Fields
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `name` | string (≤100) | Yes | Short, imperative title. |
-| `insight` | string (5–500) | Yes | Evidence-driven description — what was found and why it matters. No opinions here. |
+| `name` | string (≤100) | Yes | The finding as a claim. |
+| `insight` | string (5–500) | Yes | The finding and its evidence. No opinions here. |
 | `polarity` | enum | Yes | `risk` \| `strength` \| `opportunity` \| `observation`. |
 | `priority` | enum | Yes | `critical` \| `high` \| `medium` \| `low`. |
 | `confidence` | enum | Yes | `verified` (read the code) \| `likely` (strong evidence) \| `inferred` (derived from patterns) \| `speculative` (pattern-match guess). |
