@@ -63,17 +63,19 @@ the portal, where architects promote them to intents. The division of labour is 
 Rules that make the loop work:
 
 - **Stable ids.** `id` must be the vendor's own fingerprint (Sentry issue shortId, CloudWatch alarm
-  ARN tail, cost-anomaly id). It becomes the skeleton's insight id, which is what REPLACE-mode pushes and
-  promoted intents key on across runs. Same underlying problem ⇒ same id, every run.
+  ARN tail, cost-anomaly id). It becomes the skeleton's insight id, which is what promoted intents
+  key on across runs. Same underlying problem ⇒ same id, every run.
 - **One primary measurement.** Pick the number that best quantifies the signal (event count, p95
   latency, spend delta). Everything else goes in the insight's prose, not the wire.
 - **Locators in priority order.** The first locator to match becomes the insight's primary
   element; later matches become `relatedElements`. Lead with the most specific locator you have
   (a stack frame beats a service name).
 - **Windowing is stateless.** Use the configured window (default 7 days, or `windowDays` from
-  `.provenmap/monitoring/config.json`). Overlapping windows are safe: stable ids + REPLACE mode
-  make re-reported signals idempotent. Do not depend on local state files — scheduled cloud runs
-  start from a fresh clone.
+  `.provenmap/monitoring/config.json`). Overlapping windows are safe: each push asks the server
+  for this skill's earlier batches under the board and names them in `replacesBatchIds`, so a
+  re-reported signal replaces its unreviewed predecessor instead of piling up (reviewed and
+  promoted ones stay). Do not depend on local state files — scheduled cloud runs start from a
+  fresh clone.
 
 ## How matching works (so you can predict it)
 

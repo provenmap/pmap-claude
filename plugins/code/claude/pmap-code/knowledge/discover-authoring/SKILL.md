@@ -26,7 +26,7 @@ differs: the bound board's tree for code and connect, the whole workspace for th
 | Answers | "Why does everything run through `x`?" | "What is the blast radius of `x`?" |
 | Anchored on | one element, with an edge-grounded trail | one subject, with its neighbourhood drawn |
 | Lives | under the trail's entry board, in the Insights Bar | in the hub's Context boards card, outside the tree |
-| Filed as | the `architecture-highlights` skill, replace mode | a `contextmap` board with provenance on every element |
+| Filed as | the `architecture-highlights` skill, one batch per run | a `contextmap` board with provenance on every element |
 | Script owns | the trail, polarity, priority, measurement | the nodes, edges, containment, styles |
 | Agent owns | name, evidence prose, advice, up to two point findings | name, question, description, the per-node notes |
 
@@ -72,8 +72,10 @@ architect: nothing else).
    never four. A failed push is fixed once from `validationErrors`, else marked failed and the
    run continues.
 5. **Re-runs replace.** The previous run's context boards are removed before this run's first
-   push; insights replace through the skill's `replace` mode. A board edited since we drew it is
-   kept and named.
+   push; its insight batches ride the ledger as `cleanup.insightBatches` and are named in
+   `replacesBatchIds` on this run's first insight push, so their unreviewed insights go as the
+   new batch lands (reviewed ones stay). Only a run for the same primary board carries them. A
+   board edited since we drew it is kept and named.
 
 ## References
 

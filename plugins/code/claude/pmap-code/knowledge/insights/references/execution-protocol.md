@@ -208,9 +208,9 @@ When a finding traces a flow (blast radius, dependency cascade, auth path), use 
     "text": "Bcrypt cost factor is 14, set in 2019; modern hardware supports 12 without weakening security."
   },
   "trail": [
-    { "id": "s1", "board": "my-project-overview", "node": "api-gateway", "note": "Entry — rate limited" },
-    { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "api-gateway--calls--auth-service" }, "board": "my-project-overview", "node": "auth-service", "note": "850ms p99" },
-    { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "auth-service--calls--user-db" }, "board": "my-project-overview", "node": "user-db", "note": "Read per request" }
+    { "id": "s1", "board": "my-project-overview", "node": "api-gateway", "note": "Every login arrives here, rate limited" },
+    { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "api-gateway--calls--auth-service" }, "board": "my-project-overview", "node": "auth-service", "note": "Spends 850ms at p99 comparing bcrypt hashes" },
+    { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "auth-service--calls--user-db" }, "board": "my-project-overview", "node": "user-db", "note": "Reads the user record on every request, uncached" }
   ]
 }
 ```

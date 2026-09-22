@@ -88,11 +88,17 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-boards.js --reset
 ```
 
 It removes every analysis-derived artifact (board JSONs, the manifest, per-board stores,
-`tree-plan.json`, `plan-run.json`, `group-plan.json`, `styling/`, `coverage.json`, the insight
-context packs, the dispatch log) and keeps auth, binding, config, the role map, the archetype
-lock and proposals, the skeleton cache and everything captured by hand. Print its `display`
+`tree-plan.json`, `plan-run.json`, `group-plan.json`, `styling/`, `coverage.json`, the dispatch
+log) **and everything `/discover` derived from those boards** — its plan, briefs, packs and
+ledger, the authored insight and context-board payloads, and the record of which insight batches
+were pushed. An insight is a trail through the boards being deleted, so it cannot outlive them.
+It keeps auth, binding, config, the role map, the archetype lock and proposals, the skeleton
+cache, the connect domain's evidence links and everything captured by hand. Print its `display`
 verbatim, then run full analysis from scratch (Steps 0–9) against a freshly computed plan. Use
 when the codebase has changed significantly or the incremental result looks stale.
+
+Because `--clean` throws away authored insights, say so before running it when the user has any:
+`--reset --dry-run` lists them by name.
 
 `--reset --dry-run` reports what would go without deleting it — use it when the user asks what
 `--clean` will throw away.

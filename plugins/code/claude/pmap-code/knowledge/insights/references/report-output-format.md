@@ -111,7 +111,7 @@ Every insight must have at least 1 stop. A single stop = a point finding. Multip
     "id": "s1",
     "board": "my-project-overview",
     "node": "api-gateway",
-    "note": "Entry point — rate limited 10 req/s"
+    "note": "Every login arrives here, rate limited to 10 req/s"
   },
   {
     "id": "s2",
@@ -119,7 +119,7 @@ Every insight must have at least 1 stop. A single stop = a point finding. Multip
     "via": { "kind": "edge", "edge": "api-gateway--calls--auth-service" },
     "board": "my-project-overview",
     "node": "auth-service",
-    "note": "Validates credentials — hardcoded JWT secret here"
+    "note": "Validates credentials; the JWT secret is a string literal in this file"
   },
   {
     "id": "s3",
@@ -127,7 +127,7 @@ Every insight must have at least 1 stop. A single stop = a point finding. Multip
     "via": { "kind": "edge", "edge": "auth-service--calls--user-db" },
     "board": "my-project-overview",
     "node": "user-db",
-    "note": "Reads user record"
+    "note": "Reads the user record on every request"
   }
 ]
 ```
@@ -225,9 +225,9 @@ A structural change proposed by this finding. Set `proposal` on the finding whos
     "text": "Bcrypt cost factor is 14, set in 2019; modern hardware supports 12 without weakening security."
   },
   "trail": [
-    { "id": "s1", "board": "my-project-overview", "node": "api-gateway", "note": "Entry — rate limited" },
-    { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "api-gateway--calls--auth-service" }, "board": "my-project-overview", "node": "auth-service", "note": "850ms p99" },
-    { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "auth-service--calls--user-db" }, "board": "my-project-overview", "node": "user-db", "note": "Read per request" }
+    { "id": "s1", "board": "my-project-overview", "node": "api-gateway", "note": "Every login arrives here, rate limited" },
+    { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "api-gateway--calls--auth-service" }, "board": "my-project-overview", "node": "auth-service", "note": "Spends 850ms at p99 comparing bcrypt hashes" },
+    { "id": "s3", "from": "s2", "via": { "kind": "edge", "edge": "auth-service--calls--user-db" }, "board": "my-project-overview", "node": "user-db", "note": "Reads the user record on every request, uncached" }
   ]
 }
 ```
@@ -266,7 +266,7 @@ A structural change proposed by this finding. Set `proposal` on the finding whos
     "effort": "large"
   },
   "trail": [
-    { "id": "s1", "board": "my-project-overview", "node": "payment-service", "note": "SPOF — outage starts here" },
+    { "id": "s1", "board": "my-project-overview", "node": "payment-service", "note": "An outage starts here — no caller has a circuit breaker" },
     { "id": "s2", "from": "s1", "via": { "kind": "edge", "edge": "order-service--calls--payment-service" }, "board": "my-project-overview", "node": "order-service", "note": "Blocks on retries", "branchLabel": "order path" },
     { "id": "s3", "from": "s1", "via": { "kind": "edge", "edge": "notification-service--calls--payment-service" }, "board": "my-project-overview", "node": "notification-service", "note": "Skips confirmation", "branchLabel": "notification path" },
     { "id": "s4", "from": "s1", "via": { "kind": "edge", "edge": "analytics--calls--payment-service" }, "board": "my-project-overview", "node": "analytics", "note": "Misses events", "branchLabel": "analytics path" }
@@ -290,7 +290,7 @@ A structural change proposed by this finding. Set `proposal` on the finding whos
   },
   "trail": [
     { "id": "s1", "board": "my-project-overview", "node": "auth-service" },
-    { "id": "s2", "from": "s1", "via": { "kind": "proposedEdge" }, "board": "my-project-overview", "node": "redis-cache", "proposed": true, "parent": "infra-container", "note": "New node proposed here" }
+    { "id": "s2", "from": "s1", "via": { "kind": "proposedEdge" }, "board": "my-project-overview", "node": "redis-cache", "proposed": true, "parent": "infra-container", "note": "A session cache here would take the per-request read off the user database" }
   ],
   "proposal": {
     "action": "add",

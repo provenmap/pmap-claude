@@ -7,43 +7,30 @@ branch, prompt, and rule below is part of the contract.
 
 Throughout: print every `display` field **verbatim — do not reformat, reorder, or summarise it**.
 
-## Step 2.5: Binding-scope check (carry the previous binding's work forward, or start clean)
+## Step 2.5: Binding-scope check (the local analysis must belong to the bound board)
 
-The manifest can carry boards from a **previous binding**: after `/login switch` (or `/configure`'s
-change-board path) the boards analysed under the old binding are still on disk, outside the new
-bound board's tree. Syncing one as-is would push at a board that belongs to another binding's tree,
-and both the CLI and the server refuse it — but the analysis itself is work already paid for, and
-the new board is usually empty. Check before picking boards:
+The manifest records which board the local analysis was built for — board and workspace by name.
+After `/login switch` (or `/configure`'s change-board path) that can be a different board than the
+one now bound. Local analysis is rebuildable, so it is never moved onto another board: the check
+reports the mismatch and the user picks a side. Check before picking boards:
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-boards.js --check-scope
 ```
 
-Parse the JSON output (`bindingScope`): `carriedOverBoards` (analysed boards — provenance on disk),
-`residueBoards` (mirrors, nothing analysed), `carriedOverEvidence` (connect only; informational —
-the next `--pull` carries them).
+Parse the JSON output (`bindingScope`): `status`, `mismatchedBoards` (analysed boards built for a
+different board), `residueBoards` (mirrors, nothing analysed), `carriedOverEvidence` (connect only;
+informational — the next `--pull` carries them).
 
-- **Both lists empty** → proceed silently to Step 3.
-- **`carriedOverBoards` non-empty** → print the `display` field verbatim, then ask with
-  **AskUserQuestion** — "N analysed board(s) from the previous binding — push them to `<bound>`?"
-  with options:
-  - **Migrate to `<bound>` and push (recommended)** → run
-    `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-boards.js --migrate`. **Exit 0** → print its `display` verbatim
-    (the root is renamed to the bound slug, child boards keep their slugs and are re-parented, sync
-    state is reset so Step 4 pushes every board in full) and continue to Step 3 — the migrated
-    boards are now in scope. **Exit 3** → relay `error` verbatim; when `migrate.status` is
-    `target_not_empty` the bound board already holds nodes on the server and the push would REPLACE
-    them — ask with **AskUserQuestion** "Replace the N node(s) already on `<bound>`?" (**Replace
-    them** → re-run with `--migrate --force`, print `display`, continue; **Keep them** → stop and name
-    `/analyze` for a fresh analysis of the bound board). Any other exit-3 reason
-    (`target_has_analysis`, `ambiguous`) → stop; the error names the fix.
-  - **Start from a clean slate** → run
-    `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-boards.js --prune-foreign --delete`, print its `display`
-    verbatim (the previous binding's local analysed state is deleted), then **stop** — there is
-    nothing left to sync: name `/analyze` for a fresh analysis of `<bound>`.
-  - **Skip for now** → continue, but only in-scope boards may be synced; the offer will reappear on
-    every sync until decided.
-- **Only `residueBoards` non-empty** → print the `display` field verbatim, then ask with
+- **`status: "mismatch"`** → print the `display` field verbatim and **stop — sync nothing**. It
+  names both boards and workspaces and the only two ways out: `/login switch` back to the board the
+  analysis belongs to, or `/analyze --clean` to delete the local analysis and build a fresh
+  one for the bound board. Run neither for the user — the choice is theirs. When the bound board
+  was simply **renamed** on the server the panel says so and offers only `/analyze --clean`;
+  do not suggest `/login switch` there — it is the same binding and would change nothing. (The
+  Step 0 preflight normally stops on this same panel first, exit 2.)
+- **`residueBoards` and `mismatchedBoards` both empty** → proceed silently to Step 3.
+- **`residueBoards` non-empty** → print the `display` field verbatim, then ask with
   **AskUserQuestion** — "Archive N stale board(s) from a previous binding?" with options:
   - **Archive now (recommended)** → run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-boards.js --prune-foreign`,
     print its `display` verbatim (files move to `.provenmap/boards/_orphaned/`, reversible), then
@@ -52,8 +39,8 @@ the next `--pull` carries them).
   - **Skip for now** → continue, but only in-scope boards may be synced; the warning will reappear on
     every sync until cleaned.
 
-Never run `--migrate`, `--prune-foreign`, or `--delete` without the user's answer — the analysis
-belongs to them, and a clean slate is not reversible.
+Never run `--prune-foreign` or `--delete` without the user's answer. `--prune-foreign` exits 3 on a
+mismatch — relay its `error` verbatim and stop.
 
 ## Step 3: Determine boards to sync
 

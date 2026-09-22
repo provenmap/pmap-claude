@@ -47,6 +47,21 @@ Good: "Every skill script reaches the shared schema through one chain: blog-publ
 attention module, which needs correlation-keys to normalise URLs, which takes its DATE, MONTH
 and SLUG rules from the schema. A change to those rules changes how every skill matches threads."
 
+## The steps
+
+Each stop's `note` is read on its own, as the reader arrives at that part. Give every step one
+plain sentence about what matters THERE for this finding:
+
+- **why the call is made or what is handed over** — "Needs the canonical URL to match threads
+  across silos", not "imports from correlation-keys";
+- **or what this part does in the story** — "Validates the cart before Orders writes it";
+- **or the fact that makes it matter** — "12 modules depend on this; none has a fallback".
+
+Never a role label ("Entry", "Ring 1", "Terminal hop", "Also depends on it"), never how the view
+got there ("Descend into lib", "Up to the parent"), never the bare name of what is already on
+screen. A script-written note that already says something real may stay; replace any that only
+labels. Keep steps consistent with the `insight` text — same names, no new claims.
+
 ## The text fields
 
 | Field | Limit | What goes in it |
@@ -55,7 +70,7 @@ and SLUG rules from the schema. A change to those rules changes how every skill 
 | InsightDraft `insight` | 5–500 | The finding and the evidence for it, per the rules above. Facts only — opinions go in `advice.text`. |
 | InsightDraft `impact` | ≤300, optional | One sentence: the consequence if a risk is left, or the gain if a strength or opportunity is used. |
 | InsightDraft `advice.text` | 5–500 | `recommendation` (with `effort`): the concrete action. `context`: background worth knowing. One object, never both. |
-| Trail stop `note` | ≤200 | What THIS part does in the story ("Validates the cart before Orders writes it") — never how the view got there. |
+| Trail stop `note` | ≤200 | One sentence per "The steps" above: what matters at this part for this finding. |
 | Push `info` | ≤350 | What this run surfaced, specifically: "3 auth risks incl. a hardcoded JWT secret". |
 | Context board `name` | ≤100 | The question's answer as a title: "Blast radius of Event Bus". |
 | Context board `description` | ≤500 | What the board answers and why it matters, with the numbers that are facts about the system. |

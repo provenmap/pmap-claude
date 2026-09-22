@@ -205,16 +205,20 @@ Credentials live in ONE place — `.provenmap/credentials.json`, never the chat.
   (`bindingToken` + `apiSecret` + `boardSlug`), since a different board is a different
   binding with its own secret. The `--rebind` flag is what unlocks the board picker —
   without it, a bound project's login is authentication-only:
-  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain code --plugin-version 0.27.1` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
+  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain code --plugin-version 0.28.0` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
   2. After they sign in, pick the new board, and confirm, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain code` (give the Bash call ~250s; re-run on `status: "pending"`). Print `display` verbatim.
   3. On `status: "complete"`, the config now points at the newly selected board — the `display` panel already shows it.
-  4. **Nothing analysed here is thrown away silently.** The boards analysed under the previous
-     binding stay on disk (the `display` names them as kept), and the next `/sync` asks whether to
-     **migrate** them to the new board — the root is renamed to the new bound slug, child boards
-     are re-parented, sync state is reset, and the push carries the whole tree — or to **start
-     from a clean slate**: delete that local analysed state and run a fresh analysis of the new
-     board. Only server mirrors (nothing analysed) are archived on their own. On the connect plugin the evidence links recorded against the previous board are
-     carried into the new board's store on the next `--pull`, for review before pushing.
+
+  4. **Local analysis belongs to the board it was built for.** It stays on disk untouched, and when
+     it was built for a different board than the new one, the `display` says so — both boards and
+     workspaces by name — and every analysis and sync command stops on that same panel until the
+     user picks one of the two ways out: `/login switch` back to that board, or `/analyze --clean`
+     to delete it — with everything `/discover` derived from it — and build a fresh one for the new
+     board. Nothing is moved between boards. Only server mirrors (nothing analysed) are archived on
+     their own. A board that was merely **renamed** on the server reads as its own panel with one
+     way out (`/analyze --clean`); `/login switch` cannot help there.
+
+
 - **Update specific fields** — have the user edit `.provenmap/config.json` (settings) or
   `.provenmap/credentials.json` (the pair), then confirm and re-verify.
 - **Re-run verification** against the current file.
