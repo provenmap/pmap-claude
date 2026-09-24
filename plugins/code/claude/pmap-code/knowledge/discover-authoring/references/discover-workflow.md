@@ -2,10 +2,10 @@
 
 The command body carries the preflight, the feature check and Step 1 (the plan). This reference
 is the contract for the rest: follow it clause by clause; improvise nothing. Every CLI `display`
-prints verbatim. `<cli>` below is `${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js` for the Code and
-Connect plugins and `${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js` for the Architect plugin. The
+prints verbatim. `<cli>` below is `${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js` for the Code plugin
+and `${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js` for the Architect plugin. The
 modes and their exit codes are identical; two spellings differ and are written out where they
-occur: the Code and Connect CLI takes `--domain code` (and `--host claude` on a push)
+occur: the Code CLI takes `--domain code` (and `--host claude` on a push)
 and records an insight with `--save-insight`, the Architect CLI takes neither and records an
 insight with `--push-insight`.
 
@@ -45,7 +45,7 @@ re-run Step 1 with `--lens <a,b>` and print the new `display` before going on.
 ## Step 4 — Briefs
 
 ```bash
-# Code / Connect
+# Code
 node <cli> --briefs <ids|recommended> --rules ${CLAUDE_PLUGIN_ROOT}/knowledge/discover-authoring/references/authoring.md [--board-slug <slug>] [--plan <path>] --domain code
 # Architect
 node <cli> --briefs <ids|recommended> --rules ${CLAUDE_PLUGIN_ROOT}/knowledge/discover-authoring/references/authoring.md [--board <slug>] [--plan <path>]
@@ -76,23 +76,22 @@ lands results as it goes.
 
 For each output of the wave, in plan order:
 
-- an **insight** brief's output — Code / Connect:
+- an **insight** brief's output — Code:
   `node <cli> --save-insight <output> --require-pack --push --host claude --domain code`; Architect:
   `node <cli> --push-insight <output> --require-pack --push [--board <slug>]`.
-- a **context-board** brief's output — Code / Connect:
+- a **context-board** brief's output — Code:
   `node <cli> --push-context-board <output> --require-pack --push --host claude --domain code`; Architect:
   `node <cli> --push-context-board <output> --require-pack --push [--board <slug>]`.
 - `--board <slug>` on the Architect CLI names the subtree the plan was built for when it was not
   the whole tree; the pack it validates against is the one `--discover` cached for that root.
-  The Code and Connect CLI reads that root from the run's ledger — never pass `--board-slug` on
+  The Code CLI reads that root from the run's ledger — never pass `--board-slug` on
   a push, and never build a pack for an insight's own board: a trail crosses boards, and only
   the run's pack holds all of them.
 
 Exit 0 → print the one-line outcome (pushed, or `notAvailable` with its message). Exit 3 with
 `validationErrors[]` → fix the listed fields in the output file yourself (copy any "did you mean"
 value verbatim) and retry ONCE; still failing → leave it, say which item and why, continue with
-the next. Exit 3 with `errorType: "auth_invalid"`, or exit 1 → the **connect-now offer** (Code
-and Connect) or the command's failure branch (Architect); on `complete` resume this push. Any `warnings[]` print once; never loop on a warning. A missing
+the next. Exit 3 with `errorType: "auth_invalid"`, or exit 1 → the **connect-now offer** (Code) or the command's failure branch (Architect); on `complete` resume this push. Any `warnings[]` print once; never loop on a warning. A missing
 output file (the agent replied `not written`) is skipped with its reason.
 
 Push from THIS session, never from an agent: one paced writer.
@@ -101,7 +100,7 @@ Push from THIS session, never from an agent: one paced writer.
 
 ```bash
 node <cli> --report            # Architect
-node <cli> --report --domain code   # Code / Connect
+node <cli> --report --domain code   # Code
 ```
 
 Print `display` verbatim. Then one closing sentence: how many landed, where to look (the

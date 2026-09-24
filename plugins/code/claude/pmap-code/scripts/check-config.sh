@@ -56,7 +56,7 @@ else
         board_count=$(jq -r '.boards | length // 0' "$MANIFEST_FILE" 2>/dev/null || echo "0")
         output="$output $board_count board(s) tracked locally."
     else
-        output="$output No analysis found. Run /analyze to scan your codebase."
+        output="$output No boards tracked locally yet."
     fi
     if [ ! -d "$BOARDS_DIR" ]; then
         output="$output Local board state is missing — the next ProvenMap command will restore it from the server."

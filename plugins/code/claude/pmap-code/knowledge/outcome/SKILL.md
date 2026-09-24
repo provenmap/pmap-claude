@@ -32,10 +32,10 @@ the whole Outcome is one line.
 
 ## Reading the brief
 
-`node <plugin>/scripts/pmap-status.js --brief --domain <d> --command <name>` (code, connect) or
+`node <plugin>/scripts/pmap-status.js --brief --command <name>` (code) or
 `pmap-architect.js --brief --command <name>` returns JSON. Some results already carry it as
-`brief` — `/sync`'s push, `/analyze`'s plan close, `/intents`' resolution, the completed
-`/login` — use that and skip the call.
+`brief` — `/sync`'s push, `/analyze`'s plan close, `/ground`'s push, `/work-items`' resolution, the
+completed `/login` — use that and skip the call.
 
 - **`gates`** — blocking conditions with their `fix`. A gate is the whole of Next, alone: "Next:
   `git switch main` — the binding is pinned to main and every push refuses until you are on it."
@@ -51,7 +51,7 @@ the whole Outcome is one line.
 ## The eight rules
 
 1. **Done cites this run.** Numbers and names from the results above — nodes pushed, boards
-   skipped, gaps recorded, intents resolved, files written.
+   skipped, gaps recorded, work items resolved, files written.
    - Bad: `Done: sync completed successfully.`
    - Good: `Done: pushed payments-overview — 12 nodes, 8 edges, verified against the read-back.`
 2. **Left is honest.** Skipped steps, waived files, undrawn nodes, a failed verification, a
@@ -62,11 +62,11 @@ the whole Outcome is one line.
    this run — never a description of the command (`/help` has those). Blocking gates come first
    and alone. At most two alternatives.
    - Bad: `Next: /insights — run intelligence over the board.`
-   - Good: `Next: /intents — the architect promoted 2 findings from batch b-12 into intents for this board.`
+   - Good: `Next: /work-items — the architect promoted 2 findings from batch b-12 into work items for this board.`
 4. **Candidates or justified.** A move is one of the brief's candidates, or a named `state` fact
    justifies it. No invented flags, no invented commands, no command the state makes impossible.
    Another plugin's command is never a move — that is a hand-off.
-   - Bad: `Next: /intents --force` (no such flag) · `Next: /pmap-architect:insights` (another session)
+   - Bad: `Next: /work-items --force` (no such flag) · `Next: /pmap-architect:insights` (another session)
    - Good: `↪ The architect can review payments-overview in ProvenMap now.`
    - The one move no brief carries: when a script failed in a way the run could neither explain
      nor work around, `/report-bug` may follow the fix-or-retry move — it drafts a report with
@@ -81,11 +81,10 @@ the whole Outcome is one line.
      question the review raised.`
 7. **No Outcome on a plain answer.** A turn that answered a question without running a workflow
    ends like a colleague's reply. The Outcome belongs to commands and routed workflows.
-8. **Verbatim stays verbatim for tables.** A `display` field (status report, help card, intents
+8. **Verbatim stays verbatim for tables.** A `display` field (status report, help card, work items
    list) still prints unchanged. The Outcome is the paragraph after it, never a rewrite of it.
 
-## Three Outcomes
-
+## Four Outcomes
 
 After `/sync` that pushed one board and skipped another:
 
@@ -100,7 +99,18 @@ Next: /analyze checkout, then /sync again — that brings the second board curre
 ↪ The architect can review payments-overview in ProvenMap now.
 ```
 
+After `/ground` that re-grounded the board:
 
+```
+**Outcome**
+Done: mirrored payments-overview and pushed 41 evidence links; the 3 that had drifted since the
+  last run are re-linked to the current documents.
+Left: 2 nodes (`refund-policy`, `dispute-flow`) have no citation yet — nothing in docs/ mentions
+  them.
+Next: /insights — the board is grounded for the first time, so the first analysis runs on real
+  evidence. /work-items if you would rather work the architect's queue before that.
+↪ The architect can review payments-overview in ProvenMap now.
+```
 
 After `/update` when nothing changed and the user was mid-sync (one line):
 
@@ -117,7 +127,7 @@ Done: checkout is placed on the landscape as a new_app with 4 target components;
   intent is drafted, not released.
 Left: no skills chosen, no sequenced intents — placed, not build-ready.
 Next: /prepare-app checkout grills the spec into sequenced intents and picks its skills; that is
-  what makes it buildable. /author-intent checkout if you would rather add requirements first.
+  what makes it buildable. /author-work-item checkout if you would rather add requirements first.
 ```
 
 ## What never appears

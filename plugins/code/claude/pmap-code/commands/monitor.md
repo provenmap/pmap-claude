@@ -5,7 +5,7 @@ argument-hint: "[setup | --input <signals-file> | <focus prompt>]"
 allowed-tools: Read, Glob, Grep, Edit, Write, Bash(node:*), AskUserQuestion
 ---
 
-Correlate recent operational signals (Sentry, CloudWatch, cost APIs, …) with your architecture board and push the findings as a draft insight — an architect promotes the actionable ones to **intents**.
+Correlate recent operational signals (Sentry, CloudWatch, cost APIs, …) with your architecture board and push the findings as a draft insight — an architect promotes the actionable ones to **work items**.
 
 Print every `display` verbatim; branch only on exit codes and named fields. An `--input <file>` argument or a focus prompt ("checkout errors only") feeds step 2.
 
@@ -15,9 +15,9 @@ Print every `display` verbatim; branch only on exit codes and named fields. An `
 
 **1 Prerequisites** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --list-insight-skills`. Exit 1, or 3 with `errorType: "auth_invalid"` → **connect-now offer** · 3 otherwise → relay `error` verbatim and stop. Read `.provenmap/monitoring/config.json` (from `/monitor setup`) for sources, window and `insightSkillSlug`; defaults: auto-detected sources, 7-day window, `operational-signals`. If that slug is **not** in the returned `skills[]` → stop: `This ProvenMap server doesn't expose operational-signals monitoring yet — ask your admin to upgrade`.
 
-**Steps 2–6 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/monitoring-correlation/references/run-workflow.md` NOW and follow it exactly; improvise nothing.** It holds every call, flag, branch and prompt; the schema is in the skill beside it. The map: **2 acquire** (you; `--input` or a vendor MCP — neither → stop) · **3 correlate** (`--correlate` matches; one `--from-server` retry, else `/analyze` + `/sync`; the **user** confirms `proposals[]` into `map.json`) · **4 shape** (your judgment, per the insight-shaping rules — output is `InsightDraft[]` with trail stops grounded on pack slugs) · **5 push** (`--save-insight`; `validationErrors[]` gates, `--propose-intents` only when unattended) · **6 report** (summary table + the promote line).
+**Steps 2–6 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/monitoring-correlation/references/run-workflow.md` NOW and follow it exactly; improvise nothing.** It holds every call, flag, branch and prompt; the schema is in the skill beside it. The map: **2 acquire** (you; `--input` or a vendor MCP — neither → stop) · **3 correlate** (`--correlate` matches; one `--from-server` retry, else `/analyze` + `/sync`; the **user** confirms `proposals[]` into `map.json`) · **4 shape** (your judgment, per the insight-shaping rules — output is `InsightDraft[]` with trail stops grounded on pack slugs) · **5 push** (`--save-insight`; `validationErrors[]` gates, `--propose-work-items` only when unattended) · **6 report** (summary table + the promote line).
 
-**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command monitor` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command monitor` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Connect-now offer
 

@@ -1,14 +1,13 @@
 ---
 category: author
-description: "Author · WRITE-CAPABLE: Plan a new system on the existing landscape — grill, place it, sketch its target architecture, draft its founding intent"
+description: "Author · WRITE-CAPABLE: Plan a new system on the existing landscape — grill, place it, sketch its target architecture, draft its founding work item"
 argument-hint: "<name or idea>"
 allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
 ---
 
-Architecture-first inception of one system on an existing landscape.
 Read `${CLAUDE_PLUGIN_ROOT}/knowledge/landscape-modeling/SKILL.md`, `${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`,
 `${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md` and
-`${CLAUDE_PLUGIN_ROOT}/knowledge/intents-authoring/SKILL.md`.
+`${CLAUDE_PLUGIN_ROOT}/knowledge/work-items-authoring/SKILL.md`.
 
 ## Workflow
 
@@ -47,19 +46,19 @@ calls). Composition and size do the work; tokens are the exception — say in th
 how many elements carry none. Two failed rounds → skip, note it, continue; /style-board
 recovers later.
 
-### Step 4 — binding gate, then founding intent
+### Step 4 — binding gate, then founding work item
 
-Draft the founding intent in-session (intents-authoring quality, in the drafts file), then
+Draft the founding work item in-session (work-items-authoring quality, in the drafts file), then
 close landscape-modeling's binding gate:
 
 - Has a repo → offer `convert_node_to_app` with `observationType: 'new_app'` for the system
   planned here, `'existing_app'` only if the grill found existing code.
 - Planning material is a doc → `bind_reference_source` on the new board.
-- Architect defers → narrate the code-bound-board prerequisite; name `/author-intent <board>`
+- Architect defers → narrate the code-bound-board prerequisite; name `/author-work-item <board>`
   as the resume.
 
-Once authorable: `create_intent` (`anchors[]` grounds the L1 sketch), then the
-intents-authoring describe loop.
+Once authorable: `create_work_item` (`anchors[]` grounds the L1 sketch), then the
+work-items-authoring describe loop.
 
 ### Step 5 — build prep (new_app only)
 

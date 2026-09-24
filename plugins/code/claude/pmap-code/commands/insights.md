@@ -9,7 +9,7 @@ allowed-tools: Read, Glob, Grep, Write, Bash(node:*), AskUserQuestion
 
 **-1 Preflight** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js`: 0 → go; 1 → **connect-now offer**; 2 (binding unverified) → print `error`, stop, name `/status`; 11 (branch mismatch) → AskUserQuestion per the branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md`.
 
-**0 Prerequisites** — `boardSlug` from `.provenmap/config.json` is the **primary board**. Then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --list-insight-skills --board-slug <boardSlug> --kind code --domain code`. Exit 2 → stop: "No board data found — run `/analyze` first"; `featureAvailable: false` → stop: "No insight skills available for this account"; empty `skills` → stop: "No insight skills configured — contact your workspace admin". A failed check stops the run. On success `skills[]` is a precis: slug, name, category, description, duration.
+**0 Prerequisites** — `boardSlug` from `.provenmap/config.json` is the **primary board**. Then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --list-insight-skills --board-slug <boardSlug> --domain code`. Exit 2 → stop: "No board data found — run `/analyze` (or `/ground` for a document repo) first"; `featureAvailable: false` → stop: "No insight skills available for this account"; empty `skills` → stop: "No insight skills configured — contact your workspace admin". A failed check stops the run. On success `skills[]` is a precis: slug, name, category, description, duration.
 
 **Steps 1–2 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/insights/references/execution-protocol.md` NOW and follow it exactly; improvise nothing.** It is their contract: every remaining CLI call and flag, the pack shape, every branch and hard rule.
 
@@ -20,7 +20,7 @@ allowed-tools: Read, Glob, Grep, Write, Bash(node:*), AskUserQuestion
 
 **3 Summary** — after the last skill, print one row per skill: Skill | Findings | Trail Stops | Critical | High | Status (`pushed`/`saved`).
 
-**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command insights` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command insights` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Connect-now offer
 

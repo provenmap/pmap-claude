@@ -24,4 +24,4 @@ If the script exits non-zero, `display` already explains what went wrong (market
 failed, plugin not found under any scope, or the update command itself failed) — relay it as-is
 rather than guessing at a fix or retrying with different flags.
 
-**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command update` → one line, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command update` → one line, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.

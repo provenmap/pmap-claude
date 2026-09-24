@@ -1,6 +1,6 @@
 ---
 category: build
-description: "Build · Build the app from the platform's spec — compiled skills, intents, board design, aspect contracts. WRITE-CAPABLE: creates and edits project files (after you approve the plan)"
+description: "Build · Build the app from the platform's spec — compiled skills, work items, board design, aspect contracts. WRITE-CAPABLE: creates and edits project files (after you approve the plan)"
 argument-hint: [--plan | <focus prompt>]
 allowed-tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 ---
@@ -15,11 +15,11 @@ allowed-tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 **1.5 Skills freshness** — if the pack (`packPath`) has `skills.available` and (`skills.upstreamChanged` or `skills.compiledCount` is 0), sync first — a stale spec builds the wrong app: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-skills.js --sync --board-slug <boardSlug>`; report it (name protected `localEdits[]`), then re-run `pmap-build.js` once.
 
-**2 Branch on `nextAction`** — `none` → nothing to build from: "Compile skills for this app on the ProvenMap portal (or author a board design / intents), then re-run `/build`", stop · `map` → source but no spec: map it first — `/analyze` then `/sync`, stop · `intents` → spec built, only intent work remains: point at `/intents`, stop · `build` → continue.
+**2 Branch on `nextAction`** — `none` → nothing to build from: "Compile skills for this app on the ProvenMap portal (or author a board design / work items), then re-run `/build`", stop · `map` → source but no spec: map it first — `/analyze` then `/sync`, stop · `workItems` → spec built, only work item work remains: point at `/work-items`, stop · `build` → continue.
 
-**Steps 3–5 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/platform-driven-build/SKILL.md` NOW and follow it exactly; improvise nothing.** It holds every source, invocation, branch, and rule: **3** plan from the spec — **the user approves the plan** before any file is touched, and a `--plan` argument stops there · **4** implement unit by unit — intent-covered units go through the intent machinery, and **the user confirms** before any resolution · **5** close the loop — `/analyze`, then `/sync`.
+**Steps 3–5 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/platform-driven-build/SKILL.md` NOW and follow it exactly; improvise nothing.** It holds every source, invocation, branch, and rule: **3** plan from the spec — **the user approves the plan** before any file is touched, and a `--plan` argument stops there · **4** implement unit by unit — work-item-covered units go through the work item machinery, and **the user confirms** before any resolution · **5** close the loop — `/analyze`, then `/sync`.
 
-**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command build` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command build` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Connect-now offer
 

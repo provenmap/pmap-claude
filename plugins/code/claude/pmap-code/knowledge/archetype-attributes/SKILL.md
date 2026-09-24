@@ -65,7 +65,7 @@ Write the value only when you can point at the thing that says so, in the area y
 
 - `protocol: "HTTP/REST"` — because you read the controller decorators, not because it's a service.
 - `domain: "billing"` — because the module's own naming and its callers say so, not because the
-  directory is called `billing` and you are guessing at intent.
+  directory is called `billing` and you are guessing at work item.
 - `schemas` / `collections` — because you read the model definitions or the migration.
 - `authType` — because you read the guard, the middleware, or the client's auth header.
 

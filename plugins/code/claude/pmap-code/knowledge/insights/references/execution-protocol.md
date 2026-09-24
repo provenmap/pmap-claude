@@ -293,6 +293,6 @@ Two channels: **`validationErrors[]` + exit 3** is blocking — fix the listed f
 
 ### 11. Report Result
 
-- If pushed successfully: "Pushed to server (batchId: abc-123, N insights)". The result's `insights[]` lists the created rows in send order — keep it when proposing intents from these findings in the same session; nothing can recover that mapping later.
+- If pushed successfully: "Pushed to server (batchId: abc-123, N insights)". The result's `insights[]` lists the created rows in send order — keep it when proposing work items from these findings in the same session; nothing can recover that mapping later.
 - If push not available: "Saved locally — server push not yet available"
 - If push failed: "Saved locally — push failed: <error>"

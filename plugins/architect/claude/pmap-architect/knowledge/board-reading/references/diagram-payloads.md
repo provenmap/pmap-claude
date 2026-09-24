@@ -55,7 +55,7 @@ The array IS the operation — always build the complete array and send it in ON
 To remove elements, call `delete_nodes` / `delete_edges` with the board slug and the EXACT slugs
 to remove (from `get_nodes` / `get_edges`). Deleting a node removes its connected edges
 automatically. The removal joins the working copy like any other write; on a governed board it
-becomes a staged mark (inside a reviewable intent) only when the session commits.
+becomes a staged mark (inside a reviewable work item) only when the session commits.
 
 ## Creation order (empty or growing a board)
 

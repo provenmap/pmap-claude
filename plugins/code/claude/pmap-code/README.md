@@ -2,7 +2,7 @@
 
 The `pmap-code` plugin — codebase architecture analysis for [ProvenMap Portal](https://provenmap.com). Discovers your project's components, classifies them against your org's archetype catalogue, maps relationships, and syncs the result as a layered architecture board you can review and share.
 
-ProvenMap Code runs in **Claude Code**. Its sibling, **ProvenMap Connect** (`pmap-connect`), binds a document/knowledge repo to an architect-authored board instead of producing one.
+ProvenMap Code runs in **Claude Code**. It also grounds a board in a repo's documents with `/ground` — the ADRs and design docs beside the code, or a repo that holds only documents and grounds a board an architect authored.
 
 ## Install
 
@@ -65,8 +65,9 @@ Run `/configure` to validate both files, test the connection, and add `.provenma
 2. `/login` (browser) or `/configure` (manual) — connect to the portal (one-time per repo)
 3. `/analyze` — full architecture analysis (incremental — only changed files re-analyzed)
 4. `/sync` — push the analysis to your board
-5. `/insights` — run server-defined analyses (security, performance, etc.) against the board
-6. `/status` — see what's analyzed and what's synced
+5. `/ground` — link the repo's ADRs, RFCs and design docs to the board's nodes (or, in a documents-only repo, mirror the architect-authored board and ground it)
+6. `/insights` — run server-defined analyses (security, performance, etc.) against the board
+7. `/status` — see what's analyzed, synced and grounded
 
 `/analyze-archetypes` is **optional** — see [Archetypes](#archetypes-server-defined-settlement-optional).
 
@@ -99,13 +100,14 @@ Polyglot projects produce a unified board with cross-language relationships (HTT
 | `/analyze --all` | Re-analyze every layer board in the manifest |
 | `/sync [--board <slug>]` | Push analysis to portal (smart diff: only changed elements) |
 | `/sync --all` | Push every board in the manifest |
+| `/ground [--board <slug>]` | Ground the board in this repo's documents: mirror the authored board (or read the analysed, pushed one), propose and push node↔document evidence links, report drift |
 | `/insights` | List available insight skills and run one against the current board |
 | `/insights <skill-slug>` | Run a specific insight skill directly |
 | `/insights --all` | Run every available insight skill |
 | `/skills [--status]` | Compile the platform's skill bundle (specs + guidelines) into the repo — never overwrites local edits |
-| `/build [--plan]` | Build the app from the platform's spec — compiled skills, intents, board design, aspect contracts (write-capable; `--plan` = plan only) |
-| `/intents` | Pull architect-authored intents (work items) for the board and pick one to implement |
-| `/intents <intentId>` | Claim, implement, verify, and resolve a specific intent (write-capable — edits project files) |
+| `/build [--plan]` | Build the app from the platform's spec — compiled skills, work items, board design, aspect contracts (write-capable; `--plan` = plan only) |
+| `/work-items` | Pull architect-authored work items for the board and pick one to implement |
+| `/work-items <workItemId>` | Claim, implement, verify, and resolve a specific work item (write-capable — edits project files) |
 | `/discover [count] [--auto] [--lens …] [--board <slug>] [focus]` | Discover the insights and context boards worth showing — ranked by the graph, picked by you or chosen for you, authored in parallel, pushed to ProvenMap |
 | `/adopt [--aspect <kind> \| --db \| --api]` | Extract a code aspect (database schema, API surface, frontend pages, event catalog) onto the bound board |
 | `/monitor` · `/monitor setup` | Correlate monitoring signals (errors, logs, cloud costs) with the board and push findings as a draft insight; `setup` configures sources + a recurring run |
@@ -116,6 +118,17 @@ Polyglot projects produce a unified board with cross-language relationships (HTT
 | `/analyze-archetypes --dry-run` | Validate scan locally + ask server to dry-run, don't persist or POST |
 | `/analyze-archetypes --skip-submit` | Write the proposals file for manual review; don't POST |
 | `/analyze-archetypes --replace` | When submitting, send `mode='replace'` to overwrite pending payload |
+
+## Grounding a board in documents
+
+`/ground` keeps a board honest against the documents that back it. It has two shapes:
+
+- **A code repo `/analyze` built.** After `/sync` has pushed the board, `/ground` reads the local board, inventories the repo's documents (ADRs, RFCs, READMEs, design docs) and proposes an evidence link wherever a document substantiates a node — anchor and quoted excerpt included. The analysed board is never overwritten.
+- **A documents-only repo.** The architect authors the board in ProvenMap; `/ground` mirrors it locally (so `/insights` and `/discover` can read it), inventories the corpus and links the documents to its nodes. There is no `/analyze` phase — grounding is the whole lifecycle, and `/start` routes there.
+
+Either way the push replaces the binding's evidence set on the server, and a later run reports **drift** — a linked document changed or vanished — so a citation never goes silently stale. A run whose pull finds nothing drifted, missing or unlinked closes without proposing anything, which makes a scheduled `/ground` cheap (the `recurring-runs` reference in the `provenmap-integration` skill has the surfaces).
+
+Supported document formats: Markdown/MDX (`.md`, `.mdx`, `.markdown`), reStructuredText (`.rst`), AsciiDoc (`.adoc`, `.asciidoc`), plain text (`.txt`), HTML wiki exports (`.html`), PDF (`.pdf`, extractable text). The walk covers the whole repo, skipping dot-directories, `node_modules` and any configured `excludePaths`.
 
 ## Layered boards
 

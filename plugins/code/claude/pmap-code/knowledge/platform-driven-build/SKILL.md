@@ -16,7 +16,7 @@ The spec has up to four sources, **by primacy**:
 | Source | Carries | Comes from |
 |---|---|---|
 | **Compiled skills** (primary) | Specs, guidelines, conventions, stack choices | `/skills` sync → `skills.skillsDir` (lock-managed files) |
-| Intents | Explicit architect work items with anchors | `pmap-intents.js` (pack `intents.open[]`) |
+| Work items | Explicit architect work items with anchors | `pmap-work-items.js` (pack `workItems.open[]`) |
 | Board design | Components + relationships (unbuilt elements) | pack `design.unbuilt[]` |
 | Aspect snapshots | Data & API contracts | `.provenmap/build/aspects.json` |
 
@@ -52,13 +52,13 @@ From `.provenmap/build/aspects.json` (fields mirror the platform's aspect rows; 
 |---|---|---|
 | `empty` | No source files | Bootstrap: scaffold per skills conventions, then build every plan unit |
 | `partial` | Source exists, spec has unbuilt parts | Gap-fill: touch only what the unbuilt spec requires — never refactor existing code that isn't in the delta |
-| `built` | No unbuilt spec | Don't build; `/intents` for remaining work |
+| `built` | No unbuilt spec | Don't build; `/work-items` for remaining work |
 
 ## Steps 3–5 — the workflow `/build` delegates here
 
 Reached on the pack's `nextAction: "build"`. Follow these steps in order, exactly as written — every source, invocation, branch, prompt, and rule below is part of `/build`'s contract, not a suggestion. Do not improvise a step.
 
-**Write-capable.** These steps create and edit project files. Never create or edit a file before the user has approved the plan in Step 3, always show the user what changed, and never record an intent resolution before the user has confirmed the outcome.
+**Write-capable.** These steps create and edit project files. Never create or edit a file before the user has approved the plan in Step 3, always show the user what changed, and never record a work item resolution before the user has confirmed the outcome.
 
 ### Step 3 — Plan from the spec (approval gate)
 
@@ -67,25 +67,25 @@ Read, in this order:
 1. The compiled skills under the pack's `skills.skillsDir` — the specs and conventions to honor (app-tier overrides win; never edit these files — they're lock-managed by `/skills`).
 2. The pack's `design.unbuilt[]` — designed elements with no source mapping (components to create; board edges give their dependencies).
 3. `.provenmap/build/aspects.json`, when the pack reported `aspectsPath` — full DB tables and API endpoints to materialize as migrations and contracts.
-4. The pack's `intents.open[]` — architect work items; note which plan units they cover.
+4. The pack's `workItems.open[]` — architect work items; note which plan units they cover.
 
 Turn the unbuilt spec into an **incremental** implementation plan — the delta only, never a rebuild of what is already there: skill specs → app shape, stack, and conventions; designed nodes → components; edges → dependencies and boundaries; aspects → migrations + API contracts. The mapping rules for each of those four sources are the sections above, and the repo-state table says how much of the tree the plan may touch. If the user supplied a focus prompt argument, it narrows which part to build first.
 
 Use **AskUserQuestion** *only* at genuine decision points: the stack when the compiled skills don't pin one, and build order when the spec is large.
 
-Present the plan — units, order, what each unit creates, which intents it covers — and **get the user's approval before any file is touched**. If the argument was `--plan`, stop after presenting it; no files are touched.
+Present the plan — units, order, what each unit creates, which work items it covers — and **get the user's approval before any file is touched**. If the argument was `--plan`, stop after presenting it; no files are touched.
 
 ### Step 4 — Implement incrementally
 
 Work plan unit by plan unit:
 
-- **Intent-covered units go through the intent machinery** so attribution and verification accrue there: claim before touching files (`node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --claim <intentId> --by "<name>"`), implement, verify, and resolve only after the user confirms — exactly per `/intents` Steps 3–8 (never auto-resolve; no verify, no `implemented`).
+- **Intent-covered units go through the work item machinery** so attribution and verification accrue there: claim before touching files (`node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-work-items.js --claim <workItemId> --by "<name>"`), implement, verify, and resolve only after the user confirms — exactly per `/work-items` Steps 3–8 (never auto-resolve; no verify, no `implemented`).
 - Other units: create/edit the files, matching the conventions the compiled skills establish.
 - **Verify each unit** with the project's own checks — discover them in the repo (`package.json` scripts, a Makefile, CI config); for a fresh scaffold there is nothing to discover, so set up the minimal check the skills prescribe. Show the results.
 
 ### Step 5 — Close the loop
 
-Tell the user to run `/analyze`, then `/sync` — the next section says what each kind of build gains from it. Then `/build` is idempotent: re-running reports the spec as built and points the user at `/intents`.
+Tell the user to run `/analyze`, then `/sync` — the next section says what each kind of build gains from it. Then `/build` is idempotent: re-running reports the spec as built and points the user at `/work-items`.
 
 ## Closing the loop
 

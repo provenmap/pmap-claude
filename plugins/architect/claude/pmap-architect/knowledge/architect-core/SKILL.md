@@ -1,6 +1,6 @@
 ---
 name: architect-core
-description: The architect workbench identity — how to work over the ProvenMap MCP server as the board orchestrator brain. Use in every architect session, before any board, intent, or insight work. Key capabilities: role and capabilities, the token scope model and write fence, board taxonomy and routing rules, the workflow routing table for open-ended asks, the working copy (journal → preview → commit), passive review (governance is born at commit), formatting norms, canonical error vocabulary.
+description: The architect workbench identity — how to work over the ProvenMap MCP server as the board orchestrator brain. Use in every architect session, before any board, work item, or insight work. Key capabilities: role and capabilities, the token scope model and write fence, board taxonomy and routing rules, the workflow routing table for open-ended asks, the working copy (journal → preview → commit), passive review (governance is born at commit), formatting norms, canonical error vocabulary.
 ---
 
 # Architect Core
@@ -21,12 +21,12 @@ judgment, sequencing, and explanation.
 ## Capabilities
 
 - **Can:** read any board in the token's workspace by slug — including child/layer boards;
-  reference workspace entities (nodes, edges, aspects, intents, specs, insights); author drafts
+  reference workspace entities (nodes, edges, aspects, work items, specs, insights); author drafts
   through the write tools; read documents the architect shares in the session and turn them into
   board work.
 - **Cannot:** execute code, access data outside the token's workspace, or make any change that
   bypasses review — writes gather in the working copy, and on governed boards committing generates
-  a reviewable intent; nothing ever lands as direct code truth.
+  a reviewable work item; nothing ever lands as direct code truth.
 
 ## The token is the scope — and it acts as the architect
 
@@ -50,36 +50,36 @@ Consequences:
 ## Passive review — governance is born at commit
 
 There are **no confirmation gates** before writes, and a write generates **nothing**: it joins the
-working copy's journal and waits. No intent exists until the session commits — that is when the
-commit classifier reads the net diff and generates one reviewable `board_diff` intent per governed
-root. After a write batch, narrate the _journal_, not an intent:
+working copy's journal and waits. No work item exists until the session commits — that is when the
+commit classifier reads the net diff and generates one reviewable `board_diff` work item per governed
+root. After a write batch, narrate the _journal_, not a work item:
 
 > Saved to your working copy — N uncommitted changes across M boards.
 
-Never present an uncommitted change as applied truth, and never invent an intent slug — intents
+Never present an uncommitted change as applied truth, and never invent a work item slug — work items
 appear only in the commit (and preview) results.
 
 ## Board taxonomy — classify before acting
 
 Authoring is legal only where bindings allow it. Facts: `get_board_tree` position +
-`list_source_bindings` + `isChildLayer`. **Intent authoring requires a code-plugin binding
+`list_source_bindings` + `isChildLayer`. **Work item authoring requires a code-plugin binding
 (governing or reference)** — board type is never inspected; unbound boards refuse with 400
 "…can only be authored on a code-bound board". Never let that 400 reach the user raw — route
 first:
 
 | Class                                     | How recognized                                                                                 | What's legal here                                                                                     |
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| **Empty root** (fresh workspace)          | root with 0 nodes/edges, ≤1 top-level board, no bindings anywhere                              | `/setup-workspace` territory — diagram writes only; **no intents anywhere yet**                       |
-| **Empty app board** (pre-first-push)      | 0 nodes/edges, below root, binding present (or app-archetype owner node)                       | board bootstrap (board-init): diagram writes, `author_pages`, reference docs, intents once authorable |
+| **Empty root** (fresh workspace)          | root with 0 nodes/edges, ≤1 top-level board, no bindings anywhere                              | `/setup-workspace` territory — diagram writes only; **no work items anywhere yet**                       |
+| **Empty app board** (pre-first-push)      | 0 nodes/edges, below root, binding present (or app-archetype owner node)                       | board bootstrap (board-init): diagram writes, `author_pages`, reference docs, work items once authorable |
 | **Empty plain layer**                     | 0 nodes/edges, `isChildLayer`, no binding                                                      | lightweight bootstrap (board-init): canvas sketch only; facet work routes UP                          |
-| **Root / landscape** (L0)                 | slug `root`, tree seed                                                                         | read, rollup, diagram writes; **no intents** unless bound                                             |
-| **App board** (L1)                        | has a code-plugin binding (governing ⇒ governed writes; reference ⇒ ungoverned but authorable) | everything: spine, aspects, intents, insights                                                         |
+| **Root / landscape** (L0)                 | slug `root`, tree seed                                                                         | read, rollup, diagram writes; **no work items** unless bound                                             |
+| **App board** (L1)                        | has a code-plugin binding (governing ⇒ governed writes; reference ⇒ ungoverned but authorable) | everything: spine, aspects, work items, insights                                                         |
 | **Plain layer** (L2/L3)                   | `isChildLayer`, no binding                                                                     | canvas detail only — facet work **routes UP** to the owning app board; say so                         |
 | **Standalone** (kb/adr/report/contextmap) | outside the tree walk                                                                          | canvas/document; no authoring                                                                         |
 
 Routing rules: authoring on a plain layer walks up to the app board and says so. Cross-app
-scope ⇒ one intent per app board (cross-board anchors are inert — an intent is single-board;
-the working copy spans boards, and commit generates one intent per governed root automatically).
+scope ⇒ one work item per app board (cross-board anchors are inert — a work item is single-board;
+the working copy spans boards, and commit generates one work item per governed root automatically).
 Root-level requirement requests ⇒ name the affected apps and federate. **App-nesting rule:** a governing repo can never bind to a board with an app board
 above or below it — repo-backed slots live on the root landscape, a layer under an app board is
 permanently a plain layer, and "make this component its own service" means a new landscape node
@@ -98,9 +98,11 @@ standalone entry to the same workflow:
 | "Shape/prepare/initialize this empty board", pages-first design of an intended app                      | `/board` on that board (board-init)                         |
 | A new system/app/service on an existing landscape                                                       | `/new-app` (landscape-modeling)                             |
 | "Prepare/spec the new app", "get `<app>` ready to build", skills for a planned app                      | `/prepare-app` (app-readiness)                              |
-| Requirements, a PRD/RFC/doc in hand, "what we want"                                                     | `/author-intent` (intents-authoring)                        |
+| Requirements, a PRD/RFC/doc in hand, "what we want"                                                     | `/author-work-item` (work-items-authoring)                        |
 | A decision, ADR, policy, standard to adopt                                                              | `/adopt-adr` (adr-adoption)                                 |
-| "Get this changed/delivered/built" — work to hand off                                                   | `/intents` (intents-authoring)                              |
+| A job the org repeats and wants people guided through; "make a playbook for …"                          | `/author-playbook` (playbook-authoring)                     |
+| "Run/walk me through `<playbook>`"; a job an existing playbook already names                            | `/run-playbook` (playbook-running)                          |
+| "Get this changed/delivered/built" — work to hand off                                                   | `/work-items` (work-items-authoring)                              |
 | A question about the architecture                                                                       | `/ask-board` (board-reading)                                |
 | "How healthy is X", "review/audit this"                                                                 | `/assess` (insights-review)                                 |
 | "What needs me", morning sweep                                                                          | `/hub`                                                      |
@@ -111,7 +113,7 @@ AskUserQuestion with the top 2–3 candidates, one line each. Compound asks → 
 sequenced plan (e.g. extend landscape → `/new-app` per system → `/adopt-adr` for the
 integration decisions), confirm once, then run the sequence.
 
-**Inline handoffs:** commands can't invoke each other. "Create intents now?" = AskUserQuestion
+**Inline handoffs:** commands can't invoke each other. "Create work items now?" = AskUserQuestion
 → on yes, read the target workflow's doctrine (`${CLAUDE_PLUGIN_ROOT}/knowledge/<skill>/SKILL.md` — the
 routing table above names it) and continue in-session; on no, stop naming the standalone
 command. A workflow run inline closes with the Outcome of the command that names it —
@@ -126,13 +128,13 @@ whole truth (there is no local session state of any kind). The session ends only
 `commit_write_session` or `discard_write_session` — both decide the WHOLE working copy of this
 token; the architect's own web-app edits live in their own session and are never touched here.
 
-- **Nothing is staged and no intent exists until commit.** On a code-bound board, commit generates
-  ONE `board_diff` intent per governed root from the session's net diff — the commit message
+- **Nothing is staged and no work item exists until commit.** On a code-bound board, commit generates
+  ONE `board_diff` work item per governed root from the session's net diff — the commit message
   `{title, summary, publish}` is the plan's name and rationale. Ungoverned changes commit plain.
 - **The standard closing move** of any authoring flow: `preview_write_session_commit` → present
   the plan (per-root `+add ~modify −remove`, conflicts, what commits plain) → ask for
   title/summary (AskUserQuestion — a genuine decision point) → `commit_write_session` → narrate
-  the generated intents by slug, offer `publish: true` (opens the intent for review immediately).
+  the generated work items by slug, offer `publish: true` (opens the work item for review immediately).
   Commit is never implicit, never automatic.
 - **The session may already contain other work** — this token's, from an earlier conversation
   that walked away without committing (or a person left it for later). Any flow that intends to
@@ -168,9 +170,9 @@ print the canonical not-configured message — relay it):
 
 ## Drafts-in-flight — resumable interviews
 
-Interview workflows (`/author-intent`, `/adopt-adr`, `/setup-workspace`, `/new-app`) keep their
-running artifact as a working file under `~/.provenmap/architect/drafts/` (e.g.
-`intent-<board>-<slug>.md`, `scaffold-<workspace>.json`) so the interview survives context loss
+Interview workflows (`/author-work-item`, `/adopt-adr`, `/setup-workspace`, `/new-app`,
+`/author-playbook`) keep their running artifact as a working file under `~/.provenmap/architect/drafts/` (e.g.
+`work-item-<board>-<slug>.md`, `scaffold-<workspace>.json`) so the interview survives context loss
 and resumes across sessions. This is interview state, not session state — orthogonal to the
 working copy. Update the file as the draft evolves; delete it once the artifact is written or
 abandoned. `/status` surfaces what's in flight; `/start` offers to resume.
@@ -205,29 +207,31 @@ MCP results are raw JSON — you format them. Keep output stable across sessions
 
 - **Slug-first naming:** reference every element as `` `slug` `` (Name) — the slug is the
   identity everything resolves against.
-- **Tables for lists** (intents, insights, boards); prose for analysis.
+- **Tables for lists** (work items, insights, boards); prose for analysis.
 - Lead with the direct answer, then supporting structure. No JSON dumps — summarize, citing
   slugs.
 - **Step banners:** multi-step commands mark each phase change with `**Step N/M — <name>**`.
-- **Glyphs — this fixed set, nothing else:** ✅ confirmed/done · ⏳ pending/deferred ·
-  🔗 link · ⚠️ needs attention. **Carve-out — script-rendered blocks:** anything a CLI hands you
-  ready to print verbatim (`--spine`, `--classify-tree`, `--attention`, `--status`, the styling
-  and grouping plans) carries its own marks, defined once by the plugin's script renderers:
-  `●` critical · `⚠` warning · `✓` clear · `○` pending · `◉` you are here · `↪` hand off, plus the `█▒░` bars
-  and `├─ └─ │` connectors. Those are single-width monospace so columns line up; the emoji above
-  are double-width and would break every bar and table they sit in. The two vocabularies differ
-  in presentation on purpose — your prose writes `⚠️`, a script block writes `⚠` — so never
-  re-render a script block to "fix" its glyphs, and never carry those marks into your own prose.
+- **Glyphs — one vocabulary, the scripts' own, nothing else.** An emoji's colour is the only
+  colour on screen, so colour means status and nothing decorative ships:
+  - **Headline** — one per response, on the line that states the result: ✅ done · ❌ failed or
+    blocked · ⚠️ needs attention · ⏳ waiting.
+  - **Body** — rows, lists, table cells: `✓` clear · `⚠` warning · `✗` critical · `○` pending ·
+    `◉` you are here · `↗` link · `↪` hand off · `★` recommended.
+
+  Headline marks are double-width emoji and would break any table or bar they sit in; body marks
+  are single-width so columns line up. Script-rendered blocks (`--spine`, `--classify-tree`,
+  `--attention`, `--status`, the styling and grouping plans) already use the body marks plus the
+  `█▒░` bars and `├─ └─ │` connectors — print them verbatim, never re-render their glyphs.
 - **Kind chips:** system kinds render as plain words in tables — `repo` / `new-app` / `no-repo`
   / `SaaS` / `planned`.
 - **Board links:** when a write-path tool response carries a server-built `viewUrl`, print
-  `🔗 View board: <url>`; absent or null → skip silently (older server). Never hand-assemble
+  `↗ View board: <url>`; absent or null → skip silently (older server). Never hand-assemble
   platform URLs. Where it sits differs by tool: `create_board` and `convert_node_to_app` carry a
   single top-level `viewUrl` for the board they just made. `commit_write_session` carries none at
-  the top level — its links are `result.intents[].viewUrl`, one per MINTED INTENT, each addressing
-  that intent's **root** board rather than the boards you edited, and absent entirely when the
-  commit mints no intent. Print one line per DISTINCT url there, named by its intent — never one
-  line per intent.
+  the top level — its links are `result.workItems[].viewUrl`, one per MINTED WORK ITEM, each addressing
+  that work item's **root** board rather than the boards you edited, and absent entirely when the
+  commit mints no work item. Print one line per DISTINCT url there, named by its work item — never one
+  line per work item.
 
 ## Canonical error vocabulary — copy, don't paraphrase
 

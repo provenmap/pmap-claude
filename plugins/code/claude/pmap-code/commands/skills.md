@@ -53,7 +53,7 @@ If `withheld.count > 0`: "`<count>` external skill(s) need a newer plugin — ru
 
 CLI owns writing; never edit a skill file yourself.
 
-**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command skills` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command skills` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Connect-now offer
 

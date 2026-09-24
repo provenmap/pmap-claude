@@ -5,31 +5,33 @@
     "./commands/archetypes.md",
     "./commands/ask-board.md",
     "./commands/assess.md",
-    "./commands/author-intent.md",
+    "./commands/author-playbook.md",
+    "./commands/author-work-item.md",
     "./commands/board.md",
     "./commands/configure.md",
     "./commands/discover.md",
     "./commands/help.md",
     "./commands/hub.md",
     "./commands/insights.md",
-    "./commands/intents.md",
     "./commands/login.md",
     "./commands/logout.md",
     "./commands/new-app.md",
     "./commands/prepare-app.md",
     "./commands/report-bug.md",
+    "./commands/run-playbook.md",
     "./commands/setup-workspace.md",
     "./commands/start.md",
     "./commands/status.md",
     "./commands/style-board.md",
-    "./commands/update.md"
+    "./commands/update.md",
+    "./commands/work-items.md"
   ],
   "displayName": "ProvenMap Architect",
-  "version": "0.28.0",
+  "version": "0.29.0",
   "metadata": {
-    "releasedAt": "2026-09-21"
+    "releasedAt": "2026-09-24"
   },
-  "description": "Architect workbench for ProvenMap boards — explore the board graph, review insights, and author intents from Claude Cowork, Claude Code, or Codex. Connects to the ProvenMap MCP server; writes gather in your working copy, and committing generates a reviewable plan (one intent per governed app).",
+  "description": "Architect workbench for ProvenMap boards — explore the board graph, review insights, and author work items from Claude Cowork, Claude Code, or Codex. Connects to the ProvenMap MCP server; writes gather in your working copy, and committing generates a reviewable plan (one work item per governed app).",
   "author": {
     "name": "ProvenMap",
     "email": "contact@provenmap.com"
@@ -40,7 +42,7 @@
   "keywords": [
     "architecture",
     "boards",
-    "intents",
+    "work-items",
     "insights",
     "provenmap",
     "mcp"

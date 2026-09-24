@@ -6,7 +6,7 @@ allowed-tools: Read, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
 
 The morning sweep: lead with **what needs the architect**, ranked, before any inventory. Read
 [`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md) (taxonomy, batch
-state reads) and [`${CLAUDE_PLUGIN_ROOT}/knowledge/intents-authoring/SKILL.md`](../knowledge/intents-authoring/SKILL.md)'s
+state reads) and [`${CLAUDE_PLUGIN_ROOT}/knowledge/work-items-authoring/SKILL.md`](../knowledge/work-items-authoring/SKILL.md)'s
 staleness/verification semantics.
 
 ## Workflow
@@ -18,7 +18,7 @@ staleness/verification semantics.
    node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --attention
    ```
 
-   Then add judgment on top: for `implemented` claims worth checking now, sample `get_intent`
+   Then add judgment on top: for `implemented` claims worth checking now, sample `get_work_item`
    for `verifiedAt` (say when you sampled); connect queue items to what you know from the
    session. The report's "Waiting for first push" boards (also `governing · never pushed` in
    the classify table) are board-init territory — the bootstrap offer is already in the line.
@@ -29,7 +29,7 @@ staleness/verification semantics.
 3. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command hub` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 Script not configured (exit 1, no grant) → fall back to the direct reads: `get_hub_status
-(scope: 'tree')` + `list_intents(scope: 'tree')` at root, render the same queue shape.
+(scope: 'tree')` + `list_work_items(scope: 'tree')` at root, render the same queue shape.
 
 Empty root state → skip the dashboard, offer `/setup-workspace` (the workspace is waiting for
 its estate: map what exists, or found something new).

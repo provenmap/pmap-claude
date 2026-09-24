@@ -31,8 +31,8 @@ pause. Route:
 describe in conversation / scan repo folders / share documents; a scan runs
 `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --scan-repos --paths <p1,p2,...>`.
 
-Then work landscape-modeling's agenda; its one-line opener is the root board description
-(`apply_diagram_info`).
+Then work landscape-modeling's agenda; its one-line opener is the root board's `description`
+and its answers become the root's `mdContent` narrative (one `apply_diagram_info` call).
 
 ### Step 3 — draw the landscape
 

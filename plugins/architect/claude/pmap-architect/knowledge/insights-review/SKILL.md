@@ -1,6 +1,6 @@
 ---
 name: insights-review
-description: How to review ProvenMap insight batches and turn insights into work, how to run a structured assessment (/assess), and how to record a session analysis as a draft batch. Use when listing or reading insights, deciding what to promote to intents, running a periodic review, or capturing an architecture review performed in-session. Key capabilities: the batch→insight drill-down, insight ids, promotion to draft intents, the assess arc (frame→sweep→review→record), template honesty, create_insight draft batches.
+description: How to review ProvenMap insight batches and turn insights into work, how to run a structured assessment (/assess), and how to record a session analysis as a draft batch. Use when listing or reading insights, deciding what to promote to work items, running a periodic review, or capturing an architecture review performed in-session. Key capabilities: the batch→insight drill-down, insight ids, promotion to draft work items, the assess arc (frame→sweep→review→record), template honesty, create_insight draft batches.
 ---
 
 # Insights Review
@@ -20,9 +20,9 @@ never something you review as a whole. Where the fix is a diagram change, the in
 The continuum:
 
 `list_insights (batches) → list_insights {batchId} (the insights, with their ids) → get_insight →
-review → promote_insights (turn reviewed insights into draft intents)`
+review → promote_insights (turn reviewed insights into draft work items)`
 
-Cite insight **names** when discussing them; promotion generates one **draft** intent per reviewed
+Cite insight **names** when discussing them; promotion generates one **draft** work item per reviewed
 insight (passive review — narrate the generated drafts by slug).
 
 Heavy insight _generation_ (scheduled analyses, deep research) runs in-platform. What you can do
@@ -38,7 +38,7 @@ session analysis as a draft batch.
 | `list_insight_skills` | insight templates in the org (slug, name, description, category)                                                                    |
 | `get_insight_skill`   | one template's full methodology: instructions + references — the faithful-run input                                                  |
 | `create_insight`      | record an analysis as a **draft batch**: `insights: InsightDraft[]`, each with its own `trail` (no narrative field — the insights are the record) |
-| `promote_insights`    | reviewed insight ids → one draft intent each                                                                                        |
+| `promote_insights`    | reviewed insight ids → one draft work item each                                                                                        |
 
 ## Review workflow
 
@@ -47,9 +47,9 @@ session analysis as a draft batch.
    the next two tools take.
 3. `get_insight` on the ones worth reading in full — anchored elements (slug-first), severity,
    trail, any proposal. Triage with the architect: which are real, which deserve delivery.
-4. `promote_insights` with the chosen ids — each becomes a draft intent; report the
-   generated intents by slug.
-5. Point at `/intents` for queue management (open, assign).
+4. `promote_insights` with the chosen ids — each becomes a draft work item; report the
+   generated work items by slug.
+5. Point at `/work-items` for queue management (open, assign).
 
 ## The assess arc (/assess) — structured review, recorded
 
@@ -66,8 +66,8 @@ session analysis as a draft batch.
 4. **Record.** `create_insight` with the surviving `InsightDraft[]` — a draft batch, visible in
    the platform. Re-running the same template on the same board REPLACES whatever it last left
    unreviewed there: a re-analysis is a new verdict, not an addition.
-5. **Hand off.** AskUserQuestion "Promote any of this to intents?" → `promote_insights`
-   on the kept ids → optionally enrich via the intents-authoring loop. Not now → `/insights`
+5. **Hand off.** AskUserQuestion "Promote any of this to work items?" → `promote_insights`
+   on the kept ids → optionally enrich via the work-items-authoring loop. Not now → `/insights`
    names the batch.
 
 ## Recording a session analysis

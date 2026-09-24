@@ -142,7 +142,7 @@ the developer's first push.
 **App-nesting rule:** a governing repo can never bind to a board with an app board anywhere
 above or below it. So repo-backed slots live on the root landscape; a layer under an app board
 is permanently a plain layer; and "extract this component into its own service" means a new
-landscape node + board (+ re-wiring intents), never bind-in-place. Relay the server's refusal
+landscape node + board (+ re-wiring work items), never bind-in-place. Relay the server's refusal
 verbatim if it fires.
 
 ## Completing the binding — `convert_node_to_app`
@@ -169,7 +169,7 @@ code-plugin source, binds it GOVERNING on the branch. Rules:
   connects the repository with the code plugin (`/login` + `/configure` against the layer
   board) and makes the first push.
 - Advisory documents attach with `bind_reference_source {workBoardSlug, title, type, url|content}`
-  — a reference binding, exempt from the nesting rule, and enough to author intents.
+  — a reference binding, exempt from the nesting rule, and enough to author work items.
 
 ## The handoff checklist
 
@@ -191,7 +191,12 @@ own inception prompt claims a recipe seeds the profile — that is drift; do not
 
 The fork at the top of the interview (map or found) picks one of two agendas. Both are *a few
 short questions, not a form* (the doctrine above), and both open with the one-line answer that
-becomes the root board description (`apply_diagram_info`).
+becomes the root board's `description`. The rest of the agenda's answers become its `mdContent`,
+a short markdown narrative: what the org does (or what is being built, and for whom), the
+systems and what each owns, the actors, the external services it leans on, the zones. Write
+both in ONE `apply_diagram_info` call once the interview closes, from the answers only, nothing
+the interview didn't establish. The narrative is what the hub's *About this system* card
+shows; a root with only the one-liner gives that card a single line to say.
 
 **Map mode — the org interview:** what the org does (one line); the systems that exist today,
 each with an explicit **kind** (the table above — nothing defaults to repo-backed, and the
@@ -240,8 +245,13 @@ guards scaffold handoffs, where developer pushes supply the truth. `/new-app` is
 system is being *planned*, there is no code yet, and the architect's target sketch is the
 point. Drawing the L1 skeleton there is deliberate: containers, the key components, and the
 edges the grill named — nothing invented to fill the diagram. Narrate the reconciliation truth:
-when the repo binds and pushes, analysis reconciles against the sketch, and intents appear
+when the repo binds and pushes, analysis reconciles against the sketch, and work items appear
 where reality disagrees.
+
+**The board's words.** Once the sketch lands, ONE `apply_diagram_info` on the new board:
+`description` is the purpose sentence; `mdContent` narrates the grill (purpose, placement and
+neighbours, what it owns, what it replaces or splits). It is what the app hub's *About this
+system* card shows.
 
 **The binding gate** closes in-session, without a portal trip. Three outcomes:
 
@@ -251,9 +261,9 @@ where reality disagrees.
   already exists. Credentials are never issued here; the developer connects the repository
   separately with the code plugin.
 - **The planning material is a document** → `bind_reference_source` on the new board — a
-  reference binding is enough to author intents against.
+  reference binding is enough to author work items against.
 - **The architect defers** → the classic narration: _"Intents need a code-bound board — bind
-  the repo, then rerun `/author-intent <board>` and I'll land this draft."_
+  the repo, then rerun `/author-work-item <board>` and I'll land this draft."_
 
 ## Deliberate divergence: the founding landscape (found mode)
 
@@ -274,7 +284,7 @@ Narrate the truth every time: *"this is target state — systems graduate as the
 real → `/new-app`-style pass on its node — fix the archetype to an **app archetype** (that's
 the bindability lever above) → `create_board` →
 `convert_node_to_app {nodeSlug, branch, observationType: 'new_app'}` → L1 sketch + founding
-intent. Mixed estates work naturally: the fork is per-answer, not
+work item. Mixed estates work naturally: the fork is per-answer, not
 exclusive — a real system named during a found-mode interview is drawn as in map mode, and a
 **planned** system named during a map-mode interview gets found-mode treatment: system
 archetype, no board, graduation path narrated. That treatment is for `planned` only: a

@@ -3,7 +3,7 @@
 The `/inspect` command holds the entry steps (`--start`, `--poll`) and the preflight gate. This
 reference holds everything after the picks are in: interpreting the session, deciding what it
 becomes, executing that decision, and the two optional pushes — how a session becomes local
-evidence for revising and implementing intents. Follow it exactly: every call, flag, branch, and
+evidence for revising and implementing work items. Follow it exactly: every call, flag, branch, and
 confirm below is part of the command's contract.
 
 Print every `display` field **verbatim** — never reformat, reorder, or summarise. Branch only on
@@ -26,12 +26,12 @@ If identity came back mostly floor-level and the user wants exact file:line, off
 
 Ask with **AskUserQuestion**: "What should this session become?"
 
-- **Propose new intent (Recommended)** — when the notes describe changes to make. The default is
-  ONE intent for the whole session; offer a split-by-page option in this same question ONLY when
+- **Propose new work item (Recommended)** — when the notes describe changes to make. The default is
+  ONE work item for the whole session; offer a split-by-page option in this same question ONLY when
   captures span multiple routes AND the notes describe unrelated concerns.
-- **Attach to the intent I'm working on** — when the session is evidence for an already claimed
-  intent.
-- **Keep locally** — stop after the readout; name `/intents` as the next command.
+- **Attach to the work item I'm working on** — when the session is evidence for an already claimed
+  work item.
+- **Keep locally** — stop after the readout; name `/work-items` as the next command.
 
 Capture (steps 1–4) is local and deliberately works without credentials. The command's preflight
 gate (Step 4.5) applies only from here on, where `/inspect` first talks to the server.
@@ -44,18 +44,18 @@ directive references the component identity + the evidence; anchors from the cor
 node anchors; include `inspectionSessionId`. Write it to `<sessionDir>/propose.json`, then:
 
 ```
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --propose --payload <sessionDir>/propose.json
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-work-items.js --propose --payload <sessionDir>/propose.json
 ```
 
 Print `display` verbatim. Exit 1 with a config error triggers the command's **connect-now offer**;
 exit 3 / `notAvailable` → print `display` verbatim and stop.
 
-**Attach.** If exactly one local intent is `in_progress`, use it; otherwise run
-`node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --list`, print `display` verbatim, and ask the user
-which intent. Then:
+**Attach.** If exactly one local work item is `in_progress`, use it; otherwise run
+`node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-work-items.js --list`, print `display` verbatim, and ask the user
+which work item. Then:
 
 ```
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --attach-inspection <intentId> --session <sessionId>
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-work-items.js --attach-inspection <workItemId> --session <sessionId>
 ```
 
 Print `display` verbatim.
@@ -65,12 +65,12 @@ Print `display` verbatim.
 After a successful propose or attach, and only when ProvenMap is configured. Tell the user exactly
 what would leave the machine — the environment name and the captured URLs from the session summary
 — and ask (a single confirm: part of a prior AskUserQuestion or its own): push the capture
-screenshots + selection/annotation metadata to the intent so the architect sees them?
+screenshots + selection/annotation metadata to the work item so the architect sees them?
 
 On yes:
 
 ```
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-intents.js --push-inspection <intentId> --session <sessionId>
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-work-items.js --push-inspection <workItemId> --session <sessionId>
 ```
 
 Print `display` verbatim. `notAvailable: true` is a soft stop — the display already explains that

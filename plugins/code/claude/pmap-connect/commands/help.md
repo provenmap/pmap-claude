@@ -1,26 +1,9 @@
 ---
 category: connect
-description: "Account · List all pmap-connect commands with descriptions and the plugin version"
-allowed-tools: Bash(node:*)
+description: "Account · Retired — every command of this plugin moved into pmap-code; run /ground there"
 next-steps: none
 ---
 
-Show the user every command this plugin ships, what each one does, and the
-plugin version. The script renders the final output itself — your only job is to
-run it and pass its output through.
+Print this, verbatim, and stop:
 
-## Workflow
-
-1. Run the help script:
-
-   ```bash
-   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-help.js
-   ```
-
-2. Reproduce the script's stdout **verbatim in your reply** — write it out in
-   full; the Bash output panel is collapsed for the user, so nothing shows
-   unless you do. Print it fresh each call (not "same as last run"), and don't
-   reformat, reorder, summarise, or add commentary.
-
-3. If the script exits non-zero, print its output verbatim and stop. Do not
-   fabricate command lists.
+> **ProvenMap Connect has moved into ProvenMap Code.** Grounding — mirroring the authored board, linking its nodes to this repo's documents, reporting drift — is the `/ground` command of **pmap-code** now, and it reads this repo's `.provenmap/` state as is. Install pmap-code from the same ProvenMap marketplace this plugin came from, restart Claude Code, run `/ground`, then uninstall pmap-connect. This plugin receives no further updates.

@@ -1,6 +1,6 @@
 ---
 name: ui-inspection
-description: Interpret pmap-inspect sessions — screenshots, picked components, annotations — and turn them into precise code changes or intent language. Use when reading .provenmap/inspections/ manifests, after /inspect completes, or when component identity in a session needs improving. Covers the identity ladder, ui.page correlation, and adopting compile-time source attributes.
+description: Interpret pmap-inspect sessions — screenshots, picked components, annotations — and turn them into precise code changes or work item language. Use when reading .provenmap/inspections/ manifests, after /inspect completes, or when component identity in a session needs improving. Covers the identity ladder, ui.page correlation, and adopting compile-time source attributes.
 ---
 
 # UI Inspection Sessions
@@ -46,10 +46,10 @@ config (the one channel that yields exact file:line everywhere). Offer it when s
 back with mostly `dom`/`react-fiber` identity and the user wants precise source mapping; never
 add it unasked.
 
-## Drafting intent language from a session
+## Drafting work item language from a session
 
-One session → one intent by default; suggest a split only when captures span multiple routes AND
-the notes describe unrelated concerns. For the intent text:
+One session → one work item by default; suggest a split only when captures span multiple routes AND
+the notes describe unrelated concerns. For the work item text:
 
 - **Name:** the user's ask in imperative form ("Make the add-to-cart button prominent"), not the
   component name.

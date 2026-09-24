@@ -84,7 +84,7 @@ field definitions against ~23 KB for the archetypes a real board assigns, so the
 archetype names out of the local board files and asks only for those.
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --kind code --fields
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --fields
 ```
 
 Read `fieldContracts` from the JSON: `archetypesResolved` / `namesRequested` (a shortfall means the
@@ -250,7 +250,7 @@ For each synced board, report:
   `pushResult.edgesDeleted` is present and non-zero; a deletion must never go unmentioned
 - Any errors from the `pushResult.errors` array
 - **View link**: if `boardUrls[<board-slug>]` (from Step 3.5) is a non-null URL, print it as a
-  clickable link, e.g. `🔗 View board: <url>`. If it's `null` or absent, skip the link silently
+  clickable link, e.g. `↗ View board: <url>`. If it's `null` or absent, skip the link silently
   (don't surface an error — the server may be older or the link not yet resolvable).
 
 **Plan progress** (the last CLI output may carry a `coverageReport` field — absent means the domain
@@ -270,7 +270,7 @@ doesn't track it; skip silently):
 **Styling** (from each board's `stylingReport` — absent or `reason: "no_pending_plan"` means nothing
 pending; skip silently):
 
-- `applied: true` → print `🎨 Styling applied — <nodesStyled> node(s), <edgesStyled> edge(s), <containersComposed> container(s)<, board composition if boardComposition>.`
+- `applied: true` → print `Styling applied — <nodesStyled> node(s), <edgesStyled> edge(s), <containersComposed> container(s)<, board composition if boardComposition>.`
   List `skipped[]` entries one line each.
 - `reason: "feature_unavailable"` → "This ProvenMap server doesn't expose board styling yet — ask your admin to upgrade"
 - `reason: "validation_failed"` → note the plan drifted from the board and name `/restyle <board-slug>`

@@ -11,11 +11,11 @@ allowed-tools: Read, Glob, Grep, Write, Bash(node:*), AskUserQuestion, Task
 
 **0 Feature** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --get-insight-skill architecture-highlights --domain code`. Exit 3 (not found) → stop: "This ProvenMap server doesn't expose architecture highlights yet — ask your admin to upgrade".
 
-**1 Plan** — from the command argument: a leading integer → `--count <n>`; `--board <slug>` → `--board-slug <slug>`; `--lens` passes through; a focus prompt → the lenses it matches (say which in one line). Then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --discover [--board-slug <slug>] [--lens <a,b>] [--count <n>] --domain code`. Exit 2 → stop: "No board data found — run `/analyze` first". Print `display`.
+**1 Plan** — from the command argument: a leading integer → `--count <n>`; `--board <slug>` → `--board-slug <slug>`; `--lens` passes through; a focus prompt → the lenses it matches (say which in one line). Then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --discover [--board-slug <slug>] [--lens <a,b>] [--count <n>] --domain code`. Exit 2 → stop: "No board data found — run `/analyze` (or `/ground` for a document repo) first". Print `display`.
 
 **Steps 2–7 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/discover-authoring/references/discover-workflow.md` NOW and follow it exactly; improvise nothing.** Step map: **2 Frame** — one AskUserQuestion (choose for me / show the menu; the lens), skipped by `--auto` and wherever no prompt can be answered · **3 Pick** — auto takes the ★ set; the menu is two multi-select questions over the Id column · **4 Briefs** — `--briefs <ids> --rules …` · **5 Author** — waves of ≤4 `insight-author` agents (Task), one brief each; inline and sequential when Task is unavailable · **6 Push in order** — `--save-insight` / `--push-context-board`, both `--require-pack --push`; exit 3 → fix once, else mark failed and continue · **7 Report** — `--report`, verbatim.
 
-**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command discover` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command discover` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Connect-now offer
 

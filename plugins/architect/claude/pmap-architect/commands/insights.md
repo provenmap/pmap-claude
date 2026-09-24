@@ -1,6 +1,6 @@
 ---
 category: review
-description: "Review · Review insight batches and promote reviewed insights into draft intents"
+description: "Review · Review insight batches and promote reviewed insights into draft work items"
 argument-hint: "[board-slug] [insight-id]"
 allowed-tools: Read, AskUserQuestion, mcp__plugin_pmap-architect_provenmap__*
 ---
@@ -21,8 +21,8 @@ review workflow and promotion semantics live in
    severity, trail, any proposal). Triage with the architect — which are real, which
    deserve delivery. Cite insight names.
 4. **Promote** — AskUserQuestion to confirm the selection (genuine decision point: this generates
-   work), then `promote_insights` with the reviewed insight ids — one **draft** intent each.
-   Report generated intents by slug → `/intents` to open/assign them.
+   work), then `promote_insights` with the reviewed insight ids — one **draft** work item each.
+   Report generated work items by slug → `/work-items` to open/assign them.
 5. **Record (optional)** — if the session produced a real analysis of its own, offer
    `create_insight` to store it as a draft batch per the skill. For a _structured_ review from
    scratch (org template or ad-hoc dimension, insights defended before recording), `/assess`

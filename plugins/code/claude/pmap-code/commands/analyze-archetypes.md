@@ -15,13 +15,13 @@ Customize the **vocabulary**: scan the codebase for component categories, compar
 
 **Steps 1–5 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/archetype-analysis/references/scan-workflow.md` NOW and follow it exactly; improvise nothing.**
 
-- **1 Catalogue** — *script* `pmap-archetypes.js --no-cache --kind code --full`; take `catalogueHash` from its JSON verbatim, never recompute it.
+- **1 Catalogue** — *script* `pmap-archetypes.js --no-cache --full`; take `catalogueHash` from its JSON verbatim, never recompute it.
 - **2 Scan** — the *`architecture-analyzer` agent* in `--archetypes-only` mode, on the `archetype-analysis` heuristics; print each proposal's evidence before prompting.
 - **3 Decide** — no gaps → lock, stop. `--dry-run` (never writes the lock) and `--skip-submit` follow the flag; else the **user** picks via AskUserQuestion: Submit for review · Edit first · Skip and proceed.
 - **4 Submit** — *script* `pmap-propose-archetypes.js`, branching on `success`, `serverResult.rejected[]`, `notAvailable`, `errorCode: 3`.
 - **5 Persist lock** — *you* write `.provenmap/archetype-analysis.lock.json`, read by `pmap-precondition.js` (via `/analyze` Step -1) and `/status`. Default `gate_off`: never read. Under the opt-in `analysis.archetypeGate: "strict"` its state decides whether `/analyze` re-prompts (exit 10), warns, or proceeds.
 
-**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command analyze-archetypes` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command analyze-archetypes` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 **Connect-now offer** (preflight exit 1: not configured, or `errorType: "auth_invalid"`) — **AskUserQuestion** "Connect to ProvenMap now?":
 

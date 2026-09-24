@@ -1,12 +1,12 @@
 ---
 name: board-init
-description: Bootstrap an existing-but-empty board below root into an implementable app design. Use when /board meets an empty app board (bound governing/reference, pre-first-push, or unbound with an app-archetype owner node) or an empty plain layer, or when /start routes a "shape/prepare/initialize this empty board" ask. Key capabilities: the two entry styles (architecture-first, pages-first via author_pages), intended-aspect authoring (author_endpoints, author_tables, author_channels), the implementor bar, rich-metadata discipline, reference-doc binding, founding intents, skills prep with configure_skills, per-tool degradation rules.
+description: Bootstrap an existing-but-empty board below root into an implementable app design. Use when /board meets an empty app board (bound governing/reference, pre-first-push, or unbound with an app-archetype owner node) or an empty plain layer, or when /start routes a "shape/prepare/initialize this empty board" ask. Key capabilities: the two entry styles (architecture-first, pages-first via author_pages), intended-aspect authoring (author_endpoints, author_tables, author_channels), the implementor bar, rich-metadata discipline, reference-doc binding, founding work items, skills prep with configure_skills, per-tool degradation rules.
 ---
 
 # Board Init
 
 The bootstrap for a board that exists but holds nothing yet. The exit bar for every run:
-**an implementor picking up an intent on this board knows where everything goes.**
+**an implementor picking up a work item on this board knows where everything goes.**
 
 ## When this applies
 
@@ -27,7 +27,7 @@ already says who this app's neighbours are (`get_nodes` / `get_edges` at root), 
 reference docs may already answer questions (`list_source_bindings` + `get_source_content`).
 Ask only what's left:
 
-- Purpose (one sentence — becomes the board description via `apply_diagram_info`).
+- Purpose (one sentence — becomes the board's `description`; see *Board described* below).
 - What the app owns: data, endpoints, events — the L1 skeleton.
 - Actors/user types it serves.
 
@@ -44,12 +44,11 @@ rich-metadata discipline:
 
 - **Every node gets a description** — what an implementor finds (or creates) there, not a
   restatement of its name.
-- **The board description** states purpose + stack intent (`apply_diagram_info`).
 - Style the finished board per the **board-styling** skill (signals → plan → validate → apply)
   — composition and size first; semantic tokens only where an element must be told apart.
 
 Narrate the reconciliation truth: when the repo binds and pushes, analysis reconciles against
-this sketch — expect intents where reality disagrees.
+this sketch — expect work items where reality disagrees.
 
 ## Pages-first
 
@@ -94,15 +93,19 @@ tool list doesn't carry.
 
 Whichever entry style ran, close against the same checklist:
 
-1. **Documents bound** — PRDs, design docs, decision material the architect has:
-   `bind_reference_source` (a bound document is something intents can point back at).
-2. **Founding intent(s) authored** — where the board is authorable (governing or reference
-   binding), run the intents-authoring describe loop. Unbound board → offer the binding first,
+1. **Board described** — ONE `apply_diagram_info`: `description` is the purpose sentence plus
+   stack work item; `mdContent` expands it from the interview (purpose, what the app owns, the
+   actors it serves, stack work item). The narrative is what the app hub's *About this system*
+   card shows.
+2. **Documents bound** — PRDs, design docs, decision material the architect has:
+   `bind_reference_source` (a bound document is something work items can point back at).
+3. **Founding work item(s) authored** — where the board is authorable (governing or reference
+   binding), run the work-items-authoring describe loop. Unbound board → offer the binding first,
    the `/new-app` Step 4 gate verbatim: _"Intents need a code-bound board — bind the repo, then
-   rerun `/author-intent <board>` and I'll land this draft."_
-3. **Skills prepared** — see below.
-4. **The closing move** (architect-core): `preview_write_session_commit` → present the plan →
-   title/summary (AskUserQuestion) → `commit_write_session` → narrate the generated intents,
+   rerun `/author-work-item <board>` and I'll land this draft."_
+4. **Skills prepared** — see below.
+5. **The closing move** (architect-core): `preview_write_session_commit` → present the plan →
+   title/summary (AskUserQuestion) → `commit_write_session` → narrate the generated work items,
    offer `publish`.
 
 ## Skills prep
@@ -125,4 +128,4 @@ checklist and hand off to the platform's skill storefront.
 
 A plain layer under an app board gets the light pass only: the interview's purpose question,
 a sub-structure sketch (diagram + descriptions), the closing move. No pages, no skills, no
-intents here — facet work routes UP to the owning app board (app-nesting rule); say so.
+work items here — facet work routes UP to the owning app board (app-nesting rule); say so.

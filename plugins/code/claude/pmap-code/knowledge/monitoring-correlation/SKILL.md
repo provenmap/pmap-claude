@@ -1,6 +1,6 @@
 ---
 name: monitoring-correlation
-description: How /monitor turns raw monitoring output (Sentry issues, CloudWatch alarms, cost anomalies) into normalized signals, correlates them with board elements, and shapes intent-ready insights. Use when running /monitor, normalizing vendor monitoring data, or deciding how an operational signal maps onto architecture nodes/edges. Defines the signals schema, stable-id rules, and the teach-once mapping loop.
+description: How /monitor turns raw monitoring output (Sentry issues, CloudWatch alarms, cost anomalies) into normalized signals, correlates them with board elements, and shapes work-item-ready insights. Use when running /monitor, normalizing vendor monitoring data, or deciding how an operational signal maps onto architecture nodes/edges. Defines the signals schema, stable-id rules, and the teach-once mapping loop.
 user-invokable: false
 metadata:
   author: ProvenMap
@@ -11,11 +11,11 @@ metadata:
 
 `/monitor` closes the loop between production reality and the architecture board: signals from
 monitoring tools become insights anchored to the same nodes and edges `/analyze` + `/sync` put on
-the portal, where architects promote them to intents. The division of labour is strict:
+the portal, where architects promote them to work items. The division of labour is strict:
 
 - **You (the model)**: pull vendor data via MCP tools, normalize it into the signals schema below,
   and — after the deterministic correlation — turn each prefilled insight stub into an
-  intent-ready insight (see `references/insight-shaping.md`).
+  work-item-ready insight (see `references/insight-shaping.md`).
 - **The CLI (`pmap-insights.js --correlate`)**: everything mechanical — locator→element matching,
   mapping overrides, scope/key assignment from the context pack, skeleton generation. Never
   hand-match signals to elements or generate scope keys; that is the correlator's job.
@@ -63,7 +63,7 @@ the portal, where architects promote them to intents. The division of labour is 
 Rules that make the loop work:
 
 - **Stable ids.** `id` must be the vendor's own fingerprint (Sentry issue shortId, CloudWatch alarm
-  ARN tail, cost-anomaly id). It becomes the skeleton's insight id, which is what promoted intents
+  ARN tail, cost-anomaly id). It becomes the skeleton's insight id, which is what promoted work items
   key on across runs. Same underlying problem ⇒ same id, every run.
 - **One primary measurement.** Pick the number that best quantifies the signal (event count, p95
   latency, spend delta). Everything else goes in the insight's prose, not the wire.
@@ -109,5 +109,5 @@ future run resolves that locator deterministically.
 
 - `references/run-workflow.md` — `/monitor`'s steps 2–6 (acquire → correlate → shape → push → report): every call, flag, exit branch and prompt. The command delegates to it; follow it exactly.
 - `references/vendor-recipes.md` — per-vendor MCP tools → signals mapping, connect one-liners, auth per surface. **Adding a vendor = adding a recipe here; no code changes.**
-- `references/insight-shaping.md` — intent-ready authoring rules, priority/effort heuristics, when to add paths or graph suggestions.
-- `references/scheduling.md` — the `/monitor setup` sequence, plus recurring-run setup per host surface (desktop scheduled task, cloud routine, session loop) and the unattended-credentials pattern.
+- `references/insight-shaping.md` — work-item-ready authoring rules, priority/effort heuristics, when to add paths or graph suggestions.
+- `references/scheduling.md` — the `/monitor setup` sequence; the recurring-run surfaces (desktop scheduled task, cloud routine, session loop) and the unattended-credentials pattern live in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/references/recurring-runs.md`.

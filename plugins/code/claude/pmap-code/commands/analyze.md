@@ -12,14 +12,14 @@ Every `display` verbatim in your reply; branch only on exit codes and named fiel
 
 **-2 Preflight** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js` (whole-tree `--clean`: add `--no-repair`): 0 → continue; 1 → connect-now offer (--auto: stop, print `error` verbatim); 2 → print `error`, stop, name `/status`; 11 → branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md` (--auto: stop).
 
-**-1 Archetype gate** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-precondition.js --kind code`: `gate_off`/`ok` → proceed; `pending` → warn with `reason`; exit 10 (strict only) → AskUserQuestion per the reference (--auto: stop); 1/2 → print `error`, stop.
+**-1 Archetype gate** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-precondition.js`: `gate_off`/`ok` → proceed; `pending` → warn with `reason`; exit 10 (strict only) → AskUserQuestion per the reference (--auto: stop); 1/2 → print `error`, stop.
 
 **Read `${CLAUDE_PLUGIN_ROOT}/knowledge/codebase-analysis/references/analyze-workflow.md` NOW and follow it exactly; improvise nothing.**
 
 **Step map (ordered; at Steps -2, 0, 4.5, 8, 9 first, alone: `pmap-prepass.js --spine analyze --step <n> --with-coverage`, exit 3: report drift, go on):**
 
 - -0.5 `pmap-prepass.js --coverage` (exit 2 → stop)
-- 0 `pmap-archetypes.js --kind code` catalogue + role map (`--role-map`)
+- 0 `pmap-archetypes.js` catalogue + role map (`--role-map`)
 - 0.5 server boards `pmap-boards.js` (fail → warn, go on)
 - 1 manifest + board slug (none → connect-now)
 - 1.5 worklist: plan + `--claim-check --changed-since auto`; empty → up to date, stop
@@ -39,7 +39,7 @@ Every `display` verbatim in your reply; branch only on exit codes and named fiel
 - 8.7 fan-out: architecture-analyzer agents via `--dispatch-prompt`, one message; no stubs; 8.45 per join; final `--coverage`
 - 9 report: re-run `--board-report`, verbatim + final dashboard.
 
-**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command analyze` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command analyze` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Connect-now offer
 

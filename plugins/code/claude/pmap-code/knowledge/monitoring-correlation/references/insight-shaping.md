@@ -1,19 +1,19 @@
-# Insight Shaping — making insights intent-ready
+# Insight Shaping — making insights work-item-ready
 
-When an architect promotes an insight, the platform maps it **mechanically** onto an intent — so
-insight quality IS intent quality. Each one is an `InsightDraft`. The exact mapping:
+When an architect promotes an insight, the platform maps it **mechanically** onto a work item — so
+insight quality IS work item quality. Each one is an `InsightDraft`. The exact mapping:
 
-| Insight field | Becomes on the intent | Authoring rule |
+| Insight field | Becomes on the work item | Authoring rule |
 |---|---|---|
-| `name` | intent **name** | Imperative work item: "Fix TypeError in CheckoutSession.finalize" — never "Error observed in checkout" |
+| `name` | work item **name** | Imperative work item: "Fix TypeError in CheckoutSession.finalize" — never "Error observed in checkout" |
 | `insight` | description + directive ¶1 | Evidence only: what fails, where, how often, since when. No opinions. |
 | `advice.text` (kind: `"recommendation"`) | directive ¶2 | **The concrete corrective action a developer executes.** Use `recommendation` for all actionable insights. |
 | `advice.text` (kind: `"context"`) | directive ¶3 | Blast radius, related deploys, trend notes. Use `context` for `unmatched`/pure-observation insights — never both kinds. |
-| `trail` stops | intent **anchors** | The trail's entry stop (and nearby stops) are the primary anchors. Anchors are what `/intents --show` resolves back to source files — keep the trail tight. |
+| `trail` stops | work item **anchors** | The trail's entry stop (and nearby stops) are the primary anchors. Anchors are what `/work-items --show` resolves back to source files — keep the trail tight. |
 | `priority`, `advice.effort` | carried verbatim | **Set both on every actionable insight.** `effort` lives inside `advice` (kind: `"recommendation"`). |
 | `id` | — | Local to the skeleton: it groups a signal across runs on this machine and never reaches the wire. The platform mints the ids promotion uses. |
 
-## Per-insight checklist (skeleton → intent-ready)
+## Per-insight checklist (skeleton → work-item-ready)
 
 1. **Verify before claiming.** Read the matched node's source (from its `sourceReferences` /
    the signal's stack frames). Only upgrade `confidence` to `verified` after reading the code;

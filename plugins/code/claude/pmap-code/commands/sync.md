@@ -17,7 +17,7 @@ Print every `display` verbatim; branch only on exit codes and named fields.
 
 **`pmap-sync.js` exits** — 0 success. 1 config error → **connect-now offer**; a **branch mismatch** and an **out-of-scope board** also exit 1 — relay `error` verbatim (it names the fix; config is fine), and offer Step 2.5's cleanup for out-of-scope. 2 analysis file error → name `/analyze`. 3 validation error → relay `error` verbatim; `Invalid archetypes:` → the reference's Step 5 catalogue-gap sentence, then stop; never alter the server or its DB. 4 API error → relay `error` verbatim; the CLI already retries transient failures and maps HTTP errors; don't re-derive them. `errorType: "auth_invalid"` → **connect-now offer**. `errorType: "forbidden"` → surface the server's message verbatim, never offer re-login; repair per the reference's *inconsistent board tree* section.
 
-**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command sync` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command sync` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Connect-now offer
 

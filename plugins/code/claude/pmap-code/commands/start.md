@@ -11,13 +11,18 @@ offer the pick.
 ## Workflow
 
 1. **Surfaces card** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-help.js --card`; print it verbatim.
-2. **Ladder** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --next --domain code` (offline;
+2. **Ladder** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --next` (offline;
    never prints credentials); print it verbatim — never rebuild the ladder. It ranks blocking
    gates first and names a command on every line.
+   **Playbooks** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-playbooks.js --next` (needs credentials;
+   prints nothing on an older server). Print its `display` verbatim under the ladder. A live run's
+   next command step outranks the ladder's lead action: it is what the team decided to do next.
 3. **Judgment, briefly.** Where this session gives you something the script can't know — the
    user just said what they're trying to do, you already saw the failure they're about to hit,
    the lead action is one they explicitly declined earlier — say so in a sentence or two after
-   the verbatim block, and name the command you'd run instead. Otherwise add nothing.
+   the verbatim block, and name the command you'd run instead. Otherwise add nothing. `/start --for <slug>` means
+   `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-playbooks.js --start <slug>`, then continue with its
+   first step.
 4. **Offer the pick** — AskUserQuestion "What next?": the lead action and the next two rungs
    (label = the command, description = its reason) plus **Not now**. Hand-off lines are never
    options. A pick → run it as this plugin's own slash command where the host lets you invoke

@@ -1,16 +1,16 @@
 ---
 category: author
-description: "Author · WRITE-CAPABLE: Adopt an architecture decision — normalize it, measure the estate against it, land the decision record plus per-app remediation intents"
+description: "Author · WRITE-CAPABLE: Adopt an architecture decision — normalize it, measure the estate against it, land the decision record plus per-app remediation work items"
 argument-hint: "[decision material or file]"
 allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
 ---
 
 Turn a decision into governance: normalized record → a durable `ADR:` decision board (where the
-rule lives) → a compliance insight batch per app (the _is_) → per-app remediation intents (the work owed).
+rule lives) → a compliance insight batch per app (the _is_) → per-app remediation work items (the work owed).
 The whole arc lives in [`${CLAUDE_PLUGIN_ROOT}/knowledge/adr-adoption/SKILL.md`](../knowledge/adr-adoption/SKILL.md)
 — read it plus [`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md);
 sweeps use [`${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md`](../knowledge/board-reading/SKILL.md),
-landing uses [`${CLAUDE_PLUGIN_ROOT}/knowledge/intents-authoring/SKILL.md`](../knowledge/intents-authoring/SKILL.md) conventions.
+landing uses [`${CLAUDE_PLUGIN_ROOT}/knowledge/work-items-authoring/SKILL.md`](../knowledge/work-items-authoring/SKILL.md) conventions.
 
 ## Workflow
 
@@ -27,12 +27,12 @@ landing uses [`${CLAUDE_PLUGIN_ROOT}/knowledge/intents-authoring/SKILL.md`](../k
 5. **Record** — `create_decision_board {name: "ADR: <title>"}` and write the normalized record
    there (adr-adoption §4). This is the standing rule's home; it never "completes".
 6. **Land, federated** — `create_insight` per swept app where violations were found, then
-   remediation drafts: `promote_insights` on reviewed violations, plus `create_intent`
+   remediation drafts: `promote_insights` on reviewed violations, plus `create_work_item`
    per affected code-bound app board where compliance needs work no insight covers
-   (`--validate intent` first). Unbound affected boards named + skipped with the binding gate
+   (`--validate work-item` first). Unbound affected boards named + skipped with the binding gate
    narrated. Close with the standard move: `preview_write_session_commit` → present the plan →
    title/summary (AskUserQuestion) → `commit_write_session` → narrate what was generated.
-7. **Hand off** — enrich the drafts via the intents-authoring loop, or stop.
+7. **Hand off** — enrich the drafts via the work-items-authoring loop, or stop.
 
 **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command adopt-adr` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 

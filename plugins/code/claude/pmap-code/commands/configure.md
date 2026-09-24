@@ -62,7 +62,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-boards.js
 
 Find the root board (`isChildBoard === false`): **one** → set `boardSlug` to its slug;
 **several** → ask the user which to use; **none** → warn them to create a board in the
-ProvenMap UI first (config can still be saved, but `/analyze` and `/sync` won't work until a root board exists). Write `boardSlug` into `.provenmap/config.json`, preserving the user's other fields.
+ProvenMap UI first (config can still be saved, but `/analyze`, `/sync` and `/ground` won't work until a root board exists). Write `boardSlug` into `.provenmap/config.json`, preserving the user's other fields.
 
 ## Step 6: Confirmation
 
@@ -79,4 +79,4 @@ cancel and keep existing.
 
 Verified? Close with the Outcome — one next move with its reason, not the whole report:
 
-**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command configure` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command configure` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.

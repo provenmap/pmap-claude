@@ -196,7 +196,7 @@ the returned `display` the next text of your reply, verbatim, before the step's 
 shell-side `print` of `display` is not a relay: the Bash output panel is collapsed, so a spine
 that stays there is a spine the user never sees. It carries the phase chain, the current
 phase's steps, and the coverage bar. Do not run it at every step — once per phase is the
-intent; more is noise.
+work item; more is noise.
 
 Exit codes: `1` bad usage (fix the call), `3` the step is not registered (the pipeline
 registry has drifted from the step headings — report it and continue; the spine is display,
@@ -221,7 +221,7 @@ A user who wants to curate the archetype vocabulary *before*
 any board is produced opts in with `"analysis": { "archetypeGate": "strict" }` in
 `.provenmap/config.json`; otherwise `/analyze` runs straight through and reports the
 archetype gaps it actually hits at Step 9. Which mode is active is **decided by the script,
-not by prose** — react to `pmap-precondition.js --kind code`'s output; never decide on
+not by prose** — react to `pmap-precondition.js`'s output; never decide on
 your own that the gate does or doesn't apply.
 
 The `status` field + exit code drive behaviour:
@@ -311,7 +311,7 @@ If ProvenMap configuration exists (`.provenmap/config.json` plus `.provenmap/cre
 1. Run the archetypes CLI to fetch available archetypes from the server:
 
    ```bash
-   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --kind code
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js
    ```
 
 2. Parse the JSON output to get:
@@ -1069,11 +1069,16 @@ advisory's `message` **verbatim**, then settle every one of them:
 Re-run this step after settling each one. `gateOverrides` and `proposedDrillDowns` are both
 local-only — neither is pushed.
 
-The JSON's `typing` block (and the `🎯 Typing:` line) lists comparable nodes whose type
+The JSON's `typing` block (and the `Typing:` line) lists comparable nodes whose type
 differs from their files' mapped archetype. It is a signal, not an advisory — it never
 blocks: for each named node either adopt the mapped archetype or keep your type and say why
 in the node description's rationale. A role you keep overriding is a map entry to re-pin
 (Step 0).
+
+`A-BOARD-NARRATIVE` means the board has no `metadata.detailedDescription`. Write one before
+styling: a short markdown narrative of what this board shows, its parts and what each owns,
+and what it talks to. It is what the platform hub's *About this system* card shows, and the
+root is the board it gets skipped on.
 
 For a fanned-out drill-down this step is the agent's own (Step 8.7 already requires each
 agent to report its board's gate status and unresolved-advisory count); the orchestrator
@@ -1116,8 +1121,8 @@ recovered board still carries (`metadata.origin`, `mirroredAt`, `mirroredFromBin
 node's `metadata.mirrored`), resolves the **archetype attributes** the repository can prove
 onto the nodes (offline, from the cached field contracts), and writes the board's entry in
 `.provenmap/boards/manifest.json` (`name` comes from the parent board's carrying node; the
-root's from `projectName`). Print `display` verbatim — a `🔧 Corrected` line means a value
-you wrote disagreed with the plan; a `🧬 Attributes skipped` line means no contracts were
+root's from `projectName`). Print `display` verbatim — a `Corrected` line means a value
+you wrote disagreed with the plan; an `Attributes skipped` line means no contracts were
 cached, and the next connected `/sync` fills them in. Never edit `manifest.json` by hand and
 never stamp those fields yourself: this is the only writer. Exit 1 (no board file, no plan, or
 a slug that is not a plan unit) → print `error` verbatim and fix the cause; nothing was written.
@@ -1127,7 +1132,7 @@ name-scoped to the archetypes the local boards use, which is why it runs here �
 board is written — and not at Step 0):
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --kind code --fields
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --fields
 ```
 
 Fails or offline → continue to `--finalize` anyway; attributes are an enrichment, never a
@@ -1334,7 +1339,7 @@ Then add ONLY what the script cannot know:
   stop:
 
   ```
-  ⚑ <N> component(s) had no fit archetype — typed with the closest available:
+  ⚠ <N> component(s) had no fit archetype — typed with the closest available:
     <name> → used `<usedInstead>` (<count> node(s): <slug>, <slug>)
     Run /analyze-archetypes to propose the missing archetypes. Optional — the board is complete as it stands.
   ```

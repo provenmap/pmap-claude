@@ -19,7 +19,7 @@ what kind of thing was being done, what the plugin did, and what went wrong. Dro
 - Names from the user's project: repository, folders, files, modules, classes, functions,
   services, board and node names, org or workspace names, branch names.
 - Paths, hostnames, URLs other than provenmap.com, e-mail addresses, tokens, IDs, hashes.
-- Source code, document text, board descriptions, insight or intent text, or error
+- Source code, document text, board descriptions, insight or work item text, or error
   messages that quote any of those.
 - What the product or company does ("a payments reconciliation service" is domain knowledge).
 

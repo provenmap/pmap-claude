@@ -10,7 +10,7 @@ must surface before prompting are in its **Running the scan** section.
 ## Step 1: Pull fresh archetype catalogue
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --no-cache --kind code --full
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-archetypes.js --no-cache --full
 ```
 
 Parse the `archetypes[]`, `nodeArchetypes[]`, and `edgeArchetypes[]` from the JSON output.

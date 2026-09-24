@@ -1,6 +1,6 @@
 ---
 category: map
-description: "Map · Visually inspect the running app — pick components in a real browser, capture screenshots and metadata that feed intents"
+description: "Map · Visually inspect the running app — pick components in a real browser, capture screenshots and metadata that feed work items"
 argument-hint: "[--url <url> | --env <name>] [--capture <url>] [--list | --show <id>]"
 allowed-tools: Read, Glob, Grep, Bash(node:*), AskUserQuestion
 ---
@@ -13,11 +13,11 @@ Print every `display` verbatim; branch only on exit codes and named fields. Capt
 
 **2 Poll** — the user is picking; wait: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-inspect.js --poll --max-wait 240`. `selectStatus: "pending"` → poll again · `"complete"`/`"browser_closed"` with selections → go to 3 · `"cancelled"`, or `browser_closed` with nothing picked → stop · exit 3 → browser connection lost; relay `error`, offer `--start` again.
 
-**Steps 3–7 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/ui-inspection/references/session-workflow.md` NOW and follow it exactly; improvise nothing.** It holds every call, flag, branch, confirm and the other modes (`--capture`/`--list`/`--show`/`--stop`). The map: **3** interpret per the ui-inspection skill · **4** the **user** chooses what it becomes — new intent / attach to a claimed intent / keep locally (stop, name `/intents`) · **4.5** the preflight gate below · **5** propose or attach via `pmap-intents.js` · **6** the **user** confirms the intent push, told first what leaves the machine · **7** the **user** confirms the page-capture push.
+**Steps 3–7 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/ui-inspection/references/session-workflow.md` NOW and follow it exactly; improvise nothing.** It holds every call, flag, branch, confirm and the other modes (`--capture`/`--list`/`--show`/`--stop`). The map: **3** interpret per the ui-inspection skill · **4** the **user** chooses what it becomes — new work item / attach to a claimed work item / keep locally (stop, name `/work-items`) · **4.5** the preflight gate below · **5** propose or attach via `pmap-work-items.js` · **6** the **user** confirms the work item push, told first what leaves the machine · **7** the **user** confirms the page-capture push.
 
 **4.5 Preflight** — run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js`, branch on its exit code. 0 → go (`repairs.boardsRecovered` non-empty = state restored from the server, per its `display`) · 1 (not connected / credentials rejected) → **connect-now offer** · 2 (binding unverified) → print `error`, stop, name `/status` · 11 branch mismatch → AskUserQuestion per the branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md`.
 
-**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain code --command inspect` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command inspect` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Connect-now offer
 

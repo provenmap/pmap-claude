@@ -48,7 +48,7 @@ oracle for Step 5's quality gates.
 ## Step 4: Shape the insights (your judgment)
 
 Read `.provenmap/monitoring/skeleton.json` — one prefilled insight per signal (id, element
-anchors, priority, measurement, tags already set). For **each** one, apply the intent-ready
+anchors, priority, measurement, tags already set). For **each** one, apply the work-item-ready
 authoring rules in `insight-shaping.md`: verify against the matched element's source before
 upgrading `confidence` to `verified`; `name` as an imperative work item and `insight` as evidence;
 **always set `recommendation` and `effort`**, never `recommendation` and `context` together; carry
@@ -66,18 +66,18 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight .provenmap/mo
 - Push failed → report "Saved locally — push failed: <error>"
 - `notAvailable: true` → report "Saved locally — server push not yet available"
 
-**Optional — propose intents (unattended/scheduled runs):** append `--propose-intents` to also turn
+**Optional — propose work items (unattended/scheduled runs):** append `--propose-work-items` to also turn
 the highest-signal insights (a concrete `recommendation` + `high`/`critical` priority) into **draft
-intents**. The drafts carry the insight's name, directive and anchors, but no back-link to the
+work items**. The drafts carry the insight's name, directive and anchors, but no back-link to the
 insight row: a push answers with the batch id it minted, never with row ids. They are NOT pullable
 until an architect reviews and locks them — the queue fills itself, under human review. Default off; interactive runs usually leave
 promotion to the architect.
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight .provenmap/monitoring/skeleton.json --board-slug <boardSlug> --require-pack --push --propose-intents
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight .provenmap/monitoring/skeleton.json --board-slug <boardSlug> --require-pack --push --propose-work-items
 ```
 
-The result's `proposedIntentIds[]` lists what was proposed.
+The result's `proposedWorkItemIds[]` lists what was proposed.
 
 ## Step 6: Report
 
@@ -85,8 +85,8 @@ Print a summary table (signals pulled, matched/unmatched, insights by priority, 
 then:
 
 > The insights landed as a **draft batch** on the portal's insights tab. An architect can promote
-> individual insights to intents there; developers pick promoted intents up with `/intents`.
+> individual insights to work items there; developers pick promoted work items up with `/work-items`.
 
-If `--propose-intents` proposed any (`proposedIntentIds[]`), add: "N intents proposed as drafts —
-they appear for review on the board's intents tab and become pullable once an architect locks
+If `--propose-work-items` proposed any (`proposedWorkItemIds[]`), add: "N work items proposed as drafts —
+they appear for review on the board's work items tab and become pullable once an architect locks
 them."

@@ -32,7 +32,7 @@ Scripts own the reading and the ranking; you add judgment and offer the pick.
 
 Classify against architect-core's **workflow routing table**:
 
-- **High confidence** → state the reading in one line ("that's an intent-authoring job") and run
+- **High confidence** → state the reading in one line ("that's an work-item-authoring job") and run
   the workflow inline: read its doctrine from `${CLAUDE_PLUGIN_ROOT}/knowledge/<skill>/SKILL.md` (the
   routing table names the skill per workflow) and continue — the named command remains the
   standalone entry.

@@ -55,7 +55,7 @@ These should never appear in a proposal payload, even if a naive scan suggests t
 
 | Pattern | Why skip |
 | --- | --- |
-| Single-letter or two-letter names (`db`, `q`) | Reviewer can't tell intent from name alone |
+| Single-letter or two-letter names (`db`, `q`) | Reviewer can't tell work item from name alone |
 | Names with version numbers (`auth_v2_service`) | Versioning is a lifecycle concern, not identity |
 | Names containing punctuation (`bff-api`) | Server convention is `snake_case` only |
 | Names ≥50 characters | Likely a description, not a name |

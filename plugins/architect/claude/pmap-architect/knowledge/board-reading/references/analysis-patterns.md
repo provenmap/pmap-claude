@@ -51,4 +51,4 @@ Transitive impact: if `target-slug` fails, these would be affected: …
 ```
 
 Close an assessment with a prioritized summary and an offer to help address the top finding
-(e.g. author an intent for it — see the intents-authoring skill).
+(e.g. author a work item for it — see the work-items-authoring skill).

@@ -67,7 +67,7 @@ Build this from `nodes[]` — include `slug`, `type` (archetype), and `descripti
 ## Reading Board Data
 
 1. Check if `.provenmap/boards/<boardSlug>.json` exists
-2. If missing, report "No board data found — run /analyze first" and stop
+2. If missing, report "No board data found — run /analyze (or /ground for a document repo) first" and stop
 3. Parse the JSON and extract the skill variables above
 4. Replace all `{{variable}}` placeholders in the skill's `instructions` text
 

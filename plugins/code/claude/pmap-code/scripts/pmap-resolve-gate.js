@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
  * PreToolUse resolve gate (Claude/Codex plugin hook).
- * Denies `pmap-intents.js --resolve <id> --kind implemented` unless fresh
- * passing verify evidence exists at .provenmap/intents/verify/<id>.json —
- * mechanical enforcement of "no verify, no implemented". The intents CLI
+ * Denies `pmap-work-items.js --resolve <id> --kind implemented` unless fresh
+ * passing verify evidence exists at .provenmap/work-items/verify/<id>.json —
+ * mechanical enforcement of "no verify, no implemented". The work items CLI
  * applies the same rule itself (the host-independent backstop); this hook
  * stops the attempt before a process even runs.
  *
  * The evidence contract (shape, 30-minute freshness, filename sanitization)
- * mirrors the intents CLI's evidence contract — keep them in sync.
+ * mirrors the work items CLI's evidence contract — keep them in sync.
  *
  * Fail-open on anything unparseable: exit 0 with no output. Plain node,
  * no dependencies, no build tokens (copied untokenized by build-plugins.js).
@@ -58,12 +58,12 @@ function main() {
     input && input.tool_input && typeof input.tool_input.command === "string"
       ? input.tool_input.command
       : "";
-  if (!command.includes("pmap-intents.js")) return;
+  if (!command.includes("pmap-work-items.js")) return;
   if (!/--kind[=\s]+["']?implemented\b/.test(command)) return;
 
   const idMatch = command.match(/--resolve[=\s]+["']?([^"'\s]+)/);
   if (!idMatch) return;
-  // Same sanitization as IntentManager's file paths.
+  // Same sanitization as WorkItemManager's file paths.
   const safeId = idMatch[1].replace(/[^A-Za-z0-9._-]/g, "_");
 
   const cwd =
@@ -73,7 +73,7 @@ function main() {
   const verifyPath = path.join(
     cwd,
     ".provenmap",
-    "intents",
+    "work-items",
     "verify",
     `${safeId}.json`,
   );
@@ -86,7 +86,7 @@ function main() {
       hookSpecificOutput: {
         hookEventName: "PreToolUse",
         permissionDecision: "deny",
-        permissionDecisionReason: `Resolving as implemented needs fresh passing verify evidence — ${problem}. Run the project's checks and record each one first: pmap-intents.js --record-verify ${idMatch[1]} --command "<cmd>" --exit-code <n>`,
+        permissionDecisionReason: `Resolving as implemented needs fresh passing verify evidence — ${problem}. Run the project's checks and record each one first: pmap-work-items.js --record-verify ${idMatch[1]} --command "<cmd>" --exit-code <n>`,
       },
     }),
   );

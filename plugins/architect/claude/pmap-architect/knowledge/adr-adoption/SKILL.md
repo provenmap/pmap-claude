@@ -1,20 +1,20 @@
 ---
 name: adr-adoption
-description: How to adopt an architecture decision (ADR) into ProvenMap and measure the estate against it — the /adopt-adr arc. Use when the org has made a decision, standard, or policy that boards should be governed by and checked against. Key capabilities: ADR normalization, blast-radius sweep per aspect family, the decision grill, the durable decision board, compliance insight batches, federated per-app remediation intents.
+description: How to adopt an architecture decision (ADR) into ProvenMap and measure the estate against it — the /adopt-adr arc. Use when the org has made a decision, standard, or policy that boards should be governed by and checked against. Key capabilities: ADR normalization, blast-radius sweep per aspect family, the decision grill, the durable decision board, compliance insight batches, federated per-app remediation work items.
 ---
 
 # ADR Adoption
 
 An adopted decision becomes three things: a **decision board** (the durable record — where the
 ADR lives and is found), a **compliance insight batch** per affected app (the _is_ — where the
-estate violates it today), and **remediation intents** (the _ought_, as work that can actually
-be delivered and confirmed). Intents are per-board and cross-board anchors are inert, so a
-cross-cutting ADR **federates**: per-app intents landed together in the working copy and
+estate violates it today), and **remediation work items** (the _ought_, as work that can actually
+be delivered and confirmed). Work items are per-board and cross-board anchors are inert, so a
+cross-cutting ADR **federates**: per-app work items landed together in the working copy and
 committed as one decision.
 
 The split matters: the decision board holds the _standing_ rule, which never "completes"; the
-intents hold the _bounded_ work each app owes to comply, which does. Do not try to express a
-standing rule as an intent that can never reach Implemented.
+work items hold the _bounded_ work each app owes to comply, which does. Do not try to express a
+standing rule as a work item that can never reach Implemented.
 
 ## 1 — Intake: normalize the decision
 
@@ -43,10 +43,10 @@ swept element: compliant / violating / unclear.
 ## 3 — The grill
 
 Bounded rounds (2–4 questions each): decision crispness (the one sentence); drivers (why now);
-applicability scope (which apps, which element classes — this becomes the intent wording);
+applicability scope (which apps, which element classes — this becomes the work item wording);
 exceptions & grandfathering (violations the architect explicitly accepts); migration stance
 (fix-now vs comply-on-next-touch); supersedes check (`list_boards` for an existing `ADR:`
-decision board, and `list_intents` per affected app — does open work already cover this
+decision board, and `list_work_items` per affected app — does open work already cover this
 ground?). Keep the running normalized record in the drafts file so the interview is resumable.
 
 ## 4 — Mint the decision's durable home
@@ -65,25 +65,31 @@ batches.
 
 ## 6 — Land the remediation, federated
 
-The writes join the working copy automatically. Two paths, both producing draft intents:
+`create_epic {name: "ADR: <title>", description: <the normalized record>}` first: the epic is
+what holds a cross-cutting decision's per-app work together as one plan, and every remediation
+work item below is filed under it (`epicSlug` on `create_work_item`; `set_work_item_epic` after
+`promote_insights`). A single-app ADR still gets its epic when more than one work item lands.
+
+The writes join the working copy automatically. Two paths, both producing draft work items:
 
 - **From the assessment** — `promote_insights` on the reviewed violation insights (one
-  draft intent each, origin-linked, so insight coverage stays derived). This is the default
+  draft work item each, origin-linked, so insight coverage stays derived). This is the default
   where the sweep found concrete violations.
-- **Authored directly** — `create_intent` per affected **code-bound** app board, named
-  `ADR: <title>`, description = the normalized record (identical across apps) plus that app's
+- **Authored directly** — `create_work_item` per affected **code-bound** app board, named
+  `ADR: <title>`, `type` from the work's shape (usually `refactor`, `fix` where the sweep found
+  wrong behaviour), description = the normalized record (identical across apps) plus that app's
   applicability, directive = that app's **enforceable consequences**, element-grounded by slug.
   Use this where compliance requires work the sweep cannot see as an insight. Pre-flight each
-  payload with `--validate intent`.
+  payload with `--validate work-item`.
 
-A single-app ADR degenerates to one intent. Affected but **unbound** boards: name them, skip
-them, narrate the binding gate (intents need a code-bound board).
+A single-app ADR degenerates to one work item. Affected but **unbound** boards: name them, skip
+them, narrate the binding gate (work items need a code-bound board).
 
 ## 7 — Hand off
 
-Enrich each generated draft via the intents-authoring loop (anchor notes are what the implementer
+Enrich each generated draft via the work-items-authoring loop (anchor notes are what the implementer
 reads), then the closing move: preview → commit. Not now → `/insights` (review batches),
-`/intents` (release the drafts). Every stop names the next command.
+`/work-items` (release the drafts). Every stop names the next command.
 
 The arc: _decision in → durable record + measured compliance + per-app remediation queue out_ —
 all reviewable drafts.

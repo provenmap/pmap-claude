@@ -21,7 +21,7 @@ hosts we can't script, or when you lack the admin permission the `/login` approv
 
 In the ProvenMap platform (needs the access-manage permission): open the **workspace command
 center (hub) → Architect access → Mint a key**. Choose scope (`read` or `read_write` —
-authoring intents needs `read_write`) and an optional board-subtree restriction. The raw
+authoring work items needs `read_write`) and an optional board-subtree restriction. The raw
 token — and its ready-made setup snippets — are shown **exactly once** at generate.
 
 ### Step 2 — wire it in (pick the row that matches where this session runs)

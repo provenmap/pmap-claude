@@ -1,27 +1,9 @@
 ---
 category: connect
-description: "Account · Update this plugin to the latest published version"
-allowed-tools: Bash(node:*)
+description: "Account · Retired — no further updates; install pmap-code and run /ground"
+next-steps: none
 ---
 
-Update **ProvenMap Connect** (`pmap-connect`) to the latest version published for
-**Claude Code**. The script looks up the plugin's actual installed marketplace and scope and
-updates it directly — it does not guess or retry blindly.
+Print this, verbatim, and stop:
 
-## Update workflow
-
-Run the update script:
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-update.js --host claude --plugin-name pmap-connect --host-name "Claude Code"
-```
-
-Print the JSON `display` field **verbatim in your reply** — the Bash output panel is collapsed for
-the user, so write it out in full. It already states old → new version (or the reason it couldn't
-update). Do not reformat it, and do not state a version number yourself beyond what `display` says.
-
-If the script exits non-zero, `display` already explains what went wrong (marketplace refresh
-failed, plugin not found under any scope, or the update command itself failed) — relay it as-is
-rather than guessing at a fix or retrying with different flags.
-
-**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --domain connect --command update` → one line, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
+> **ProvenMap Connect has moved into ProvenMap Code.** Grounding — mirroring the authored board, linking its nodes to this repo's documents, reporting drift — is the `/ground` command of **pmap-code** now, and it reads this repo's `.provenmap/` state as is. Install pmap-code from the same ProvenMap marketplace this plugin came from, restart Claude Code, run `/ground`, then uninstall pmap-connect. This plugin receives no further updates.

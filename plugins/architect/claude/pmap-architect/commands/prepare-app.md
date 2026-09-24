@@ -1,6 +1,6 @@
 ---
 category: author
-description: "Author · WRITE-CAPABLE: Take a new app from placed to build-ready — grill the spec into sequenced intents, choose its skills"
+description: "Author · WRITE-CAPABLE: Take a new app from placed to build-ready — grill the spec into sequenced work items, choose its skills"
 argument-hint: "[board]"
 allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-architect_provenmap__*
 ---
@@ -38,7 +38,7 @@ narrate the developer handoff (it is in the display) and stop.
 
 ### Step 3 — work the open items
 
-Follow the app-readiness skill: the spec grill (full intents-authoring machinery) for open
+Follow the app-readiness skill: the spec grill (full work-items-authoring machinery) for open
 items 1–2, board-init's Skills prep for item 3. Each item is optional per session; what is
 skipped stays honestly open for next time.
 

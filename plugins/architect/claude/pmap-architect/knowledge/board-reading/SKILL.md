@@ -7,7 +7,7 @@ description: How to orient on and evolve a ProvenMap board over MCP — read the
 
 <!-- Distilled from platform board-orchestrator prompt builders:
      services/prompts/modes/standard/hydrated-board.prompt.ts +
-     empty-board.prompt.ts (orientation, intent detection, operations) and
+     empty-board.prompt.ts (orientation, work item detection, operations) and
      base/diagram-tool-contract.ts (payload shape + slug discipline).
      references/ carries the detailed criteria and payload shapes. -->
 
@@ -17,9 +17,9 @@ To orient on a board, read in this order (each call is cheap; batch where possib
 
 1. `get_board_tree` — every descendant layer board (slug, name, drill path).
 2. `get_workboard_details` — the board itself: structure, nodes, edges, semantic styles.
-3. `get_hub_status` — intent counts, latest insight batch, binding health (`scope: 'tree'`
+3. `get_hub_status` — work item counts, latest insight batch, binding health (`scope: 'tree'`
    aggregates the subtree).
-4. `list_intents` / `list_insights` — what work and insights are already in flight.
+4. `list_work_items` / `list_insights` — what work and insights are already in flight.
 
 Summarize: purpose, the domains/containers, layer structure, and anything in flight — slug-first,
 then invite direction.
@@ -31,7 +31,7 @@ Before authoring anything, determine the board's class from three facts:
 1. **Tree position** — `get_board_tree('root')`: is this the root, a node's layer board, or
    absent from the tree (standalone)?
 2. **Bindings** — `list_source_bindings(workBoardSlug)`: a code-plugin binding (governing or
-   reference) makes the board an **app board** — the only class where intents are legal.
+   reference) makes the board an **app board** — the only class where work items are legal.
 3. **Layer flag** — `isChildLayer` on the board details: true + no binding = **plain layer**;
    facet work routes up to the nearest bound ancestor.
 
@@ -76,7 +76,7 @@ into it **before** answering.
 
 ## Reading the request
 
-Detect what the user wants (from the platform's intent-detection signals):
+Detect what the user wants (from the platform's work-item-detection signals):
 
 | Signal       | Keywords                               | Shape                                                         |
 | ------------ | -------------------------------------- | ------------------------------------------------------------- |
@@ -97,7 +97,7 @@ Diagram writes (`create_nodes`, `update_nodes`, `delete_nodes`, `create_edges`, 
 `delete_edges`, `apply_diagram_info`, `apply_semantic_styles`, `apply_composition`,
 `apply_icon_shape_styles` — styling methodology: the board-styling skill) are exposed and
 journaled: every write joins the architect's working copy, and **nothing is staged until the
-session commits** (on a governed board, commit generates one reviewable `board_diff` intent per
+session commits** (on a governed board, commit generates one reviewable `board_diff` work item per
 governed root).
 Narrate the journal after a batch: "Saved to your working copy — N uncommitted changes across
 M boards."

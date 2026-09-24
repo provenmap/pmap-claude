@@ -29,9 +29,9 @@ Classify per the architect-core taxonomy; per-class detection facts and orientat
   app board, the lightweight variant for a layer (or route up to the owning app board).
 - **Root / landscape** → orient as a **portfolio**, not a canvas walk; landscape edits follow
   `${CLAUDE_PLUGIN_ROOT}/knowledge/landscape-modeling/SKILL.md`.
-- **Plain layer** → orient normally; say that facet work (intents) routes up to the owning app board.
+- **Plain layer** → orient normally; say that facet work (work items) routes up to the owning app board.
 - **App board** → the full board-reading orientation sequence (`get_workboard_details`,
-  `get_hub_status`, `list_intents`, `list_insights`).
+  `get_hub_status`, `list_work_items`, `list_insights`).
 
 Then summarize slug-first and invite direction — the session is conversational from here.
 
@@ -53,7 +53,7 @@ Print its `display` **verbatim** (a summary); read verdicts from the JSON's `clu
 and the `Grouping rationale:` override per that reference. Every move re-parents a node — apply only what the architect confirms.
 
 **Closing move (any session that wrote):** architect-core's standard move (preview → title/summary
-via AskUserQuestion → commit → narrate the intents, offer `publish`). To abandon instead: confirm
+via AskUserQuestion → commit → narrate the work items, offer `publish`). To abandon instead: confirm
 the boards + counts from `get_write_session`, then `discard_write_session` — it reverts the WHOLE
 working copy.
 

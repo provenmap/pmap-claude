@@ -25,7 +25,7 @@ it and pass its output through.
 2. Run the status script:
 
    ```bash
-   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --domain code
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js
    ```
 
 3. Reproduce the script's stdout **verbatim in your reply** — write it out in
