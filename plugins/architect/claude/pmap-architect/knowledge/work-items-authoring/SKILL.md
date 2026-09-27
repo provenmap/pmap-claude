@@ -1,6 +1,6 @@
 ---
 name: work-items-authoring
-description: How to author, anchor, and manage ProvenMap work items — the living specs that connect architecture decisions to delivery. Use when creating work items, authoring requirements against a board, managing the work item queue (transition, assign, delete), or turning insights and board changes into work. Key capabilities: the work item lifecycle, DRAFT-only stance, the impact→attach→describe authoring loop, the authoring interview, anchor recording with the platform's verbs, single-board rule and session-linked federation, the materialization gates (duplicate, already-implemented, sequencing), structured directives, staleness and verification semantics.
+description: How to author, anchor, and manage ProvenMap work items — the living specs that connect architecture decisions to delivery. Use when creating work items, authoring requirements against a board, managing the work item queue (transition, assign, delete), or turning insights and board changes into work. Key capabilities: the work item lifecycle, DRAFT-only stance, the impact→attach→describe authoring loop, the authoring interview, anchor recording with the platform's verbs, one-app rule (reference anywhere) and session-linked federation, the materialization gates (duplicate, already-implemented, sequencing), structured directives, staleness and verification semantics.
 ---
 
 # Work items Authoring
@@ -59,6 +59,7 @@ open`) or rejects it.
 
 | Tool                       | Use                                                                                              |
 | -------------------------- | ------------------------------------------------------------------------------------------------ |
+| `find_elements`               | find layers, nodes, connections and aspect rows under a root by name; with `homeBoardSlug`, flags references |
 | `list_work_items`             | summaries; `scope: 'tree'` spans layer boards                                                    |
 | `get_work_item`               | full detail: directive, anchors + notes, origin, resolution history, staleness                   |
 | `create_work_item`            | author a draft (incl. the `narrative` and, for a bound document, `draftedFromSourceSlug`)        |
@@ -77,7 +78,7 @@ Address work items by slug (`list_work_items` → `get_work_item`), or by number
 
 `create_work_item` takes `{ workBoardSlug, name, type?, epicSlug?, directive (10–4000 chars),
 description?, narrative?, draftedFromSourceSlug?, dependsOnSlugs?, anchors[]{elementType,
-aspectKind?, slug, note?}, priority?, effort? }`.
+aspectKind?, slug, boardSlug?, note?}, priority?, effort? }`.
 
 **Type — one question, early.** Every work item is one of `feature` (something the system does
 not do yet), `fix` (something behaves wrongly), `refactor` (behaviour stays, shape changes),
@@ -111,6 +112,13 @@ a draft _came from_, not what it is about.
 (a table, an endpoint — pass `aspectKind`), or a child layer board. Add a note per anchor saying
 why it is there; **the implementer reads it**. Anchors you author carry the `context` role
 ('changed' anchors come only from captures that physically edited elements).
+
+**One app, reference anywhere.** A work item changes one app — its board and the layers
+beneath, the repo the implementer works in — and can reference anything else under the root.
+Pass `boardSlug` on an anchor that lives on another board (`find_elements` returns it); omit it
+for the work item's own board. An anchor outside the work item's app is a **reference**: its
+note says why it is relevant, never what should change there. A change another app needs is its
+own work item on that app, sequenced with `dependsOnSlugs`.
 
 **Structured directives.** Write the directive so a concrete diff could be derived from it:
 
@@ -160,9 +168,11 @@ architect-core's taxonomy — work items are legal only on code-bound boards):
    ranking from judgment: spine radius (`get_edges` with `nodeSlugs` on the seeds; one more
    hop only for hubs; classify inbound/outbound); aspect fan-out (`get_node_aspects` on seeds
    - implicated neighbours — the pages, endpoints, tables, channels, authz entries the change
-     actually touches); affected child layers (`layerBoardSlug` ⇒ layer anchors). **Candidates
-     on other boards become separate per-board work items** — group by home board; a work item is
-     single-board (cross-board anchors are inert).
+     actually touches); affected child layers (`layerBoardSlug` ⇒ layer anchors). Find elements
+     named in the material with `find_elements` (pass `homeBoardSlug`) rather than walking boards
+     one by one. **One app per work item:** candidates in another app are references when they
+     only explain the change; a change they need becomes that app's own work item — group by
+     app.
 4. **The materialization gates.** Three checks against the existing work item estate — every one
    must pass before anything lands
    ([references/materialization-gates.md](references/materialization-gates.md)):
@@ -192,7 +202,7 @@ before submit"`. Templates and composition rules:
    lives on the linked insight" — anchor table (slug · type · note), the _Drafted from_
    line when `draftedFromSourceSlug` is set, and the _After_ line when `dependsOnSlugs`
    is set. One AskUserQuestion: **Land as draft** /
-   **Revise**. Multi-board split → render every per-board work item, one question for the batch.
+   **Revise**. Changes in several apps → render each app's work item, one question for the batch.
    Revise loops back to the step that owns the field, then re-renders once — the second
    read-back is final unless the architect asks again. After landing, narrate slug-first as
    usual; the read-back already served as the summary, so no duplicate narration.

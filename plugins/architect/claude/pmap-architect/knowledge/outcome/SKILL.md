@@ -55,7 +55,9 @@ completed `/login` — use that and skip the call.
    - Bad: `Done: sync completed successfully.`
    - Good: `Done: pushed payments-overview — 12 nodes, 8 edges, verified against the read-back.`
 2. **Left is honest.** Skipped steps, waived files, undrawn nodes, a failed verification, a
-   question the run could not answer.
+   question the run could not answer. Source the analysis cannot read (`state.unreadSource`) is
+   always Left, even at 100%. Never promise that `coverage.extensions` makes it readable:
+   it adds the files by name only, with no edges.
    - Bad: (omitted, while the run skipped a board)
    - Good: `Left: checkout was skipped — 14 files behind HEAD; a push would send stale plan units.`
 3. **Next leads with one move and its because.** The because is a fact from the brief or from

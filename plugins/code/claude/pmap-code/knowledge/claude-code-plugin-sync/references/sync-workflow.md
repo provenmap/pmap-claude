@@ -267,6 +267,17 @@ doesn't track it; skip silently):
 - Any other `reason` → one line: progress snapshot failed with that reason (the sync itself still
   succeeded).
 
+**Boundary rules** (from each board's `boundaryReport` — absent, `reason: "no_rules"` or
+`reason: "feature_unavailable"` means nothing to say; skip silently). The architect declares these
+rules on the board; the sync proves them against this checkout:
+
+- `sent: true` → one line `Boundary rules: <holds> hold, <violated> violated, <unevaluated> not evaluated.`
+  then print each `display` line **verbatim**. A violated rule is the architect's layering broken
+  by the code: say so plainly, never soften it, and never change code to fix it unless asked.
+- `staleSlugs` non-empty → the architect edited those rules during the sync; the next `/sync` checks them.
+- `reason: "branch_mismatch"` → skipped on the wrong branch; `/status` explains the recovery.
+- Any other `reason` → one line: rule check failed with that reason (the sync itself succeeded).
+
 **Styling** (from each board's `stylingReport` — absent or `reason: "no_pending_plan"` means nothing
 pending; skip silently):
 

@@ -30,9 +30,10 @@ pause. Route:
 **The source gate** (map mode, before any estate question; AskUserQuestion, multi-select):
 describe in conversation / scan repo folders / share documents; a scan runs
 `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --scan-repos --paths <p1,p2,...>`.
+`appHosts[]` → landscape-modeling's AppHost section drives Steps 2–5.
 
-Then work landscape-modeling's agenda; its one-line opener is the root board's `description`
-and its answers become the root's `mdContent` narrative (one `apply_diagram_info` call).
+Then work landscape-modeling's agenda: its one-line opener → the root's `description`, its
+answers → the root's `mdContent` narrative (one `apply_diagram_info` call).
 
 ### Step 3 — draw the landscape
 
@@ -52,6 +53,8 @@ recovers later.
 `create_board` per repo-backed node: **never draw inside**. Found mode: **skipped** — no boards or bindings; say why.
 
 ### Step 5 — commit the scaffold, complete the bindings
+
+AppHost: offer `proposal.boundaryRules[]` first (landscape-modeling).
 
 Architect-core's closing move: `preview_write_session_commit` → title/summary (AskUserQuestion) →
 `commit_write_session`.

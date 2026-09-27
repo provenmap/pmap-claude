@@ -257,7 +257,7 @@ duplicating them.
 ```
 
 **Required fields:** `slug`, `name`, `type`, `description`, `detailedDescription` — plus `coveredFiles` on every non-container node (the plan claim — see "Plan units and claims")
-**Optional fields:** `path`, `parentSlug`, `layerBoardSlug`, `metadata`
+**Optional fields:** `path`, `parentSlug`, `layerBoardSlug`, `tags` (see `references/analyze-workflow.md` → Tags), `metadata`
 
 ### Edge Format
 

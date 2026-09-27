@@ -1,6 +1,6 @@
 ---
 name: landscape-modeling
-description: How to model an org's digital estate on the ProvenMap root landscape — the inception doctrine, archetype selection, and the binding handoff. Use when bootstrapping an empty workspace (/setup-workspace), placing a new system (/new-app), or editing the root landscape in a /board session. Key capabilities: the modelling doctrine (model what exists, one node per system), the source gate and shallow repo scan (--scan-repos), per-system kinds, app archetypes as the bindability lever, domain-group containers, the L0 granularity budget, the binding-handoff checklist, skill-profiles-start-empty truth, the /setup-workspace interview agendas and plan sketch, the /new-app grill agenda and binding gate. Covers both map mode (model what exists) and found mode (founding landscape for a new product line — strategic-only, graduation path).
+description: How to model an org's digital estate on the ProvenMap root landscape — the inception doctrine, archetype selection, and the binding handoff. Use when bootstrapping an empty workspace (/setup-workspace), placing a new system (/new-app), or editing the root landscape in a /board session. Key capabilities: the modelling doctrine (model what exists, one node per system), the source gate and shallow repo scan (--scan-repos), the Aspire AppHost landscape proposal, per-system kinds, app archetypes as the bindability lever, domain-group containers, the L0 granularity budget, the binding-handoff checklist, skill-profiles-start-empty truth, the /setup-workspace interview agendas and plan sketch, the /new-app grill agenda and binding gate. Covers both map mode (model what exists) and found mode (founding landscape for a new product line — strategic-only, graduation path).
 ---
 
 # Landscape Modeling
@@ -41,7 +41,8 @@ choice — and any scan inventory — in the drafts file (architect-core): a res
 neither re-asks the gate nor re-scans. Found mode skips the gate (nothing exists to scan);
 a real repo named mid-interview may still get the scan offer (per-answer fork, below).
 
-The scan is shallow by design — identity facts only, depth 1, never recursive:
+The scan is shallow by design — identity facts only, depth 1, never recursive — with one
+bounded exception: it looks for .NET Aspire AppHost projects (below).
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --scan-repos --paths <p1,p2,...>
@@ -49,9 +50,68 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --scan-repos --paths <p1,p2
 
 Each candidate carries `{path, dirName, isGitRepo, gitRemote, manifestKind, manifestName,
 readmeTitle, monorepoHint}`; the result carries `skipped[]` and `truncated` (the 200-entry
-cap is always reported — relay it, never hide it). Deep analysis stays the code plugin's job
-after binding. Your job on the output is judgment: dedupe, propose system names, kinds, and
-repo scopes, and feed the confirmation table — scan output never bypasses the interview.
+cap is always reported — relay it, never hide it), plus `appHosts[]` and `walkTruncated[]`.
+Deep analysis stays the code plugin's job after binding. Your job on the output is judgment:
+dedupe, propose system names, kinds, and repo scopes, and feed the confirmation table — scan
+output never bypasses the interview.
+
+## An Aspire AppHost: the landscape is already written
+
+An AppHost (`AddProject`, `AddPostgres`, `WithReference`, …) is the runtime topology as code.
+When the scan reports `appHosts[]`, the landscape comes from it — not from READMEs, and not
+from asking the architect to list systems the code already names. Several AppHosts → ask which
+one describes this estate. `walkTruncated[]` names repos the bounded csproj walk could not
+finish — relay it: an AppHost deeper than the bound was not seen.
+
+Each AppHost carries its `resources[]`, `references[]`, `unresolved[]` and a `proposal`:
+
+- **`proposal.diagram`** is a ready `create_nodes` + `create_edges` payload for `root`: one
+  node per resource (slug = resource name), projects on app archetypes named after their
+  csproj, databases inside their server container, one edge per `WithReference` or YARP
+  route. `WaitFor` rides its edge as a start-order note; a wait-only pair is never an edge.
+  Write it to a file and pre-flight it with `--validate diagram` like any payload.
+- **Archetypes are proposals.** Check each against `get_archetypes`; a missing one falls back
+  to `data_store` (stores, brokers) or `infrastructure_component` (anything else), and a
+  project keeps SOME app archetype — the architect may pick a better one (`backend-app`, …).
+- **`conditional` tags** mark resources and edges the AppHost adds only inside an if-block
+  (Foundry/Ollama behind a flag). Name them in the plan; the architect keeps or drops each —
+  never drop one silently.
+- **`omitted[]`** lists what was left off and why (a deployment environment, model deployments
+  folded into their AI service, wait-only pairs); relay it in one line.
+- **`unresolved[]`** lists calls the reader could not follow (a helper from a package, a
+  reference to something it could not resolve), each with file and line. Relay every one and
+  ask; never fill a gap with a guess.
+- **`proposal.apps[]`** gives each project node's repo match: `matched` (its csproj is in a
+  scanned repo; `alsoIn` names the AppHost's own monorepo copy it was preferred over),
+  `ambiguous` (ask which repo), `unmatched` (ask: a repo elsewhere, or no repo). Matched is
+  the `repo` kind — the architect confirms, never re-classifies from scratch.
+- **`proposal.repos[]`** groups project nodes per repo. **One repo binds one app board**: a
+  repo with one node slug makes that node its app; a repo several project nodes share (the
+  monorepo) → ask which node, if any, it binds to — the rest stay plain nodes, still on app
+  archetypes so they can bind once split out.
+
+- **`proposal.boundaryRules[]`** freezes today's data ownership: one `only` rule per database
+  the AppHost wires, its referencing projects as the owners (eShop: only `ordering-api` and
+  `order-processor` reach `orderingdb`). Each row is a ready `author_boundary_rules` row for
+  `root`. Offer them once, after the landscape is drawn (AskUserQuestion, multi-select, each
+  named by its sentence); declare the chosen ones, never the rest. A shared store is a finding
+  in itself — say so when a rule has more than one owner. The server proves root rules against
+  the root's edges, so each shows holds or violated as soon as it lands.
+
+The interview shrinks to what the AppHost cannot know: the one-line opener, actors, systems
+outside it (external SaaS, legacy estates), zones. The plan sketch and the confirmation table
+are drawn from the proposal; one go-ahead covers the batch as always.
+
+**Binding each service repo.** A repo whose `boundBoardSlug` is set was bound before the
+landscape existed: its app board is that board. When app boards are generated, adopt it with
+`create_board {ownerNodeSlug: <node>, newBoardSlug: <boundBoardSlug>, name}` — it re-parents an
+ownerless board intact (relay a refusal verbatim if another node owns it) — and do **not**
+`convert_node_to_app` that node: the repo's binding already governs the adopted board. Every
+other confirmed app node completes as usual (`convert_node_to_app`, `observationType:
+'existing_app'`). Tell the
+developers each remaining service repo binds to its own root node at the code plugin's
+`/login` — the board picker offers convertible root nodes — so every repo shares the one slug
+the AppHost gave it.
 
 ## Archetype selection — the bindability lever
 

@@ -1,6 +1,6 @@
 ---
 name: board-init
-description: Bootstrap an existing-but-empty board below root into an implementable app design. Use when /board meets an empty app board (bound governing/reference, pre-first-push, or unbound with an app-archetype owner node) or an empty plain layer, or when /start routes a "shape/prepare/initialize this empty board" ask. Key capabilities: the two entry styles (architecture-first, pages-first via author_pages), intended-aspect authoring (author_endpoints, author_tables, author_channels), the implementor bar, rich-metadata discipline, reference-doc binding, founding work items, skills prep with configure_skills, per-tool degradation rules.
+description: Bootstrap an existing-but-empty board below root into an implementable app design. Use when /board meets an empty app board (bound governing/reference, pre-first-push, or unbound with an app-archetype owner node) or an empty plain layer, or when /start routes a "shape/prepare/initialize this empty board" ask. Key capabilities: the two entry styles (architecture-first, pages-first via author_pages), intended-aspect authoring (author_endpoints, author_tables, author_channels, author_boundary_rules), the implementor bar, rich-metadata discipline, reference-doc binding, founding work items, skills prep with configure_skills, per-tool degradation rules.
 ---
 
 # Board Init
@@ -80,6 +80,10 @@ reconciles on push; on analyzer-owned rows only the human fields are writable):
   — the intended data model (columns render into the table's usage notes).
 - `author_channels {workBoardSlug, channels: [{slug, name, broker, purpose, producers, consumers, ownerNodeSlug}]}`
   — the intended event catalog (broker is required — it's identity-stable).
+- `author_boundary_rules {workBoardSlug, rules: [{slug, name, kind: 'forbid'|'only', from, to, target, allowed, rationale}]}`
+  — the layering the design depends on, over node slugs you just created (`forbid`: from must
+  not depend on to; `only`: only allowed may depend on target, e.g. one component owns a store).
+  The code plugin proves each rule on every sync.
 
 Author only what the interview actually settled — an intended aspect is a claim the architect
 is making, never filler.

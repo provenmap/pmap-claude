@@ -1,7 +1,7 @@
 ---
 name: architecture-analyzer
 description: |
-  Use this agent when the user asks to "analyze codebase structure", "map architecture", "detect tech stacks", "identify components", "create architecture diagram", or when comprehensive codebase analysis is needed for ProvenMap integration. Supports JavaScript/TypeScript, Python, Java, Go, C#, Ruby, Rust, PHP, Kotlin, Swift, and Scala projects. Examples:
+  Use this agent when the user asks to "analyze codebase structure", "map architecture", "detect tech stacks", "identify components", "create architecture diagram", or when comprehensive codebase analysis is needed for ProvenMap integration. Supports JavaScript/TypeScript (with Vue and Svelte components), Python, Java, Go, C# (with Razor components), Ruby, Rust, PHP, Kotlin, Swift, and Scala projects, plus Protobuf contracts. Examples:
 
   <example>
   Context: User wants to understand their project structure

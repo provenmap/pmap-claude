@@ -1,7 +1,7 @@
 ---
 name: relationship-detector
 description: |
-  Use this agent when the user asks to "find dependencies", "detect relationships", "map imports", "identify connections", "analyze data flow", or when building edges between components for architecture visualization. Supports JavaScript/TypeScript, Python, Java, Go, C#, Ruby, Rust, PHP, Kotlin, Swift, and Scala import patterns. Examples:
+  Use this agent when the user asks to "find dependencies", "detect relationships", "map imports", "identify connections", "analyze data flow", or when building edges between components for architecture visualization. Supports JavaScript/TypeScript (with Vue and Svelte components), Python, Java, Go, C# (with Razor components), Ruby, Rust, PHP, Kotlin, Swift, and Scala import patterns, plus Protobuf contracts. Examples:
 
   <example>
   Context: User has nodes but needs to understand how they connect

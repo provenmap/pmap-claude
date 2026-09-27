@@ -63,7 +63,7 @@ instead, so spend the extra question where a slug is available.
   don't guess.)
 - Which aspect rows — pages (`ui.page`), endpoints (`api.endpoint`), tables (`db.table`),
   channels (`event.channel`), authz entries (`authz.registry`)?
-- Does any part of this belong to a *different* app board? (Split — a work item is single-board.)
+- Does any part of this belong to a *different* app board? (A change there is its own work item on that app; link it here only as a reference.)
 
 ## Integration touchpoints
 

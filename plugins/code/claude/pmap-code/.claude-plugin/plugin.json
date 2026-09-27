@@ -24,9 +24,9 @@
     "./commands/work-items.md"
   ],
   "displayName": "ProvenMap Code",
-  "version": "0.29.0",
+  "version": "0.30.0",
   "metadata": {
-    "releasedAt": "2026-09-24"
+    "releasedAt": "2026-09-27"
   },
   "description": "Real-time codebase architecture analysis and visualization for ProvenMap Portal. Analyzes codebases across multiple languages, detects tech stacks, identifies component relationships, and syncs to ProvenMap for collaborative architecture boards. Supports server-defined insight analysis skills.",
   "author": {

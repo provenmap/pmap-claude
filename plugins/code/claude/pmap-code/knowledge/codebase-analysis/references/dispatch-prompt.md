@@ -53,7 +53,8 @@ Run every command from `{{pluginRoot}}/scripts/pmap-prepass.js` against `{{worki
    `metadata.parentNodeSlug: "{{parentNodeSlug}}"`, `metadata.layer: {{layer}}`, and
    `metadata.analyzedBy: { "mode": "agent", "model": "{{model}}" }` — never
    `analyzedAtCommit` or the manifest: the orchestrator stamps both with `--finalize` when
-   your board joins.
+   your board joins. Tag nodes per **Tags** in
+   `${CLAUDE_PLUGIN_ROOT}/knowledge/codebase-analysis/references/analyze-workflow.md`.
 5. `--claim-check .provenmap/boards/{{childBoardSlug}}.json --skeleton
    .provenmap/skeletons/{{childBoardSlug}}.json` — exit 3 (a file claimed twice) is the one
    hard defect; fix and re-run. An unclaimed file is debt: claim it, waive it with an exact

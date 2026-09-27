@@ -26,7 +26,7 @@ Every `display` verbatim in your reply; branch only on exit codes and named fiel
 - 2–4 config + stacks from the digest (script-owned)
 - 4.5 `--scope-unit` read + `--detail`; slice only inlined clusters
 - 4.6 `--group-plan --layer <n>` (no marks); evidence flip → ask first
-- 5 carry child units + own files; `planUnitId`; write board JSON
+- 5 carry child units + own files; `planUnitId`; `tags` (reuse org tags); write board JSON
 - 5.5 `--claim-check`; exit 3 → fix double claim, re-run
 - 6 `--rollup <slug> --apply` (exit 3 → fix; re-read board) + semantic edges, one per pair; 5+ isolated → relationship-detector agents (read-only, max 4, one message)
 - 7 propose depth → `metadata.proposedDrillDowns`

@@ -18,8 +18,11 @@ marks its end proof done.
 The division is absolute and it is the whole safety story:
 
 - **You do the work**, through the product's own doors — the same MCP tools any session has.
-- **The server decides what is done.** It watches real workspace state. There is no tool that
-  marks a step complete and you must never behave as if there were.
+- **The server decides what is done.** It watches real workspace state. No tool proves a step;
+  `report_playbook_step` records only what the workspace cannot show (a choice, a skip, a
+  person's mark), and a mark shows as marked, never proven.
+- **A run is one person's walk.** `list_playbooks` shows teammates' runs too, with `mine` on
+  each; work the run you started, and start your own rather than acting on someone else's.
 
 So a step is finished when a re-read of the run says it is finished, and at no other moment.
 If you did the work and the step has not ticked, something about the work did not land: say
@@ -27,20 +30,24 @@ what is missing rather than moving on.
 
 ## The tools
 
-| Tool                  | Use                                                                                             |
-| --------------------- | ----------------------------------------------------------------------------------------------- |
-| `list_playbooks`      | the catalogue this org can start, plus this workspace's live runs and each one's next step      |
-| `start_playbook`      | open a run on a board; returns the existing run when one is already live                        |
-| `get_playbook_skill`  | the playbook compiled to one file: stages, steps, the tools each step names, the proof for each |
-| `get_playbook_run`    | one run with every step evaluated — done, available, the evidence that proved it                |
+| Tool                   | Use                                                                                                                                                                                                                                            |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `list_playbooks`       | the catalogue this org can start, plus this workspace's live runs and each one's next step                                                                                                                                                     |
+| `start_playbook`       | open a run on a board; returns the existing run when one is already live                                                                                                                                                                       |
+| `get_playbook_skill`   | the playbook compiled to one file: stages, steps, the tools each step names, the proof for each                                                                                                                                                |
+| `get_playbook_run`     | one run with every step evaluated — done, available, the evidence that proved it (on an open step, `evidence` without an `instance` says why it is still open: relay it)                                                                       |
+| `report_playbook_step` | record on your run what the server cannot see: `choice` (the branch key), `selectTarget` (`boardSlug` or `epicSlug`), `selectLayer` (`layerSlug`), `skip`/`restore`, `markDone`/`unmark`, `acknowledge` (a sign-off the named person gave you) |
+| `publish_board`        | publish a board (a publish step's tool); the run's publish step ticks from the publish itself. Ask the person first                                                                                                                            |
+| `get_hub_status`       | pass `playbook` when a step asks you to look at the hub: the read is that run's hub visit                                                                                                                                                      |
 
 `get_playbook_skill` is the instruction set. Read it before the first step, not after.
 
 ## The run loop
 
-1. **Find the run.** `list_playbooks` with the board. A live run for what the architect asked
-   for → use it. None → pick from the catalogue by matching the ask against each playbook's
-   `job` line, confirm the playbook by name, then `start_playbook`.
+1. **Find the run.** `list_playbooks` with the board. A live run of yours (`mine`) for what the
+   architect asked for → use it. None → pick from the catalogue by matching the ask against each
+   playbook's `job` line, confirm the playbook by name, then `start_playbook`. Any playbook
+   starts anywhere; one on an app or an epic that has none yet opens on its Select target step.
 2. **Pull the skill.** `get_playbook_skill` for that playbook. Follow its stage order. Its
    per-step **Tools** list is what you may call for that step; a step that names none is not a
    step you do (see below).
@@ -61,21 +68,60 @@ what is missing rather than moving on.
 Report as you go: one line per step, naming the step and the evidence. A run of six steps is
 six short lines, not a narrative.
 
-## Steps you do not do
+## Steps a person answers, and steps that are not yours
 
-Some steps exist for a person, and the compiled file says so in its own words. Name the step,
-say where it happens, and stop the loop there rather than inventing a way around it:
+Every playbook but the setup guide can be finished from here: each step has tools, a command,
+or a person you ask. Some steps need the person, and the compiled file says how on each:
 
-- **`control`** — an on-screen control in the web app. There is no terminal equivalent.
-- **`code`** — a guided sub-flow the web app walks itself.
-- **A chat question expecting an answer** — its proof is a conversation thread on the board, and
-  an MCP session has none. The compiled file says so on the step; hand it to a person.
+- **A chat question expecting an answer** — yours to answer, from the board, with the read
+  tools the step lists. Give the person the answer and where it comes from. Once they are
+  satisfied, tick it with `report_playbook_step` `markDone`; it reads as marked, since the answer
+  lives in this session rather than in a chat thread.
+- **`acknowledge`** — a named person confirms it. Ask them; once they have confirmed, record it
+  with `report_playbook_step` `acknowledge`. Never confirm one on someone's behalf: that is the
+  one place a human signature is the point. A step that opens later ("a month on") is refused
+  until its day.
+- **`publish`** — `publish_board`, after asking: it makes the board readable outside the
+  workspace. It keeps the board's current visibility unless the person names another
+  (protected needs Pro).
+- **A work item step that stops at Drafted** — draft the plan's work items and leave them as
+  drafts for the person to read; handing off is a later step's.
 - **A work item step that ends at Confirmed** — you author and hand off; the tick comes later,
   from a sync in the repository. Report the hand-off and move on; never wait for it.
-- **`acknowledge`** — a named person ticks it. Never tick one on someone's behalf; that is the
-  one place a human signature is the point.
-- **`choice`** — ask the architect which branch, then record it by doing the branch's work.
-  Do not pick for them.
+- **`control` with tools** — yours: its tools are the terminal's way to the same proof (the
+  attention queue is `get_hub_status` with `playbook`; owner tags are `update_nodes`).
+
+Only these stop the loop; name the step, say where it happens, and stop rather than invent a
+way around it:
+
+- **`control` with no tools** — an on-screen control with no terminal equivalent. Outside the
+  setup guide the composer refuses one, so it means a playbook saved before that rule.
+- **`code`** — a guided sub-flow the web app walks itself (the setup guide's own screens).
+- **`select-target`** — done when the run is on its app or epic. While it is open, the run's
+  `targetChoices` says how to answer (`answerWith`). An app run lists the apps by name and slug:
+  offer them (AskUserQuestion). An epic run lists none (`choices: null`), because epics can run to
+  hundreds: ask which epic, looking it up with `list_epics`, or make one with `create_epic`. Then
+  record the pick with `report_playbook_step` (`selectTarget`, with `boardSlug` or `epicSlug`). No
+  apps yet → `convert_node_to_app` on a landscape system with the architect. Never pick for them.
+  Work items you make at an epic run's steps are filed in its epic by the server; do not file them
+  yourself.
+- **`select-layer`** — done when the run is on the board where the project's systems are drawn.
+  While it is open, the run lists every board under `layerChoices` (slug, name, its path from the
+  root, whether it is an app) and `current`, the board it reads now. Suggest one: the root when
+  the new systems stand beside the others, the layer inside a system when they extend it. Read
+  what is drawn on the likely candidates with `get_nodes` and weigh it against the epic's brief,
+  then ask (AskUserQuestion), your suggestion first with its reason. Record the answer with
+  `report_playbook_step` (`selectLayer`, with `layerSlug`). Every later step that reads the run's
+  board reads this one. Never pick for them.
+- **`choice`** — ask the architect which branch (AskUserQuestion), then record it with
+  `report_playbook_step` (`kind: "choice"`, the branch key). The branch's steps open only once
+  it is recorded; doing the work first proves nothing. Do not pick for them. A choice with
+  `settledBy` that the run already shows done is moot (the workspace has what every branch
+  was for): do not ask, move on.
+- **Work done outside its door** — a step you can see is done but the run cannot (the work
+  item was written by hand without the run, say). Name the step and say it can be marked done
+  in the guide, or with `report_playbook_step` `markDone` if the person asks you to. The tick
+  shows as marked, never proven; milestones cannot be marked.
 
 A `command` step naming a `code` plugin command (`/analyze`, `/sync`, `/adopt`) belongs to the
 repository session, not here: name the command and the repo, and hand off.
@@ -90,9 +136,12 @@ tools available before starting rather than failing three steps in.
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
 - 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
-- 402 on a step's tool → the org's plan does not include it. Relay the message, skip that step,
-  and carry on with the rest of the run.
+- 402 on a step's tool → the org's plan does not include it. Relay the message; if the step is
+  optional, `report_playbook_step` `skip` so its dependants open, and carry on. A required step
+  stops the run there.
 - `get_playbook_skill` refuses a slug → it is not in this org's catalogue, or it is disabled.
   `list_playbooks` says what can be started.
 - The run pins the version it started on. A newer version of the playbook exists → say so; the
-  run keeps its pinned steps and restarting is the architect's call, in the composer.
+  run keeps its pinned steps, and restarting is the architect's call from the run's menu on the
+  hub card or in the guide (Restart, Remove).
+- `report_playbook_step` refuses with "belongs to …" → the run is a teammate's. Start your own.

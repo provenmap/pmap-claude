@@ -96,11 +96,18 @@ id · summary · kind · what proves it done. Compose from
 - **Dependencies.** A step lists in `dependsOn` the steps whose output it needs. Steps in a
   later stage usually depend on the previous stage's steps; steps in one stage run side by side
   unless one needs another. No cycles.
-- **Tools, when an agent will run it.** Every step kind implies the tools an agent calls for
-  it (a context-board step implies `create_context_board` and the drawing tools; a work item step
-  implies `create_work_item` and `transition_work_item`; a step a person does in the browser implies
-  none), and the compiled skill prints the implied list. Name `tools` only when a step needs
-  something specific (`[{ "name": "create_board", "instruction": "…" }]`, wire names as MCP
+- **Every step can be done from the plugin.** A playbook runs from `/run-playbook` as well as the
+  browser, so every step needs a way an agent gets it done: its tools, a repository command, or
+  a person the agent asks (a choice, a sign-off, Select target or layer, a question it answers
+  itself). A `control` step implies no tools, so it names the ones that do the same thing
+  (`get_hub_status` for the attention queue, `update_nodes` for tags); the composer refuses a
+  step with none.
+- **Tools, and a line on each.** Every other step kind implies its tools (a context-board step
+  implies `create_context_board` and the drawing tools; a work item step implies
+  `create_work_item` and `transition_work_item`, or only `create_work_item` when it stops at
+  Drafted; a publish step implies `publish_board`), and the compiled skill prints the implied
+  list. Name `tools` when a step needs something specific, with an `instruction` saying what
+  this step wants of the tool (`[{ "name": "create_board", "instruction": "…" }]`, wire names as MCP
   advertises them, at most 8). An authored list on a step the run proves through what it
   produces must still include the tool that creates that thing (`create_context_board`,
   `create_work_item`, `create_epic`, `create_insight`), or the composer refuses it: an agent could
@@ -119,14 +126,32 @@ Ask (AskUserQuestion, a few options each, your recommendation first) only for pa
 change what the playbook means, and batch them into as few questions as possible:
 
 - `insight-run` → which skill: offer slugs from `list_insight_skills`, never invent one.
-- `acknowledge` → who confirms (`role`, e.g. "engineering lead") and what they confirm (`text`).
-- `work-item` → the work item `type` and whether the step ends at hand-off or at confirmed.
+- `acknowledge` → who confirms (`role`, e.g. "engineering lead") and what they confirm (`text`); `opensAfterDays` for
+  a confirmation that only means something later ("a month on, still current").
+- `work-item` → the work item `type` and where the step ends: `drafted` (the plan written down
+  as drafts, by hand or from chat), `handedOff`, or `confirmed`.
+  On a playbook that runs on an epic, `epic` is `existing` (the run's epic); `new` is refused.
 - `publish` → which board: the run's target, the root, or the board a `context-board` or
   chat-starter step drew (`{ "kind": "step", "stepId": … }`).
-- `choice` → the question and 2–4 branches, each running a playbook slug or nothing.
+- `choice` → the question and 2–4 branches, each running a playbook slug or nothing. When
+  every branch leads to the same state of the workspace, set `settledBy` to that milestone:
+  a workspace that already has it is never asked.
+- `select-target` → no parameters. A listed playbook on an app or an epic opens with exactly one,
+  first and depending on nothing: it pins the run to the app or epic the person picks, and every
+  other step waits on it. A workspace playbook and a building block have none.
+- `select-layer` → no parameters. For a listed playbook on an epic or the workspace whose work is
+  drawn somewhere (a new project, a new subsystem): at most one, depending on nothing. It follows
+  Select target on its own, every other step waits on it, and the board it chooses (the root or
+  any layer) is the one every later step reads. An app playbook and a building block have none.
 
 Write chat-starter prompts, context-board questions and guidance text yourself; they show in
-the read-back, where the user can change them.
+the read-back, where the user can change them. Set a chat-starter's `expected` deliberately:
+`answer` is for questions only: in the browser its proof is the chat thread, and an agent
+answers it in its own session and marks it once the person is satisfied (list the read tools it
+answers from). Anything with a manual path is not a chat step: a plan becomes a `work-item` step
+that stops at `drafted`, a drawing a `context-board` step. `contextBoard`, `decisionBoard` and
+`workItemDraft` remain for steps that are chat's by nature. `scope` is the conversation scope
+the browser opens with.
 
 ### 5. Read-back gate
 
