@@ -12,9 +12,9 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-adopt.js --aspect <kind> --payload <payl
 ```
 
 `<kind>` is one of `database.schema`, `api.surface`, `ui.pages`, `event.catalog`,
-`authz.registry`; `<payload-file>` is the payload the extraction step wrote —
+`authz.registry`, `api.clients`; `<payload-file>` is the payload the extraction step wrote —
 `.provenmap/aspects/tmp/<x>-payload.json`, where `<x>` is `db` | `api` | `pages` | `event` |
-`authz` (`ui.pages` on a layered board writes one payload per sub-board; see its skill).
+`authz` | `clients` (`ui.pages` on a layered board writes one payload per sub-board; see its skill).
 
 ## Modes
 

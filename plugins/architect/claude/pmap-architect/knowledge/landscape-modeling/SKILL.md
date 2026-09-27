@@ -182,6 +182,25 @@ re-asking per call. The whole scaffold gathers in the working copy, so walking a
 is recoverable — but discard reverts the WHOLE token session (every board it touched): confirm
 with the named boards + counts first (architect-core).
 
+## Reading across systems — the root's folded views
+
+Once the apps have adopted `event.catalog` and `api.clients`, the root reads what passes between
+them without anyone drawing it: `get_system_view {workBoardSlug: 'root', view: 'events'}` lines up
+every app's copy of each channel and event type, and `view: 'calls'` shows which system's code calls
+which, over what, and which endpoint each call reaches. Both are folded from the apps' own rows on
+every read; nothing is stored on the root.
+
+Each has three findings worth raising, as an insight whose trail runs through the systems involved:
+
+- **Contract drift** — an event type whose subscriber reads a field no publisher sends, or reads it as
+  another type. Name the systems and the fields.
+- **A call to a service no node answers to** — the code addresses a name the root does not carry.
+  Either the landscape is missing a system, or a node is named differently from the code; propose the
+  node or the rename.
+- **A call with no drawn edge** — the code depends on a system the diagram doesn't show. Propose the
+  edge. Root boundary rules already count these calls as evidence (`client-call`), so a rule can read
+  violated before anyone draws the line.
+
 ## App boards and the nesting rule
 
 `create_board(ownerNodeSlug, newBoardSlug, name)` per repo-backed node — it creates the board

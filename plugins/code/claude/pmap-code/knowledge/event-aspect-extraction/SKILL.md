@@ -1,12 +1,12 @@
 ---
 name: event-aspect-extraction
 user-invokable: false
-description: Extracts a repository's event/messaging catalog (channels, event types, subscriptions) into an EventCatalogPayload for /adopt --aspect event.catalog. Use when adopting the event.catalog aspect. Reads AsyncAPI specs, Kafka/kafkajs configs, AWS SQS/SNS/EventBridge infra-as-code, RabbitMQ, Google Pub/Sub, Redis Streams, or NATS declarations — never connects to a live broker.
+description: Extracts a repository's event/messaging catalog (channels, event types, subscriptions) into an EventCatalogPayload for /adopt --aspect event.catalog. Use when adopting the event.catalog aspect. Reads AsyncAPI specs, Kafka/kafkajs configs, AWS SQS/SNS/EventBridge infra-as-code, RabbitMQ, Google Pub/Sub, Redis Streams, or NATS declarations, and .NET event buses (IEventBus-style RabbitMQ, MassTransit, Dapr pub/sub) with their integration-event records — never connects to a live broker.
 license: MIT
 compatibility: Claude Code plugin. Requires a synced spine (.provenmap/boards/<board>.json) so channels can link to node slugs.
 metadata:
   author: ProvenMap
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Event Catalog Extraction (event.catalog aspect)
@@ -40,17 +40,20 @@ the ones that must resolve against the spine — never the channel's own `slug`.
 
 `broker` is a closed enum — use exactly one of these eight values, matching what you find:
 
-| Source              | Where it lives                                                                                                                   | `broker` value           |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| **AsyncAPI spec**   | `asyncapi.{json,yaml}` — the richest single source; read this first if present, it maps directly to channels/messages/operations | per `servers[].protocol` |
-| **Kafka**           | topic configs, `kafkajs`/`node-rdkafka` producer/consumer instantiation, Confluent Schema Registry subject registrations         | `kafka`                  |
-| **AWS SQS**         | CDK/Terraform/SAM `AWS::SQS::Queue`, `@aws-sdk/client-sqs` call sites                                                            | `sqs`                    |
-| **AWS SNS**         | CDK/Terraform/SAM `AWS::SNS::Topic`, `@aws-sdk/client-sns` call sites                                                            | `sns`                    |
-| **AWS EventBridge** | CDK/Terraform/SAM `AWS::Events::Rule` / `EventBus`, `@aws-sdk/client-eventbridge` call sites                                     | `eventbridge`            |
-| **RabbitMQ**        | `amqplib` exchange/queue/binding declarations                                                                                    | `rabbitmq`               |
-| **Google Pub/Sub**  | Terraform/gcloud topic + subscription resources, `@google-cloud/pubsub` client                                                   | `pubsub`                 |
-| **Redis Streams**   | `XADD`/`XREADGROUP` call sites, stream key declarations                                                                          | `redis-stream`           |
-| **NATS**            | subject declarations, `nats`/`nats.ws` client instantiation, JetStream stream configs                                            | `nats`                   |
+| Source              | Where it lives                                                                                                                                                                                                               | `broker` value           |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| **AsyncAPI spec**   | `asyncapi.{json,yaml}` — the richest single source; read this first if present, it maps directly to channels/messages/operations                                                                                             | per `servers[].protocol` |
+| **Kafka**           | topic configs, `kafkajs`/`node-rdkafka` producer/consumer instantiation, Confluent Schema Registry subject registrations                                                                                                     | `kafka`                  |
+| **AWS SQS**         | CDK/Terraform/SAM `AWS::SQS::Queue`, `@aws-sdk/client-sqs` call sites                                                                                                                                                        | `sqs`                    |
+| **AWS SNS**         | CDK/Terraform/SAM `AWS::SNS::Topic`, `@aws-sdk/client-sns` call sites                                                                                                                                                        | `sns`                    |
+| **AWS EventBridge** | CDK/Terraform/SAM `AWS::Events::Rule` / `EventBus`, `@aws-sdk/client-eventbridge` call sites                                                                                                                                 | `eventbridge`            |
+| **RabbitMQ**        | `amqplib` exchange/queue/binding declarations                                                                                                                                                                                | `rabbitmq`               |
+| **Google Pub/Sub**  | Terraform/gcloud topic + subscription resources, `@google-cloud/pubsub` client                                                                                                                                               | `pubsub`                 |
+| **Redis Streams**   | `XADD`/`XREADGROUP` call sites, stream key declarations                                                                                                                                                                      | `redis-stream`           |
+| **NATS**            | subject declarations, `nats`/`nats.ws` client instantiation, JetStream stream configs                                                                                                                                        | `nats`                   |
+| **.NET event bus**  | an `IEventBus` over RabbitMQ.Client (eShop-style: one exchange, the routing key is the event type name); `AddSubscription<TEvent, THandler>()` is a subscription, `PublishAsync(new TEvent(…))` makes the service a producer | `rabbitmq`               |
+| **MassTransit**     | `IPublishEndpoint.Publish<T>` / `ISendEndpoint.Send<T>` call sites (producers), `IConsumer<T>` classes (subscriptions); the transport configured in `AddMassTransit` picks the broker                                        | per transport            |
+| **Dapr pub/sub**    | `[Topic("pubsub", "orders")]` / `DaprClient.PublishEventAsync` call sites; the `pubsub.*` component type names the broker                                                                                                    | per component            |
 
 **Never call a live broker's admin API or connect to consume/produce a probe message** — read the
 declarations (IaC, config files, client instantiation call sites) the same way `database.schema` reads
@@ -85,6 +88,33 @@ published on the channel (a Kafka record type, an EventBridge `detail-type`, a C
 `name` is channel-unique and is the join key `subscriptions[].eventTypeName` points at (see below).
 `payloadSchema` is whatever schema you can find verbatim (JSON Schema, Avro, protobuf descriptor) — opaque
 is fine, don't hand-write one. Leave `deprecated`/`textual` at their defaults (human-tier).
+
+**Code-first messages.** When the message is a class or record in code (a C# `record … : IntegrationEvent`,
+a TS interface, a Java class, a Python dataclass) and no published schema exists, write its fields as
+declared:
+
+```json
+{
+  "format": "fields",
+  "fields": [
+    { "name": "OrderId", "type": "int" },
+    { "name": "OrderStatus", "type": "OrderStatus" }
+  ]
+}
+```
+
+List the type's own public properties and positional record parameters, with types exactly as written
+in code (`IEnumerable<OrderStockItem>`, `string?`); add `"optional": true` for a nullable or defaulted
+field. Leave out a shared base class's envelope fields (an `IntegrationEvent`'s `Id`/`CreationDate`).
+This is what lets the platform line up every app's copy of the same event and flag the one that has
+drifted, so write it for subscribers' copies too, not only the publisher's.
+
+**Names that match across repos.** The platform folds channels from every app by `broker` +
+`channelName` and event types by `name`. Use the raw exchange/topic name as declared for `channelName`
+(eShop: `eshop_event_bus`, the same in every service) and the message's type name exactly as declared
+for `name` (`OrderStatusChangedToPaidIntegrationEvent`), never a per-repo rewording. A service that only
+subscribes still lists the type in its channel's `eventTypes[]` (with its own copy's fields) and names it
+in `subscriptions[]`; a type listed without a subscription is read as one the service publishes.
 
 ## `subscriptions[]` — who's listening, and to what
 

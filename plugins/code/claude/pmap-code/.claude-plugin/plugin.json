@@ -24,7 +24,7 @@
     "./commands/work-items.md"
   ],
   "displayName": "ProvenMap Code",
-  "version": "0.30.0",
+  "version": "0.31.0",
   "metadata": {
     "releasedAt": "2026-09-27"
   },
