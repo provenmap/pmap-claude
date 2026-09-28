@@ -9,12 +9,14 @@ metadata:
 
 # Discover — authoring the answers a graph can give
 
-`/discover` is graph-first and fast. A script reads the context pack, scores what the
-architecture can answer on its own, and offers two ranked menus: **insights** (an observation
-about one element from its own characteristics, traced as a trail) and **context boards** (why
-something matters, drawn as a small board of its relationships). The user picks, or asks the
-script to choose. Agents author the picks in parallel from a brief; a script pushes them in
-order; a report closes.
+`/discover` is graph-first, then read. A script reads the context pack and scores what the
+architecture can answer on its own: **insights** (an observation about one element from its own
+characteristics, traced as a trail) and **context boards** (why something matters, drawn as a
+small board of its relationships). Before anything is suggested, the orchestrator reads the code
+behind the strongest rows and curates them: what stands out, a sharper question and the
+non-obvious angle per row, the rows set aside. The user takes that set or picks from the menu.
+Agents author the picks in parallel from a brief, built around the angle; a script pushes them
+in order; a report closes.
 
 The same skill serves the ProvenMap Code, Connect and Architect plugins. Only the universe
 differs: the bound board's tree for code and connect, the whole workspace for the architect.
@@ -32,6 +34,11 @@ differs: the bound board's tree for code and connect, the whole workspace for th
 
 ## The wow levers (the script enforces them; the agent keeps them)
 
+- **The read is the wow.** A count is what anyone could say; the finding the code shows is what
+  the owner did not know: two callers with half the system behind them, a "helper" every write
+  funnels through, one entry path that skips the validation. The script finds where to look and
+  keeps test and example code out of the set; the read (workflow Step 2) finds what is there and
+  writes it as the question, the angle and the evidence the author builds on.
 - **The trail is the demo.** Every insight ships a multi-stop trail; a fan-out from a hub
   (branch stops sharing one `from`) reads instantly; a `layer` hop makes the camera fly.
 - **Half the insights cross a layer when the tree has one** — and every crossing means
@@ -83,5 +90,5 @@ architect: nothing else).
 - [references/families.md](references/families.md) — every candidate family: the question it answers, the shape it draws, the prose that fits it
 - [references/context-board-payload.md](references/context-board-payload.md) — the context-board payload schema and its gates
 - [references/c4-reading.md](references/c4-reading.md) — how a drawn board reads as a C4 diagram: what each instrument asserts, and the note style per level
-- [references/discover-workflow.md](references/discover-workflow.md) — the command's Steps 2–7, clause by clause
+- [references/discover-workflow.md](references/discover-workflow.md) — the command's Steps 2–8, clause by clause: the read, the frame, the pick, the briefs, the authoring, the pushes, the report
 - `${CLAUDE_PLUGIN_ROOT}/knowledge/insight-writing/SKILL.md` — how every insight and context-board word is written (shared with `/insights`)

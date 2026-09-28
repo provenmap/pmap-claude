@@ -18,7 +18,7 @@ adds only what is particular to a brief.
 | `contextTags` | The org's tag names; use only these in the push's `tags`, or none. |
 | `verify` | `source`: you may open files named in element descriptions to confirm a number you cite. `pack`: read nothing outside the brief. |
 | `skillSlug` | Always `architecture-highlights`. |
-| `framing` | The lens the user chose and the primary board — tone, not content. |
+| `framing` | The lens, the primary board, and the `question` the row asks. When the orchestrator read the code before this run, also `angle` — the finding it read there — and `evidence`, the `path:line`s it rests on. |
 | `output` | The one path to write. |
 
 ## Authoring an insight (`candidate.kind === "insight"`)
@@ -39,8 +39,13 @@ The first `InsightDraft`:
 
 - `name`, `insight`, `impact`, `advice` — written per insight-writing. Start `name` from the
   candidate's `title`; draw the evidence from `packSlice` descriptions, `why[]` and `measurement`.
+  **When `framing.angle` is present, it is the point of the insight**: `name` states that
+  finding as a claim, `insight` opens with it and backs it with the `why[]` facts, and `advice`
+  follows from it. Open the `framing.evidence` lines (`verify: "source"`) to write it exactly;
+  never contradict or inflate it.
 - `polarity`, `priority`, `measurement`, `proposal` — copy from the candidate when present.
-- `confidence` — `verified` only if `verify: "source"` and you read the file; else `inferred`.
+- `confidence` — `verified` only if `verify: "source"` and you read the file (the `framing.evidence`
+  lines count once you have opened them); else `inferred`.
 - `trail` — **copy `candidate.trail` verbatim.** You may edit a stop's `note` (≤200 chars) to
   make it read better; never add, remove, reorder or re-point a stop, and never change a
   `via.edge`, `via.direction`, `board` or `node` value. A note says what THIS part does in the
@@ -55,8 +60,9 @@ instead of drawing, an unowned hub, a missing description. Skip them unless they
 
 Write a `ContextBoardPayload`: start from `candidate.draft` and change ONLY these:
 
-- `name`, `question`, `description`, `nodes[].note` — written per insight-writing; keep the
-  candidate's question or sharpen it. The subject's and the first ring's notes show on the canvas
+- `name`, `question`, `description`, `nodes[].note` — written per insight-writing; `question`
+  is `framing.question` in plain text (no backticks), sharpened only if it reads badly. When
+  `framing.angle` is present, `description` leads with that finding. The subject's and the first ring's notes show on the canvas
   (they are sized `xl`/`lg`), so write them as a C4 reader expects — what it is, the technology if
   known, its responsibility in this answer ([c4-reading.md](c4-reading.md)).
 

@@ -11,7 +11,7 @@ and say so in the plan's `standingDown` list.
 | Family | Question | Signal | Trail shape | Polarity |
 |---|---|---|---|---|
 | `chokepoint` | Why does everything run through `x`? | fan-in ≥ 3 and ≥ 2× the median of family peers (≥ 5 with no family) | one dependent → the hub → the other dependents as branches; when that dependent drills down, a last stop descends into it onto the element whose port edge makes the call | risk; observation for a gateway, datastore, channel, endpoint or infra element |
-| `cascade` | What breaks if `x` goes down? | ≥ 3 dependents with no alternative element of the hub's family | what the hub leans on → the hub → ring 1 as branches (one fewer when descending) → a descent into the first dependent onto the element whose port edge fails first → one ring-2 element | risk; critical at ≥ 5 |
+| `cascade` | What breaks if `x` goes down? — for the keystone, What quietly depends on `x`? | ≥ 3 dependents with no alternative element of the hub's family; plus one keystone per plan the ranking missed: ≥ 2 direct dependents but at least twice as many transitive ones, and three in ten of its board | what the hub leans on → the hub → ring 1 as branches (one fewer when descending) → a descent into the first dependent onto the element whose port edge fails first → one ring-2 element | risk; critical at ≥ 5, and for the keystone |
 | `journey` | How does `entry` reach `leaf`? | a source (nothing depends on it) whose family is ui, endpoint, channel, actor or gateway — or any source when no family is known | 3–7 stops along the heaviest out-edges; descends into each drill-down it reaches, and when the walk inside meets a boundary port it walks the port edge and ascends from the port onto the parent-board node it stands for; one branch from the entry | observation |
 | `cycle` | Where do `a`, `b` and `c` depend on each other? | a strongly connected component of 2–6 elements | the cycle walked once, the last note pointing back | risk; high at ≥ 3 |
 | `boundary` | Which edges cross the `p` boundary? | ≥ 3 primary edges leaving a top-level container | the inner element with most crossings → each other container as a branch | risk |
@@ -27,10 +27,10 @@ and say so in the plan's `standingDown` list.
 | `blast-radius-map` | What is the blast radius of `x`? | the hub, its dependents, their dependents (depth 2), their containers | the in-edges / `flow`, horizontal |
 | `neighbourhood` | What surrounds `x`? | the subject and every direct neighbour, containment kept | every edge to it / `network` |
 | `cross-app-flow` | How does a request cross from `a` to `b`? | a chain of apps on the landscape, each opened to the element inside that first handles it — **architect only** | the landscape edges / `flow`, horizontal |
-| `external-surface` | What do we expose to the outside? | every external and everything that touches it | the touching edges / `flow`, horizontal |
-| `data-gravity` | Where does the data live, and who reaches it? | every datastore and its accessors | the accessor edges / `flow`, horizontal |
+| `external-surface` | What leans on `a`, `b` and N more, outside our control? | every external and everything that touches it | the touching edges / `flow`, horizontal |
+| `data-gravity` | Who reaches `a`, `b` and N more, and which of them are shared? | every datastore and its accessors | the accessor edges / `flow`, horizontal |
 | `ownership-map` | Who owns what? | the busiest elements with their recorded owner in the note, only when owners exist | none / `hierarchy`, vertical |
-| `entry-surface` | Where does work enter? | every entry point and its first hop | the first-hop edges / `flow`, horizontal |
+| `entry-surface` | Where does work enter through `a`, `b` and N more, and where does it go first? | every entry point and its first hop | the first-hop edges / `flow`, horizontal |
 
 Every drawn board is styled by one script pass (`styleBoard`) after the family has settled what
 is on it: the subject is the one `xl` and the only guaranteed `emphasis`; the family's cohort
@@ -50,16 +50,26 @@ A drawn board holds at most 25 nodes; a family that would exceed it trims by deg
 Per candidate: 30 for a readable size (3–8 stops, 6–20 nodes; 12 otherwise), up to 30 for the
 anchor's degree, +15 for crossing a board, +10 for a layer hop, a small shape bonus
 (cross-app-flow 10, cascade 8, journey 6, blast-radius-map 6, chokepoint 4), +20 per lens
-whose family list contains the family. The lens lists: reliability → cascade, chokepoint,
+whose family list contains the family; +12 for a journey that ends on a datastore, data, external,
+channel, endpoint, gateway or worker element and −12 for one that ends on a UI element; +10 when
+the anchor of a cascade, chokepoint or blast-radius map reaches at least three more elements
+transitively than directly and a fifth of its board (the evidence line then leads with that
+reach); −40 for test or example code — a candidate whose anchor is, whose journey walks
+through it, or most of whose elements are. Test or example code: a slug word such as `test`,
+`fixture`, `mock`, `example` or `benchmark`, or (Code plugin) half or more of its files under
+such paths. The lens lists: reliability → cascade, chokepoint,
 blast-radius-map, cycle, shared-store; onboarding → journey, entry-surface, neighbourhood,
 cross-app-flow; ownership → unowned-hub, ownership-map, external-surface, data-gravity, boundary,
 handoff.
 
-The recommended set (★): greedy by score under variety — distinct polarities across the
+The script's set: greedy by score under variety, never a test- or example-code candidate (a set
+one short beats a fixture) — distinct polarities across the
 insights before any repeats, no two items on one anchor, at most one seam; then three repairs
 that swap the weakest duplicate out: at least half the insights (rounded up) crossing a layer
 when the tree has a drill-down, one board-crossing item when the universe has any, and one item
-per level present in the universe.
+per level present in the universe. The script's set is where the read starts, not the answer:
+Step 2 of the workflow opens the code behind the shortlist and `--curate` re-picks the ★ set from
+these rows (picks first, then the script's own ranking, never a row set aside).
 
 ## Layer crossings
 

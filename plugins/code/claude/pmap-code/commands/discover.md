@@ -1,6 +1,6 @@
 ---
 category: understand
-description: "Understand · Discover the insights and context boards worth showing — ranked by the graph, picked by you or chosen for you, authored in parallel, pushed to ProvenMap"
+description: "Understand · Discover the insights and context boards worth showing — ranked by the graph, read in your code, picked by you or chosen for you, authored in parallel, pushed to ProvenMap"
 argument-hint: "[count] [--auto] [--lens reliability,onboarding,ownership] [--board <slug>] [focus]"
 allowed-tools: Read, Glob, Grep, Write, Bash(node:*), AskUserQuestion, Task
 ---
@@ -13,7 +13,7 @@ allowed-tools: Read, Glob, Grep, Write, Bash(node:*), AskUserQuestion, Task
 
 **1 Plan** — from the command argument: a leading integer → `--count <n>`; `--board <slug>` → `--board-slug <slug>`; `--lens` passes through; a focus prompt → the lenses it matches (say which in one line). Then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --discover [--board-slug <slug>] [--lens <a,b>] [--count <n>] --domain code`. Exit 2 → stop: "No board data found — run `/analyze` (or `/ground` for a document repo) first". Print `display`.
 
-**Steps 2–7 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/discover-authoring/references/discover-workflow.md` NOW and follow it exactly; improvise nothing.** Step map: **2 Frame** — one AskUserQuestion (choose for me / show the menu; the lens), skipped by `--auto` and wherever no prompt can be answered · **3 Pick** — auto takes the ★ set; the menu is two multi-select questions over the Id column · **4 Briefs** — `--briefs <ids> --rules …` · **5 Author** — waves of ≤4 `insight-author` agents (Task), one brief each; inline and sequential when Task is unavailable · **6 Push in order** — `--save-insight` / `--push-context-board`, both `--require-pack --push`; exit 3 → fix once, else mark failed and continue · **7 Report** — `--report`, verbatim.
+**Steps 2–8 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/discover-authoring/references/discover-workflow.md` NOW and follow it exactly; improvise nothing.** Step map: **2 Read** — before suggesting anything, open the code behind Step 1's `shortlist`, write the curation to `curationFile`, `--curate <file>`; every run, `--auto` included · **3 Frame** — one AskUserQuestion (these N / the menu / refocus), skipped by `--auto` and wherever no prompt can be answered · **4 Pick** — the curated ★ set, or two multi-select questions over the Id column · **5 Briefs** — `--briefs <ids> --rules …` · **6 Author** — waves of ≤4 `insight-author` agents (Task), one brief each; inline and sequential when Task is unavailable · **7 Push in order** — `--save-insight` / `--push-context-board`, both `--require-pack --push`; exit 3 → fix once, else mark failed and continue · **8 Report** — `--report`, verbatim.
 
 **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command discover` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 

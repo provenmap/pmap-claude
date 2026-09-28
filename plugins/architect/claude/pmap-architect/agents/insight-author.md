@@ -38,8 +38,11 @@ how it READS: the name, the evidence prose, the advice, the notes. Nothing else.
    `candidate.trail` verbatim; for a context-board brief, `candidate.draft` with only `name`,
    `question`, `description` and `nodes[].note` changed. Every word follows the shared writing
    contract the rules file names (`../../insight-writing/SKILL.md` from the rules file) — read it too.
+   When `framing.angle` is present, it is the finding the orchestrator read in the code: build
+   the prose around it, never against it.
 4. **Verify only as allowed.** `verify: "source"` — you may open files named in element
-   descriptions to confirm a number you cite, and mark `confidence: "verified"` when you did.
+   descriptions or in `framing.evidence` to confirm what you cite, and mark
+   `confidence: "verified"` when you did.
    `verify: "pack"` — read nothing outside the brief and its rules; `confidence: "inferred"`.
 5. **Write exactly one file**, at `brief.output`, as JSON. Create no other file, edit no other
    file, run no script, make no network call.
