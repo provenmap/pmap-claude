@@ -27,7 +27,7 @@
     "./commands/work-items.md"
   ],
   "displayName": "ProvenMap Architect",
-  "version": "0.32.0",
+  "version": "0.33.0",
   "metadata": {
     "releasedAt": "2026-09-28"
   },

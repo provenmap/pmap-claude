@@ -65,4 +65,11 @@ fi
 
 # Every state ends on the same door: /start reads the real state and offers the next step.
 echo "$output Run /start for the guided next step."
+
+# The plugin-update line, from the server policy the last ProvenMap call cached.
+# Offline like the rest of this hook; a missing node or cache just prints nothing.
+notice=$(node "$(dirname "$0")/pmap-status.js" --update-notice 2>/dev/null || true)
+if [ -n "$notice" ]; then
+    echo "$notice"
+fi
 exit 0
