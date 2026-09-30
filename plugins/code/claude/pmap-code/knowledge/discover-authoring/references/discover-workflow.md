@@ -119,7 +119,7 @@ node <cli> --briefs <ids|recommended> --rules ${CLAUDE_PLUGIN_ROOT}/knowledge/di
 
 Exit 1 → print `error`, stop (it names what to run). Exit 3 → print `error` (an unknown id), fix
 the selection, retry once. On success print `display` — the wave table — and note the cleanup
-line when present: the previous run's context boards go before this run's first push.
+line when present: the previous run's context boards go once this run's first push lands.
 
 ## Step 6 — Author
 

@@ -37,7 +37,6 @@ what is missing rather than moving on.
 | `get_playbook_skill`   | the playbook compiled to one file: stages, steps, the tools each step names, the proof for each                                                                                                                                                |
 | `get_playbook_run`     | one run with every step evaluated — done, available, the evidence that proved it (on an open step, `evidence` without an `instance` says why it is still open: relay it)                                                                       |
 | `report_playbook_step` | record on your run what the server cannot see: `choice` (the branch key), `selectTarget` (`boardSlug` or `epicSlug`), `selectLayer` (`layerSlug`), `skip`/`restore`, `markDone`/`unmark`, `acknowledge` (a sign-off the named person gave you) |
-| `publish_board`        | publish a board (a publish step's tool); the run's publish step ticks from the publish itself. Ask the person first                                                                                                                            |
 | `get_hub_status`       | pass `playbook` when a step asks you to look at the hub: the read is that run's hub visit                                                                                                                                                      |
 
 `get_playbook_skill` is the instruction set. Read it before the first step, not after.
@@ -81,9 +80,9 @@ or a person you ask. Some steps need the person, and the compiled file says how 
   with `report_playbook_step` `acknowledge`. Never confirm one on someone's behalf: that is the
   one place a human signature is the point. A step that opens later ("a month on") is refused
   until its day.
-- **`publish`** — `publish_board`, after asking: it makes the board readable outside the
-  workspace. It keeps the board's current visibility unless the person names another
-  (protected needs Pro).
+- **`publish`** — a person's step: there is no publish tool. Ask the person to publish the board
+  from **Publish** in ProvenMap; publishing makes it readable outside the workspace, so they choose
+  who can see it. The step ticks when they publish.
 - **A work item step that stops at Drafted** — draft the plan's work items and leave them as
   drafts for the person to read; handing off is a later step's.
 - **A work item step that ends at Confirmed** — you author and hand off; the tick comes later,

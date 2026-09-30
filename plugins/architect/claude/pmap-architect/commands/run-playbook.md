@@ -31,7 +31,7 @@ mark, a sign-off the named person gave you. Runs are per person: work yours (`mi
    missing. At a `choice` step ask the person, then `report_playbook_step` `choice` with the
    branch key; nothing behind it opens until it is recorded. A question is yours to answer
    from the board, then `markDone` once the person is satisfied; a sign-off is asked for, then
-   recorded with `acknowledge`; a publish is `publish_board`, after asking.
+   recorded with `acknowledge`; a publish is the person's, from **Publish** in ProvenMap.
 5. **Stop** — at the end proof, or at the first step that is not yours here: a control with no
    tools, a `code` sub-flow, a `code`-plugin command in the repo. Name where it happens; do not
    work around it.

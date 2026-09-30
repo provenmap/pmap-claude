@@ -105,7 +105,7 @@ id · summary · kind · what proves it done. Compose from
 - **Tools, and a line on each.** Every other step kind implies its tools (a context-board step
   implies `create_context_board` and the drawing tools; a work item step implies
   `create_work_item` and `transition_work_item`, or only `create_work_item` when it stops at
-  Drafted; a publish step implies `publish_board`), and the compiled skill prints the implied
+  Drafted; a publish step implies none, since the person publishes), and the compiled skill prints the implied
   list. Name `tools` when a step needs something specific, with an `instruction` saying what
   this step wants of the tool (`[{ "name": "create_board", "instruction": "…" }]`, wire names as MCP
   advertises them, at most 8). An authored list on a step the run proves through what it

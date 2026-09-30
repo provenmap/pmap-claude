@@ -57,6 +57,10 @@ to remove (from `get_nodes` / `get_edges`). Deleting a node removes its connecte
 automatically. The removal joins the working copy like any other write; on a governed board it
 becomes a staged mark (inside a reviewable work item) only when the session commits.
 
+Confirm a node delete with the person first. A discard restores the deleted nodes and their edges,
+but not two side effects: child nodes moved out of a deleted node, and a layer board the node owned,
+which stays as a standalone board.
+
 ## Creation order (empty or growing a board)
 
 1. Analyze: domains, components, relationships.
