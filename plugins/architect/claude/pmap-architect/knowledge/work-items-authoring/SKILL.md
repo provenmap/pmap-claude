@@ -57,20 +57,21 @@ open`) or rejects it.
 
 ## The tools
 
-| Tool                       | Use                                                                                              |
-| -------------------------- | ------------------------------------------------------------------------------------------------ |
-| `find_elements`               | find layers, nodes, connections and aspect rows under a root by name; with `homeBoardSlug`, flags references |
-| `list_work_items`             | summaries; `scope: 'tree'` spans layer boards                                                    |
-| `get_work_item`               | full detail: directive, anchors + notes, origin, resolution history, staleness                   |
-| `create_work_item`            | author a draft (incl. the `narrative` and, for a bound document, `draftedFromSourceSlug`)        |
-| `update_work_item`            | revise a draft/needs_clarification work item — fields + context anchors (changed anchors preserved) |
-| `transition_work_item`        | lifecycle moves (draft→open locks for developer pulls; →rejected reverts staged changes)         |
-| `assign_work_item`            | assign to users; empty list clears; assigning an open work item moves it to assigned                |
-| `promote_insights`         | reviewed insight ids → one draft work item each (see insights-review)                               |
-| `delete_work_item`            | delete + withdraw everything staged                                                              |
-| `list_epics`               | the workspace's epics — the groups work items are filed under                                       |
-| `create_epic`              | a new epic (name + why); holds no work itself                                                    |
-| `set_work_item_epic`          | file a work item under an epic, or take it out (any status)                                        |
+| Tool                   | Use                                                                                                                                    |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `find_elements`        | find layers, nodes, connections and aspect rows under a root by name; with `homeBoardSlug`, flags references                           |
+| `trace_impact`         | what depends on an element, across layers and apps; `include: ['workItems']` lists open work items already anchored to what it reaches |
+| `list_work_items`      | summaries; `scope: 'tree'` spans layer boards                                                                                          |
+| `get_work_item`        | full detail: directive, anchors + notes, origin, resolution history, staleness                                                         |
+| `create_work_item`     | author a draft (incl. the `narrative` and, for a bound document, `draftedFromSourceSlug`)                                              |
+| `update_work_item`     | revise a draft/needs_clarification work item — fields + context anchors (changed anchors preserved)                                    |
+| `transition_work_item` | lifecycle moves (draft→open locks for developer pulls; →rejected reverts staged changes)                                               |
+| `assign_work_item`     | assign to users; empty list clears; assigning an open work item moves it to assigned                                                   |
+| `promote_insights`     | reviewed insight ids → one draft work item each (see insights-review)                                                                  |
+| `delete_work_item`     | delete + withdraw everything staged                                                                                                    |
+| `list_epics`           | the workspace's epics — the groups work items are filed under                                                                          |
+| `create_epic`          | a new epic (name + why); holds no work itself                                                                                          |
+| `set_work_item_epic`   | file a work item under an epic, or take it out (any status)                                                                            |
 
 Address work items by slug (`list_work_items` → `get_work_item`), or by number as `#42`.
 
@@ -165,8 +166,10 @@ architect-core's taxonomy — work items are legal only on code-bound boards):
 3. **Sweep candidates — holistically.** Estate pass first: place the ask on the whole estate
    (the `--classify-tree` cache or `get_board_tree`) — which sibling app boards it touches,
    which root-landscape systems are implicated. Then the close-in sweep — facts from reads,
-   ranking from judgment: spine radius (`get_edges` with `nodeSlugs` on the seeds; one more
-   hop only for hubs; classify inbound/outbound); aspect fan-out (`get_node_aspects` on seeds
+   ranking from judgment: spine radius (`trace_impact` on each seed with
+   `include: ['workItems']` — what the change reaches, which of it only the code proves, and
+   who is already changing it; on an older server, `get_edges` with `nodeSlugs` on the seeds,
+   one more hop only for hubs; classify inbound/outbound); aspect fan-out (`get_node_aspects` on seeds
    - implicated neighbours — the pages, endpoints, tables, channels, authz entries the change
      actually touches); affected child layers (`layerBoardSlug` ⇒ layer anchors). Find elements
      named in the material with `find_elements` (pass `homeBoardSlug`) rather than walking boards

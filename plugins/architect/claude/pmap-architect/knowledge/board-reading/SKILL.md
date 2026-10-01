@@ -51,9 +51,39 @@ see [references/analysis-patterns.md](references/analysis-patterns.md)), pull th
 (`get_nodes`, `get_edges` with `nodeSlugs`, `get_node_aspects`), follow `childBoardSlug` only
 when the answer lives a layer down.
 
-**Answer-mode heuristic:** prose is the default. Escalate to a _drawn_ answer when the answer
-IS a subgraph — dependency/impact traces, cross-app flows, "show me how X reaches Y", anything
-where prose would enumerate more than ~5 elements plus their relationships. The drawn form:
+**A dependency or impact question is one call, not a walk.** `trace_impact` (what depends on
+this), `trace_dependencies` (what this depends on) and `find_path` (how A comes to depend on B)
+fold the whole tree under `workBoardSlug` — the drawn edges, the layers through their boundary
+ports, and what aspect rows prove (code using a table, a client calling an endpoint, a node
+subscribed to a channel, a page fetching) — and return the hits nearest first. Pass `from` (and
+`to`) exactly as `find_elements` returns an element; span `root` to follow dependencies between
+apps, an app board to stay inside one. Three things to carry into the answer:
+
+- `provenance` — `drawn` is a line on the diagram; `derived` is proven by an aspect row and may
+  not be drawn. Say which. `summary.derivedOnly` counts what the diagram does not show.
+- `resolution` — how many reference links in the tree resolved. When some did not, the counts
+  are a floor; say so.
+- `truncated` — `depth` means more lies beyond (raise `depth`), `limit` means only the nearest
+  were listed (`summary.total` is the full count).
+
+**Present it the way the web app does**: the gist first, then a picture (systems by hop for
+impact, a tree for dependencies, one line for a route), then a table, then what limits the
+answer and what to do next. The shapes, how to read a hit, and worked examples are in
+[references/dependency-answers.md](references/dependency-answers.md); read it before writing the
+answer.
+
+`found: false` from `find_path` is an answer — the two are independent as far as the rows say.
+The result's `trail` goes to `create_insight` unchanged, and its hits are the payload of a drawn
+answer. Pass the trace itself along as that insight's `traceAsk` (`question`: `impact`,
+`dependencies` or `path`; `spanSlug`: the `workBoardSlug` you traced on; `request`: the rest of
+the trace's input), so whoever opens the insight can run the trace again. An older server
+ignores the field. When these tools are absent (older server), walk it by hand: `get_edges` with
+`nodeSlugs`, one hop at a time.
+
+**Answer-mode heuristic:** prose is the default, and a trace answer is already drawn in text
+(above). Escalate to a _drawn_ answer when the user wants the subgraph on a canvas — a
+trace they will keep exploring, cross-app flows, "show me how X reaches Y", anything where prose
+would enumerate more than ~5 elements plus their relationships. The drawn form:
 `create_context_board {name, question}` generates an ephemeral standalone `contextmap` (outside
 the tree — clean by construction); draw the answer-subgraph on it with the normal diagram
 tools (ungoverned — nothing is staged), hand back its slug + a prose précis, and clean up with

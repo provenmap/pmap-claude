@@ -14,8 +14,11 @@ Method (question-scoped reading, the answer-mode heuristic) lives in
 
 1. **Resolve the board** — argument, session board, or `get_board_tree` + AskUserQuestion.
 2. **Answer in prose (default)** — pick the analysis pattern, read the needed slices, follow
-   `childBoardSlug` when the answer lives a layer down, cross-board via the tree. Answer
-   slug-first, lead with the direct answer.
+   `childBoardSlug` when the answer lives a layer down, cross-board via the tree. A dependency,
+   impact or "how does X reach Y" question is one `trace_impact` / `trace_dependencies` /
+   `find_path` call over the tree (older server: walk `get_edges`), presented as board-reading's
+   dependency-answers reference shows: gist, picture, table. Answer slug-first, lead with the
+   direct answer.
 3. **Escalate to a drawn answer when the answer IS a subgraph** (board-reading's heuristic:
    traces, cross-app flows, >~5 elements + relationships). Offer once per session
    (AskUserQuestion), remember the preference. On yes: `create_context_board` → draw the

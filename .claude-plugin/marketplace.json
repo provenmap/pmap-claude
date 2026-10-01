@@ -7,15 +7,15 @@
   },
   "metadata": {
     "description": "ProvenMap plugins for codebase and knowledge architecture analysis, visualization, and sync to ProvenMap Portal.",
-    "version": "0.33.2"
+    "version": "0.33.3"
   },
   "plugins": [
     {
       "name": "pmap-code",
       "displayName": "ProvenMap Code",
-      "version": "0.33.2",
+      "version": "0.33.3",
       "metadata": {
-        "releasedAt": "2026-09-30"
+        "releasedAt": "2026-10-01"
       },
       "source": "./plugins/code/claude/pmap-code",
       "description": "Real-time codebase architecture analysis and visualization for ProvenMap Portal. Analyzes codebases across multiple languages, detects tech stacks, identifies component relationships, and syncs to ProvenMap for collaborative architecture boards. Supports server-defined insight analysis skills.",
@@ -45,9 +45,9 @@
     {
       "name": "pmap-connect",
       "displayName": "ProvenMap Connect (retired)",
-      "version": "0.33.2",
+      "version": "0.33.3",
       "metadata": {
-        "releasedAt": "2026-09-30"
+        "releasedAt": "2026-10-01"
       },
       "source": "./plugins/code/claude/pmap-connect",
       "description": "Retired — grounding moved into ProvenMap Code. Install pmap-code and run /ground in this repo; its .provenmap/ state is picked up as is.",
@@ -76,9 +76,9 @@
     {
       "name": "pmap-architect",
       "displayName": "ProvenMap Architect",
-      "version": "0.33.2",
+      "version": "0.33.3",
       "metadata": {
-        "releasedAt": "2026-09-30"
+        "releasedAt": "2026-10-01"
       },
       "source": "./plugins/architect/claude/pmap-architect",
       "description": "Architect workbench for ProvenMap boards — explore the board graph, review insights, and author work items from Claude Cowork, Claude Code, or Codex. Connects to the ProvenMap MCP server; writes gather in your working copy, and committing generates a reviewable plan (one work item per governed app).",
