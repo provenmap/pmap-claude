@@ -6,7 +6,7 @@
     "./commands/update.md"
   ],
   "displayName": "ProvenMap Connect (retired)",
-  "version": "0.34.0",
+  "version": "1.0.0",
   "metadata": {
     "releasedAt": "2026-10-02"
   },
