@@ -27,9 +27,9 @@
     "./commands/work-items.md"
   ],
   "displayName": "ProvenMap Architect",
-  "version": "0.33.3",
+  "version": "0.33.4",
   "metadata": {
-    "releasedAt": "2026-10-01"
+    "releasedAt": "2026-10-02"
   },
   "description": "Architect workbench for ProvenMap boards — explore the board graph, review insights, and author work items from Claude Cowork, Claude Code, or Codex. Connects to the ProvenMap MCP server; writes gather in your working copy, and committing generates a reviewable plan (one work item per governed app).",
   "author": {
