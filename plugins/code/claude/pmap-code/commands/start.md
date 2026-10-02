@@ -17,6 +17,8 @@ offer the pick.
    **Playbooks** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-playbooks.js --next` (needs credentials;
    prints nothing on an older server). Print its `display` verbatim under the ladder. A live run's
    next command step outranks the ladder's lead action: it is what the team decided to do next.
+   **Work items** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-work-items.js --next`; print a non-empty
+   `display` verbatim under that.
 3. **Judgment, briefly.** Where this session gives you something the script can't know — the
    user just said what they're trying to do, you already saw the failure they're about to hit,
    the lead action is one they explicitly declined earlier — say so in a sentence or two after
@@ -24,7 +26,8 @@ offer the pick.
    `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-playbooks.js --start <slug>`, then continue with its
    first step.
 4. **Offer the pick** — AskUserQuestion "What next?": the lead action and the next two rungs
-   (label = the command, description = its reason) plus **Not now**. Hand-off lines are never
+   (label = the command, description = its reason; work items `count > 0` → `/work-items` takes
+   the last slot) plus **Not now**. Hand-off lines are never
    options. A pick → run it as this plugin's own slash command where the host lets you invoke
    one; otherwise read `${CLAUDE_PLUGIN_ROOT}/commands/<name>.md` (Cursor: `skills/<name>/SKILL.md`)
    and follow it, Outcome step included. **Not now** → stop. Hosts without the tool: ask in one

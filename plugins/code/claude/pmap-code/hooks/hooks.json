@@ -1,5 +1,5 @@
 {
-  "description": "ProvenMap hooks: session status, intents resolve gate, dispatch log",
+  "description": "ProvenMap hooks: session status, dispatch log",
   "hooks": {
     "SessionStart": [
       {
@@ -8,18 +8,6 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/check-config.sh",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-resolve-gate.js",
             "timeout": 10
           }
         ]

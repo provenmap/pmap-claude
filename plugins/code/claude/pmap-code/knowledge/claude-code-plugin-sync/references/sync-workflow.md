@@ -278,6 +278,13 @@ rules on the board; the sync proves them against this checkout:
 - `reason: "branch_mismatch"` → skipped on the wrong branch; `/status` explains the recovery.
 - Any other `reason` → one line: rule check failed with that reason (the sync itself succeeded).
 
+**Work items** (from each board's `workItemsReport` — absent means this sync settled nothing about
+this repo's work items; skip silently): print its `display` **verbatim**. A ✅ line is a work item
+this sync gave the **✓ Confirmed** mark, or an open one whose changes were already in the code, so
+the sync completed it. A ⏳ line is a work item this repo marked completed whose structural changes
+the sync did not find: say so plainly, and check the code against the work item before re-running
+`/analyze` and `/sync`.
+
 **Styling** (from each board's `stylingReport` — absent or `reason: "no_pending_plan"` means nothing
 pending; skip silently):
 

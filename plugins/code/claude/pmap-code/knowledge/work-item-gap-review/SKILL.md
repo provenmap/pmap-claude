@@ -51,6 +51,6 @@ See [references/gap-criteria.md](references/gap-criteria.md) for the exact block
 ## 4. Where this review sits
 
 `/work-items` runs Steps -1 to 1 inline (preflight, pull the list, pick a work item) and delegates Steps
-2–8 — gate the pick, claim, show and map to source, **this review**, implement, verify, resolve,
-reject — to [references/implementation-workflow.md](references/implementation-workflow.md). That
+2–8 — gate the pick, claim, show and map to source, **this review**, ground truth and the plan,
+implement, verify, resolve, reject — to [references/implementation-workflow.md](references/implementation-workflow.md). That
 file is the contract for those steps: every CLI call, branch, and prompt. This skill is its Step 4.5.
