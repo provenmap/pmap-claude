@@ -110,4 +110,4 @@ future run resolves that locator deterministically.
 - `references/run-workflow.md` — `/monitor`'s steps 2–6 (acquire → correlate → shape → push → report): every call, flag, exit branch and prompt. The command delegates to it; follow it exactly.
 - `references/vendor-recipes.md` — per-vendor MCP tools → signals mapping, connect one-liners, auth per surface. **Adding a vendor = adding a recipe here; no code changes.**
 - `references/insight-shaping.md` — work-item-ready authoring rules, priority/effort heuristics, when to add paths or graph suggestions.
-- `references/scheduling.md` — the `/monitor setup` sequence; the recurring-run surfaces (desktop scheduled task, cloud routine, session loop) and the unattended-credentials pattern live in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/references/recurring-runs.md`.
+- `references/scheduling.md` — the `/monitor setup` sequence; the recurring-run surfaces (local desktop routine or scheduled task, cloud routine, session loop) and the unattended-credentials pattern live in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/references/recurring-runs.md`.

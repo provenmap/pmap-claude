@@ -1,13 +1,13 @@
 ---
 category: operate
 description: "Operate · Correlate monitoring signals (errors, logs, cloud costs) with your architecture board and push findings as insights"
-argument-hint: "[setup | --input <signals-file> | <focus prompt>]"
+argument-hint: "[setup | --scheduled | --input <signals-file> | <focus prompt>]"
 allowed-tools: Read, Glob, Grep, Edit, Write, Bash(node:*), AskUserQuestion
 ---
 
-Correlate recent operational signals (Sentry, CloudWatch, cost APIs, …) with your architecture board and push the findings as a draft insight — an architect promotes the actionable ones to **work items**.
+Print every `display` verbatim; branch only on exit codes and named fields.
 
-Print every `display` verbatim; branch only on exit codes and named fields. An `--input <file>` argument or a focus prompt ("checkout errors only") feeds step 2.
+**`--scheduled`** (unattended, no prompts): first `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --scheduled-run begin --command monitor`; any stop goes to the Outcome (*Scheduled* in `run-workflow.md`).
 
 **With the argument `setup`, do only this and stop:** follow `${CLAUDE_PLUGIN_ROOT}/knowledge/monitoring-correlation/references/scheduling.md` exactly — the **user** picks sources and cadence and confirms any recurring run; you write `.provenmap/monitoring/config.json`, print each source's connect one-liner, then close (below) adding `--facts '{"mode":"setup"}'`.
 
@@ -17,7 +17,7 @@ Print every `display` verbatim; branch only on exit codes and named fields. An `
 
 **Steps 2–6 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/monitoring-correlation/references/run-workflow.md` NOW and follow it exactly; improvise nothing.** It holds every call, flag, branch and prompt; the schema is in the skill beside it. The map: **2 acquire** (you; `--input` or a vendor MCP — neither → stop) · **3 correlate** (`--correlate` matches; one `--from-server` retry, else `/analyze` + `/sync`; the **user** confirms `proposals[]` into `map.json`) · **4 shape** (your judgment, per the insight-shaping rules — output is `InsightDraft[]` with trail stops grounded on pack slugs) · **5 push** (`--save-insight`; `validationErrors[]` gates, `--propose-work-items` only when unattended) · **6 report** (summary table + the promote line).
 
-**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command monitor` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command monitor` (`--scheduled`: `--facts '{"mode":"scheduled","outcome":"<outcome>","reasonText":"<error>"}'`) → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Connect-now offer
 

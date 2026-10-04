@@ -181,6 +181,9 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-sync.js \
   --host claude --domain code
 ```
 
+Add `--summary "<one sentence>"` when you know what this push changes in the architecture — see the
+option below. It is what the hub's activity feed shows for this push, beside who pushed it.
+
 **CLI options:**
 
 - `--board-slug <slug>`: **required** — board slug to sync to
@@ -193,6 +196,12 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-sync.js \
 - `--no-verify`: skip the post-push server read-back verification — **discouraged**, only for
   exceptional cases
 - `--host claude --domain code`: plugin identity stamped on the push (hub display data)
+- `--summary "<sentence>"`: optional — one plain sentence, at most 200 characters, on what this push
+  changes for this board: what it gained, lost or rewired, naming the elements, with no counts
+  ("Gained a refund flow: two endpoints and a call to Payment Processor."). Write it only from what
+  you know changed since the last sync: this session's analysis, or the commit subjects since the
+  board's `analyzedAtCommit`. On a board's first sync say what was mapped. When you do not know what
+  changed, omit the flag — never guess; the hub then shows the push without a sentence.
 
 ## Step 5: Parse the CLI output
 

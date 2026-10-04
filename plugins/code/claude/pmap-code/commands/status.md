@@ -37,7 +37,7 @@ it and pass its output through.
 4. If the status script exits non-zero, print its output verbatim and stop. Do not
    fabricate status.
 
-The report is offline (local `.provenmap/` state + local git only) — it never
-calls the API, so it cannot verify credentials. If the user asks whether the
-connection actually works, point them to `/login` (browser) or `/configure`
-(manual), which test the connection.
+The report reads local `.provenmap/` state and local git. Its one call to ProvenMap is a
+best-effort read of the last scheduled runs (this checkout's own record when ProvenMap can't be
+reached); it never verifies credentials. If the user asks whether the connection actually works,
+point them to `/login` (browser) or `/configure` (manual), which test the connection.

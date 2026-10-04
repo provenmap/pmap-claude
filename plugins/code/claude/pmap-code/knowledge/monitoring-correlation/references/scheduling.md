@@ -17,7 +17,7 @@
 4. Scheduling — take the best surface this session actually has, per
    `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/references/recurring-runs.md`: if it can create
    schedules (a `/schedule`-style skill for cloud routines, or the desktop app's scheduled tasks),
-   offer to create a recurring "run `/monitor`" at the chosen cadence now — **the user confirms**.
+   offer to create a recurring "run `/monitor --scheduled`" at the chosen cadence now — **the user confirms**.
    Otherwise print that surface's copy-paste setup block. For cloud/unattended runs, note that
    credentials go in the run environment as `PMAP_BINDING_TOKEN` / `PMAP_API_SECRET`, and
    correlation uses `--from-server` (§2).

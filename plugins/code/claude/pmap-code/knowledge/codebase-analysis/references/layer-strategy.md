@@ -201,8 +201,10 @@ rolled-up L0 edges — breadth here is what creates hairballs.
 - **Node types**: Methods, internal flows, data transformations
 - **When**: The tree plan goes as deep as the code demands — a unit that overshoots its band is
   split (by coupling, else by its own directories) until its children fit or fall under the floor —
-  down to `analysis.plan.maxDepth` (L4 by default; `null` lifts the cap). Clusters below the cap
-  are proposals, never boards, until accepted.
+  down to `analysis.plan.maxDepth` (L4 by default; `null` lifts the cap). Below the cap, a cluster
+  the plan finds later is a proposal, never a board, until accepted. Past the cap nothing is
+  proposed: the plan notes the board once as at the cap, and a person who wants that depth names
+  the folder (`/analyze --deeper <folder>`).
 
 ## File Organization
 
@@ -231,7 +233,9 @@ plan did not reach, not a mark: record it in `metadata.proposedDrillDowns`
 (`{nodeSlug, reason}`) with a one-line reason. The heuristics below are what to weigh when
 deciding whether a cluster the plan didn't reach is worth proposing:
 
-1. It represents a domain/service with 5+ internal source files
+1. Its node claims at least a floor's worth (`analysis.plan.unitFloor`, 12 by default) of
+   significant source files itself — the plan drops a smaller proposal, and one past
+   `analysis.plan.maxDepth`
 2. It contains sub-domains or distinct internal modules
 3. The current layer's granularity hides important internal architecture
 

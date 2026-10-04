@@ -58,7 +58,10 @@ than restating them.
 5. Then merge:
    a. Re-analyze ONLY the files behind `impact.replace` plus `impact.unclaimedChanged`
       (Steps 3–6 scoped to those files), then replace those nodes and add nodes for the
-      unclaimed changed files
+      unclaimed changed files. A replaced node that is already on the board keeps its `name`,
+      `description` and `detailedDescription`: the platform fills those once, then they are the
+      architect's, and a push never overwrites them. Refresh what does land — claims,
+      archetype, parent, edges
    b. Remove the nodes in `impact.remove`
    c. Remove edges where source or target node was removed
    d. Re-run relationship detection for changed nodes (Step 6)
@@ -120,9 +123,33 @@ Find the node among the unit's `children[]` (matched by `nodeSlug`). If it names
 unit, build (or refresh) that unit's board — Step 4.5 onward, scoped by `--scope-unit
 <child-slug>`. If no child unit carries that node, **stop**: "`<node-slug>` is not a planned
 board under `<parent-board-slug>` — accept the matching proposal (`--plan-accept <key>`, from
-the plan's `proposals[]`) or run `/analyze --clean` to re-plan." Never build a board the plan
-does not list. Incremental mode applies to a planned child board too — if it already exists,
+the plan's `proposals[]`), name its folder with `/analyze --deeper <folder>`, or run
+`/analyze --clean` to re-plan." Never build a board the plan does not list. Incremental mode applies to a planned child board too — if it already exists,
 only its `stale`/`incomplete` worklist is re-analyzed (see "Default: Incremental Analysis").
+
+### Deeper: Analyse a Named Folder (`--deeper <folder>`)
+
+The user names an area the plan has no board for — a folder, or comma-separated files — and it
+becomes one, past `analysis.plan.maxDepth` too: the cap stops the plan's suggestions, not a
+person. After Step -0.5's gate:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --plan-add <folder>
+```
+
+- Exit 1 → print `error` verbatim and stop. It names why (not analysed source, already a
+  board, spread over boards with no one board holding most of it, nothing new beyond existing
+  boards, one file, too few files for a board at that layer) and what to name instead; nothing was written.
+- Exit 0 → print `display` verbatim. The plan now has the unbuilt unit `addedUnit.slug` under
+  `parentBoardSlug` (the board that held most of the folder), carried by the node
+  `parentNodeSlug`. Files under the folder that other boards hold stay there (`leftOn`) —
+  never move them. Refresh `<parentBoardSlug>` first
+  (the Board Refresh mechanics — it is stale until it carries the new node; if it is not built
+  yet, build it through the Drill-Down flow), then build the new board through the Drill-Down
+  flow (`--scope-unit <addedUnit.slug>`, Steps 4.5 onward), then Step 8.5 and Step 8.6.
+
+Only ever pass a folder or files the user named. `--auto` and `--scheduled` never run
+`--plan-add`.
 
 ### Board Refresh (`--board <slug>`)
 
@@ -183,7 +210,49 @@ Steps -2/-1 name the `--auto` behaviour). The script's stall guard and run cap
 because the loop "feels" done, never continue past a `done`/`stalled` verdict, and never run
 `--plan-accept` on the plan's behalf.
 
-## Progress display (every phase change)
+### Scheduled: Refresh and Sync (`--scheduled`)
+
+The upkeep run a host schedule fires, so the boards follow the code without anyone running two
+commands after each merge (the provenmap-integration skill's `references/recurring-runs.md` has
+the recipes). It is `--auto` narrowed: every `--auto` stop applies, it refreshes only boards
+that are already built — never builds a new one, never accepts a proposal — and it ends by
+syncing what the portal has not seen. The script owns the loop, exactly as in `--auto`. It runs
+in the repo where `/analyze` ran, and every run — refreshed, up to date or stopped — is recorded
+on the platform and shown on the board's binding. A Step -2 or Step -1 stop — a
+preflight exit 1, 2 or 11, the archetype gate's exit 10, or a precondition exit 1 or 2 — prints
+the CLI's `error` (or `reason`) line, never prompts, and goes straight to step 4 with that line
+as `reasonText` in `--facts`. The Outcome call works out a preflight cause itself (not
+connected, off the bound branch, an analysis built for another board) and takes `reasonText`
+only for a stop it cannot see, such as the gate; omit the key on a run that got past both steps.
+
+1. **Start** (after the Step -2/-1 gates, replacing Step -0.5):
+   `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --auto-plan --scheduled --reset`. Print its
+   `display` verbatim. It runs `git pull --ff-only` itself first, so never run git around it.
+2. **Branch on `mode`:**
+   - `"round"` — refresh `sequential[]` one at a time, each scoped to its own unit (Step 8.6
+     step-4 mechanics — the incremental merge of "Default: Incremental Analysis"), with the
+     same one status line per board as `--auto`. The script already chose them (longest-waiting
+     first, capped by `analysis.plan.maxScheduledRefreshes`); act on nothing else. Then run
+     `--auto-plan --scheduled` again (no `--reset`), print `display` verbatim, return to 2.
+   - `"done"` or `"stalled"` — the analysis is over. On `stalled`, relay `stallReason`: it
+     names the cause (no analysed board in this checkout, uncommitted changes, a pull that
+     could not fast-forward, the refresh cap, or a round that built nothing). Go to 3.
+3. **Sync:** an empty `unsynced[]` means there is nothing to push — go to 4. A run where no
+   claimed file changed ends here, having read no code and pushed nothing. Otherwise read
+   `${CLAUDE_PLUGIN_ROOT}/knowledge/claude-code-plugin-sync/references/sync-workflow.md` and run its
+   Steps 2.5–6 with `unsynced[]` as Step 3's boards, unattended: answer Step 2.5's archive
+   question **Skip for now** and name the residue boards in the Outcome; a binding-scope
+   mismatch stops as that step says; any `pmap-sync.js` exit other than 0 → relay its `error`
+   verbatim, push nothing further, and leave the remaining boards for `/sync`. Never pass
+   `--no-verify`.
+4. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command analyze --facts '{"mode":"scheduled"}'` (a Step -2/-1 stop adds `"reasonText":"<the CLI line>"`)
+   → Done · Left · Next per the outcome skill. The call also records the run: its JSON carries
+   `scheduledRun` (`outcome`, `reason`, `reasonText`, counts, and whether the platform has the
+   record yet). Call it once: to read more of its output, keep the JSON from that call — a
+   repeat reports the same run with `alreadyRecorded: true` and sends nothing. Name what the run left for a person: boards past the cap, a stopped run's
+   reason and the one-line fix, proposals, unbuilt boards (`/analyze --auto` builds them).
+
+
 
 At the **first step of each phase** — Steps -2, 0, 4.5, 8, and 9 — run:
 
@@ -934,6 +1003,11 @@ band-escalated cluster's `subClusters`), record a proposal rather than marking i
 }
 ```
 
+Propose only depth the plan can take: the node must itself claim at least
+`analysis.plan.unitFloor` (12 by default) significant files, and the board must sit above
+`analysis.plan.maxDepth`. The plan drops anything smaller or deeper, so it never reaches the
+user.
+
 **Never set `layerBoardSlug` on a node the plan does not carry as a child unit** —
 `--board-report` fails the board (`A-PLAN-MARK`) on a mark naming no child unit. The plan is
 the only thing that turns a proposal into a board: the user (or `--auto`'s human-in-the-loop
@@ -1199,6 +1273,10 @@ connecting them to this session. Which unit to build next is a genuine user deci
    - Then `proposals[]`, one option each: label `Accept \`<key>\` — <reason>` — on
      selection, run `pmap-prepass.js --plan-accept <key>`, print its `display` verbatim, and
      offer the newly added unit for building on the next pass.
+   - When `proposals[]` is non-empty, one option: label `Dismiss the proposals shown` —
+     description: "They stay off the list until a floor's worth of new files lands in them."
+     On selection, run `pmap-prepass.js --plan-dismiss <the shown keys, comma-separated>` and
+     print its `display` verbatim.
    - Always last: **Sync what I have** — description: "Stop analysing; push the boards +
      this plan snapshot to the platform."
 4. If the user picks a single option, act on it and **return to Step 8.5** (refresh,
@@ -1216,7 +1294,12 @@ connecting them to this session. Which unit to build next is a genuine user deci
    - an `incomplete[]` entry → fix per its `integrity`
      (`unclaimed`/`doubleClaimed`/`outOfScope`), then re-run Step 8.3's gate — never a full
      re-run
-   - a `proposals[]` entry → already handled at selection time (above); nothing further here
+   - a `proposals[]` entry or the dismiss option → already handled at selection time (above);
+     nothing further here
+
+   The dashboard's "At the depth cap" note is information, never an option: those boards are
+   as deep as the plan goes. Mention `/analyze --deeper <folder>` only when the user asks for
+   more depth there.
 5. If the user picks **Sync what I have**: proceed to Step 9 and end the final report with the
    Outcome (the command body's last step: `--brief --command analyze`). If it was selected
    alongside other areas, build those areas first, then end the loop with the same Outcome.

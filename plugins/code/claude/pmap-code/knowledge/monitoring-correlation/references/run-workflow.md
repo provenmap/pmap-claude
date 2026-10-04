@@ -90,3 +90,25 @@ then:
 If `--propose-work-items` proposed any (`proposedWorkItemIds[]`), add: "N work items proposed as drafts —
 they appear for review on the board's work items tab and become pullable once an architect locks
 them."
+
+## Scheduled (`--scheduled`)
+
+The unattended run a host schedule fires (`${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/references/recurring-runs.md`).
+Nobody answers a prompt, and every run is recorded on the platform and shown on the board's
+binding.
+
+1. **Open the run first**, before the command's step 0:
+   `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --scheduled-run begin --command monitor`. Its JSON
+   carries the run's `runId`, which every push the run makes then carries. A failure here never
+   stops the run.
+2. **A prompt becomes a stop.** The connect-now offer, the branch-mismatch prompt, the
+   `--propose-work-items` choice (unattended runs pass it) and the mapping prompt of Step 3 are not
+   asked: each unmet gate stops the run — relay the CLI's `error` verbatim — and goes to step 3.
+3. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command monitor --facts '{"mode":"scheduled","outcome":"<outcome>","reasonText":"<error>"}'`.
+   `outcome` is `up_to_date` when the correlation found no new signal and nothing was pushed,
+   `refreshed` when Step 5 pushed an insight batch, and `stopped` on any exit that ends the run
+   early. `reasonText` is the stopping CLI's `error` line verbatim, and only for `stopped` (omit
+   the key otherwise). Status checks both against the run's allowed values and records the run; the
+   brief's `scheduledRun` says what was recorded. Name a stopped run's reason in the Outcome, with the
+   one-line fix.
+

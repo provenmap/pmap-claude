@@ -52,8 +52,8 @@ open`) or rejects it.
 - `implemented` is the developer's CLAIM; `verifiedAt` is the server's PROOF that a later push
   actually matches. Do not present a claim as proven.
 - Rejecting a work item automatically reverts any board changes it staged. Deleting a work item
-  withdraws everything it staged (only `draft`/`open`/`needs_clarification` can be deleted —
-  terminal work items are the delivery ledger).
+  withdraws everything it staged. Anything but `assigned`/`in_progress` can be deleted, completed
+  included — those belong to a developer, who must release the work item first.
 
 ## The tools
 

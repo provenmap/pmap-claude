@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --session-start --host claude",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js\" --session-start --host claude",
             "timeout": 10
           }
         ]

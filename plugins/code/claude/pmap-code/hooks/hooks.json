@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/check-config.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/check-config.sh\"",
             "timeout": 10
           }
         ]
@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-dispatch-log.js",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/pmap-dispatch-log.js\"",
             "timeout": 10
           }
         ]

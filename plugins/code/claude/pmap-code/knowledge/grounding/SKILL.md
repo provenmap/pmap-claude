@@ -73,3 +73,23 @@ itself from a fresh read of the document at push time, so never compute or guess
 When `--push` exits 3, the links file failed schema validation or an evidence path didn't resolve
 in the document corpus; `validationErrors[]` names the exact field/path. Fix
 `.provenmap/evidence-links.json` accordingly and retry the push once.
+
+## Scheduled (`--scheduled`)
+
+The unattended drift check a host schedule fires (`recurring-runs.md` in the provenmap-integration
+skill). Nobody answers a prompt, and every run is recorded on the platform and shown on the board's
+binding.
+
+1. **Open the run first**, before Step 0:
+   `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --scheduled-run begin --command ground`. Its JSON
+   carries the run's `runId`, which the run's pushes then carry. A failure here never stops the run.
+2. **A prompt becomes a stop.** The connect-now offer and the branch-mismatch prompt are not asked:
+   an unmet gate, and any exit that stops the command, ends the run — relay the CLI's `error`
+   verbatim — and goes to step 3.
+3. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command ground --facts '{"mode":"scheduled","outcome":"<outcome>","reasonText":"<error>"}'`.
+   `outcome` is `up_to_date` when nothing drifted, went missing or sat unlinked (the quiet run),
+   `refreshed` when the run re-linked and pushed evidence, `stopped` on any stop. `reasonText` is the
+   stopping CLI's `error` line verbatim, and only for `stopped` (omit the key otherwise). Status
+   checks both against the run's allowed values and records the run; the brief's `scheduledRun` says
+   what was recorded. Name a stopped run's reason in the Outcome, with the one-line fix.
+

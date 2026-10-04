@@ -38,9 +38,9 @@ Authoring runs the **impact → attach → describe** loop from
      →rejected reverts staged changes — say so), `assign_work_item` (empty list clears).
      `needs_clarification` → read the developer's question, revise via `update_work_item`,
      re-open via `transition_work_item` (the full loop, in-session).
-   - **Delete** → `delete_work_item` withdraws everything staged; only
-     draft/open/needs_clarification can be deleted. AskUserQuestion confirms bulk
-     deletion only.
+   - **Delete** → `delete_work_item` withdraws everything staged; anything but
+     assigned/in_progress can be deleted (ask the developer to release those first).
+     AskUserQuestion confirms bulk deletion only.
 5. **Close** — if this session made board edits: `preview_write_session_commit` → present the
    plan → title/summary (AskUserQuestion) → `commit_write_session` → narrate generated work items
    by slug, offer `publish`. Report writes from the result message, slug-first.

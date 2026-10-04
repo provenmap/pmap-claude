@@ -165,7 +165,8 @@ written value is a pin, and the project would stop following a retuned default.
   Cursor); set it to `""` for per-layer defaults.
 - `analysis.plan` holds the tree plan's knobs: `maxDepth` (4 — the deepest layer planned,
   L0 being the bound board; `null` plans as deep as the code demands), `unitFloor` (12 significant files to be a board),
-  `maxParallel` (4) and `maxBoardsPerRun` (25) for `--auto`. `maxDepth` and `unitFloor`
+  `maxParallel` (4) and `maxBoardsPerRun` (25) for `--auto`, `maxScheduledRefreshes` (15
+  stale boards one `--scheduled` run refreshes, longest-waiting first). `maxDepth` and `unitFloor`
   shape the plan only when it is first computed: changed later, planned boards stay
   planned (a lower cap removes none; a higher one adds boards only as proposals to
   accept) — to apply them to an existing plan, re-plan with `/analyze --clean`.
@@ -204,7 +205,7 @@ Credentials live in ONE place — `.provenmap/credentials.json`, never the chat.
   (`bindingToken` + `apiSecret` + `boardSlug`), since a different board is a different
   binding with its own secret. The `--rebind` flag is what unlocks the board picker —
   without it, a bound project's login is authentication-only:
-  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain code --plugin-version 1.0.0` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
+  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain code --plugin-version 1.1.9` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
   2. After they sign in, pick the new board, and confirm, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain code` (give the Bash call ~250s; re-run on `status: "pending"`). Print `display` verbatim.
   3. On `status: "complete"`, the config now points at the newly selected board — the `display` panel already shows it.
   4. **Local analysis belongs to the board it was built for.** It stays on disk untouched, and when
