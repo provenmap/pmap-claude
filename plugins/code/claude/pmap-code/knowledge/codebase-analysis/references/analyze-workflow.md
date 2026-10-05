@@ -154,7 +154,9 @@ Only ever pass a folder or files the user named. `--auto` and `--scheduled` neve
 ### Board Refresh (`--board <slug>`)
 
 Refresh one already-built board directly, without walking the Step 8.6 menu. Read
-`--tree-plan --unit <slug>`. If the unit is `stale` or `incomplete`, run the matching Step 8.6
+`--tree-plan --unit <slug>`. If the unit is `stale` or `incomplete`, first run
+`node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --refresh <slug>`: `refreshed: true` means the
+script closed it (print its `display`; done), `needsModel: true` means run the matching Step 8.6
 step-4 mechanic scoped to that unit, then Step 8.5. If it is already `built` and clean, report
 so and stop — nothing to refresh. If `<slug>` names no unit, stop with the same message
 `--drill` uses for an unplanned node.
@@ -191,8 +193,13 @@ The loop:
      then go to 3.
    - `"round"` — execute the plan exactly: `dispatch[]` as one Step 8.7 batch (one
      `architecture-analyzer` agent per entry, already capped by `analysis.plan.maxParallel`),
-     then `sequential[]` one at a time (stale/incomplete units — Step 8.6 step-4 mechanics,
-     each scoped to its own unit). Act on nothing the plan doesn't list; never accept a
+     then `sequential[]` one at a time, **strictly in the listed order** (parents before
+     children: a child's boundary ports resolve against its parent's nodes, so a parent the
+     model must update is finished before its children are refreshed). For each entry first run
+     `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --refresh <boardSlug>`: `refreshed: true` →
+     print its `display` as the board's status line and move on; `needsModel: true` → the
+     Step 8.6 step-4 mechanics scoped to that unit, then the next entry. Never skip the script
+     call, never batch past a board that needs the model. Act on nothing the plan doesn't list; never accept a
      proposal unattended. As each board finishes, print one status line — board slug,
      node/edge counts, gate pass/fail, advisories resolved or overridden — so progress stays
      visible mid-round. Then go to 3.
@@ -229,9 +236,14 @@ only for a stop it cannot see, such as the gate; omit the key on a run that got 
    `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --auto-plan --scheduled --reset`. Print its
    `display` verbatim. It runs `git pull --ff-only` itself first, so never run git around it.
 2. **Branch on `mode`:**
-   - `"round"` — refresh `sequential[]` one at a time, each scoped to its own unit (Step 8.6
-     step-4 mechanics — the incremental merge of "Default: Incremental Analysis"), with the
-     same one status line per board as `--auto`. The script already chose them (longest-waiting
+   - `"round"` — refresh `sequential[]` **strictly in the listed order** (parents before
+     children: a child's boundary ports resolve against its parent's nodes). For each entry
+     first run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --refresh <boardSlug>`:
+     `refreshed: true` → print its `display` as the board's status line and move on;
+     `needsModel: true` → the Step 8.6 step-4 mechanics scoped to that unit (the incremental
+     merge of "Default: Incremental Analysis"), then the next entry. Never skip the script
+     call, never batch past a board that needs the model. One status line per board, as
+     `--auto`. The script already chose them (longest-waiting
      first, capped by `analysis.plan.maxScheduledRefreshes`); act on nothing else. Then run
      `--auto-plan --scheduled` again (no `--reset`), print `display` verbatim, return to 2.
    - `"done"` or `"stalled"` — the analysis is over. On `stalled`, relay `stallReason`: it

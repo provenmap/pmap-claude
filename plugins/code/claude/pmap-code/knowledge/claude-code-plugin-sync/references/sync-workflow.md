@@ -166,30 +166,59 @@ endpoint materialises each child board from its parent's `layerBoardSlug` on pus
 sync before its children or the child push is rejected.
 
 Boards **within one layer** have no such ordering constraint and each owns its own store file, so run
-them concurrently: issue up to **3** of the Step 4 commands at once, wait for that layer to finish,
-then move to the next layer. Keep the batch at 3 — this is one server's rate budget, not a local
+them concurrently: issue up to **3** of the 4b pushes at once, wait for that layer to finish, then
+move to the next layer. Keep the batch at 3 — this is one server's rate budget, not a local
 limit. If any board in a batch fails with a rate-limit or 5xx error, finish the layer serially before
 continuing.
 
-For each board to sync, run the ProvenMap sync CLI with the board's analysis file and board slug:
+The sync digest is **one per sync**, not one per board: compute it once (4a) for every board this
+sync pushes, before the first push, then push each board (4b). It is what tells the hub what this
+sync changed and who was involved.
+
+### 4a. Sync digest — once, before the first push
+
+Read `${CLAUDE_PLUGIN_ROOT}/knowledge/claude-code-plugin-sync/references/sync-digest.md` once per session
+and follow its steps 1 and 2, naming every board this sync pushes, in push order, shallowest first:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-digest.js \
+  --boards <board-slug>,<board-slug>,... \
+  --model <the model you are running as> \
+  --host claude --domain code
+```
+
+- **`digest: "written"`** → write the sentences its `fill` lists by that reference's writing rules
+  (`pmap-digest.js --fill <draftPath> --prose <n>="<sentence>"`, one `--prose` per entry), and pass
+  the draft at `draftPath` to the **first** push below with `--digest`.
+- **`digest: "none"`** → push every board without `--digest`. Not an error; say nothing about it.
+
+The digest never blocks: whatever this step returns, every board is pushed.
+
+### 4b. Push
+
+Run the ProvenMap sync CLI with the board's analysis file and board slug:
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-sync.js \
   --board-slug <board-slug> \
   --analysis .provenmap/boards/<board-slug>.json \
   --smart-sync \
+  --summary "<one sentence>" \
+  --digest <draftPath> \
   --host claude --domain code
 ```
 
-Add `--summary "<one sentence>"` when you know what this push changes in the architecture — see the
-option below. It is what the hub's activity feed shows for this push, beside who pushed it.
+`--digest` goes on **one push only**: the first board you push. Once it rides a push the CLI deletes
+the draft, so every other push leaves the flag out. If that push does not land (`digestReport.reason:
+"not_pushed"`), the draft is kept: pass it to the next push instead. Leave out `--digest` everywhere
+when 4a wrote no draft, and `--summary` when you have no sound sentence — see the two options below.
 
 **CLI options:**
 
 - `--board-slug <slug>`: **required** — board slug to sync to
 - `--analysis <path>`: **required** — analysis file path
 - `--config <path>`: config file path (default: `.provenmap/config.json`, rarely needed)
-- `--dry-run`: validate and transform only, don't push to the API
+- `--dry-run`: validate and transform only, don't push to the API (and send no digest)
 - `--smart-sync`: enable diff-based sync (pulls server state, computes the diff for the report and
   the post-push confirmation; the push itself always carries the full board)
 - `--force-pull`: force refresh of server elements before computing the diff
@@ -197,11 +226,17 @@ option below. It is what the hub's activity feed shows for this push, beside who
   exceptional cases
 - `--host claude --domain code`: plugin identity stamped on the push (hub display data)
 - `--summary "<sentence>"`: optional — one plain sentence, at most 200 characters, on what this push
-  changes for this board: what it gained, lost or rewired, naming the elements, with no counts
-  ("Gained a refund flow: two endpoints and a call to Payment Processor."). Write it only from what
-  you know changed since the last sync: this session's analysis, or the commit subjects since the
-  board's `analyzedAtCommit`. On a board's first sync say what was mapped. When you do not know what
-  changed, omit the flag — never guess; the hub then shows the push without a sentence.
+  changes for this board: what it gained, lost or rewired, naming the elements, with no counts. It
+  is what the hub's activity feed shows for this push, beside who pushed it. Its source is the
+  digest draft's working material (the sync-digest reference, *The push sentence*): this board's
+  entry in `working.boards` and the commit messages since the last sync. On a board's first sync
+  say what was mapped. With no draft, write it only from what this session
+  itself changed; when you do not know what changed, omit the flag — never guess; the hub then
+  shows the push without a sentence.
+- `--digest <draftPath>`: optional, on the sync's first push only — the digest draft from 4a, with
+  your sentences written in. The CLI validates it, strips the working material and sends it with
+  the push. A draft it cannot use
+  is dropped with a warning (`digestReport`) and the push still goes.
 
 ## Step 5: Parse the CLI output
 
@@ -222,6 +257,10 @@ The CLI outputs one JSON object to stdout. Branch on `success`:
   is the only way to propose additions.
 - The CLI output may carry a `stylingReport` field (absent means the domain has no styling) — hold it
   for Step 6.
+- `digestReport` (present only when `--digest` was passed): `sent: true` and `reason: "dry_run"`
+  need no mention. Any other `sent: false` means the draft was dropped and the push went ahead
+  without it — report it in one line with its `detail` (`reason: "not_pushed"`: the push itself
+  failed; report that error, not the digest).
 
 Always report `serverPullStatus` when it is not "fresh" — "cached" is fine to omit; a failed pull
 aborts with its own error.
@@ -269,6 +308,8 @@ doesn't track it; skip silently):
   summarise** (it carries the progress bar, the percent, and the stale / incomplete counts:
   `{ sent, percent, built, units, stale, incomplete, display }`). If `stale > 0` or
   `incomplete > 0`, add: `Close the gap with /analyze (incremental).`
+- `reason: "unchanged"` → print `display` verbatim, same as `sent: true` (the platform already has
+  this snapshot, so it was not re-sent).
 - `reason: "no_plan"` → `No tree plan yet — run /analyze (it computes the plan) so the platform can track analysis progress.`
 - `reason: "feature_unavailable"` → "This ProvenMap server doesn't expose analysis progress yet — ask your admin to upgrade"
 - `reason: "branch_mismatch"` → note the snapshot was skipped because the plan was computed on the

@@ -1,6 +1,6 @@
 ---
 name: pmap-sync
-description: Bundled Node.js CLI scripts for syncing codebase analysis to the ProvenMap Claude Code Plugin API. Provides pmap-sync.js for smart diff-based sync, pmap-archetypes.js for server archetype caching, pmap-boards.js for board management, and pmap-adopt.js for aspect adoption. Self-contained — no npm install required.
+description: Bundled Node.js CLI scripts for syncing codebase analysis to the ProvenMap Claude Code Plugin API. Provides pmap-sync.js for smart diff-based sync, pmap-digest.js for the sync digest a push carries, pmap-archetypes.js for server archetype caching, pmap-boards.js for board management, and pmap-adopt.js for aspect adoption. Self-contained — no npm install required.
 user-invokable: false
 metadata:
   author: ProvenMap
@@ -35,10 +35,47 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-sync.js [options]
 | `--cache-file <name>` | `.provenmap/boards/archetypes-cache.json` | Archetype cache file name |
 | `--host <h>` | - | Plugin host (claude\|codex\|cursor) stamped on the push identity |
 | `--domain <d>` | - | Plugin domain (code\|connect) stamped on the push identity |
+| `--summary <text>` | - | One sentence (at most 200 characters) on what this push changed; shown on the hub's activity feed |
+| `--digest <file>` | - | Sync digest draft from `pmap-digest.js`, with its prose written in; validated and sent with the push. One push per sync: the first |
 
-**Output:** JSON to stdout with fields: `success`, `nodeCount`, `edgeCount`, `pushResult`, `diff`, `timing`
+**Output:** JSON to stdout with fields: `success`, `nodeCount`, `edgeCount`, `pushResult`, `diff`, `timing`, and `digestReport` when `--digest` was passed
 
 **Exit codes:** 0=success, 1=config error, 2=analysis file error, 3=validation error, 4=API error
+
+### pmap-digest.js — Compute the Sync Digest
+
+Computes what changed since the last sync — commits, who was involved and with which coding agent,
+services touched, a yes or no per change rule — and writes it as a draft; `--fill` then writes the
+agent's sentences into it. Run once per sync across every board it pushes (`--boards`), before the
+first `pmap-sync.js` push; for an adopt, once before `pmap-adopt.js`.
+
+**Invocation:**
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-digest.js --boards <slug,slug,...> [options]
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-digest.js --aspect <kind> --payload <file> [--board-slug <slug>] [options]
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-digest.js --fill <draft> --prose <n>="<sentence>" [--prose ...]
+```
+
+**Options:**
+| Flag | Default | Description |
+|---|---|---|
+| `--boards <slugs>` | - | Structural sync: every board it pushes, comma-separated, in push order; each read from `.provenmap/boards/<slug>.json` |
+| `--board-slug <slug>` | `config.boardSlug` | Adopt: the board the ingest targets |
+| `--aspect <kind>` | - | Digest an adopt of this aspect family instead of a structural sync |
+| `--payload <path>` | - | The extracted aspect payload (required with `--aspect`) |
+| `--mode <mode>` | `replace` | `merge` or `replace`, as the adopt will run |
+| `--model <name>` | - | The model the agent is running as (self-reported) |
+| `--host <h>` | - | Plugin host (claude\|codex\|cursor) |
+| `--domain <d>` | - | Plugin domain (code\|connect) |
+| `--fill <draft>` | - | Write sentences into this draft instead of computing one |
+| `--prose <n>=<text>` | - | With `--fill`: the sentence for fill entry `<n>`; repeat per entry |
+
+**Output:** JSON with `digest`. `written`: `draftPath` (`.provenmap/digest/sync.json`, or
+`<board-slug>.<aspect>.json` for an adopt), `basis`, and `fill` — the numbered sentences left for the agent.
+`none`: `reason` (`no_reanalysis`, `older_server`, `failed`) and `detail`. With `--fill`: `filled`
+(`written`, `unknown`, `left`) or `unfilled` (`detail`).
+
+**Exit codes:** always 0 — a digest never stops a push
 
 ### pmap-archetypes.js — Fetch Archetypes
 
@@ -99,11 +136,11 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-adopt.js --aspect <kind> --payload <payl
 
 **Options:** `--aspect <kind>` and `--payload <path>` (both required), `--mode replace|merge`
 (default `replace`), `--board-slug <slug>` (default `config.boardSlug`), `--analysis <path>`,
-`--extractor-version <v>`, `--config <path>`, `--dry-run`, `--no-verify`, `--host <h>`,
-`--domain <d>`.
+`--extractor-version <v>`, `--config <path>`, `--dry-run`, `--no-verify`, `--summary <text>`,
+`--digest <file>`, `--host <h>`, `--domain <d>`.
 
 **Output:** JSON `AspectUpsertResult` with `inserted`, `updated`, `deleted`, `skippedManual`,
-`unlinked`, `unresolvedRefs`, `unknownSlugs`, `verify`.
+`unlinked`, `unresolvedRefs`, `unknownSlugs`, `verify`, and `digestReport` when `--digest` was passed.
 
 **Exit codes:** 0=success, 1=config error (a **branch mismatch** lands here), 2=spine-not-synced
 or analysis error, 3=payload validation error or post-ingest verify drift, 4=API error
@@ -124,4 +161,5 @@ Sync state is stored per-board in `.provenmap/boards/stores/<board-slug>.store.j
 - [transformation-rules.md](references/transformation-rules.md) — Code archetype mapping table
 - [sync-protocol.md](references/sync-protocol.md) — What `pmap-sync.js` does internally: smart sync, diff fields, push mode
 - [sync-workflow.md](references/sync-workflow.md) — The `/sync` command's Steps 2.5–6: binding scope, integrity gate, push loop, reporting, tree repair
+- [sync-digest.md](references/sync-digest.md) — The sync digest a `/sync` or `/adopt` push carries: computing the draft, the writing rules for its prose, sending it
 - [aspect-adoption.md](references/aspect-adoption.md) — The `/adopt` command's delegated tier: `pmap-adopt.js` modes, flags, exit codes, and how to report every result field

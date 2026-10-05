@@ -16,6 +16,31 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-adopt.js --aspect <kind> --payload <payl
 `.provenmap/aspects/tmp/<x>-payload.json`, where `<x>` is `db` | `api` | `pages` | `event` |
 `authz` | `clients` (`ui.pages` on a layered board writes one payload per sub-board; see its skill).
 
+After the digest step below wrote a draft, the same command takes `--digest <draftPath>` and
+`--summary "<one sentence>"`.
+
+## Sync digest — before the adopt
+
+An adopt after a fresh extraction carries a **sync digest**: what this family's rows changed since
+its last adopt (a table added, an endpoint removed, a channel reshaped) and who was involved. Before
+`pmap-adopt.js`, read `${CLAUDE_PLUGIN_ROOT}/knowledge/claude-code-plugin-sync/references/sync-digest.md`
+and follow its steps 1 and 2 for this kind:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-digest.js \
+  --board-slug <board-slug> \
+  --aspect <kind> --payload <payload-file> --mode <mode> \
+  --model <the model you are running as> \
+  --host claude --domain code
+```
+
+- **`digest: "written"`** → write the sentences its `fill` lists by that reference's writing rules
+  (`pmap-digest.js --fill <draftPath> --prose <n>="<sentence>"`, one `--prose` per entry), then
+  adopt with `--digest <draftPath>` and `--summary "<one sentence>"`.
+- **`digest: "none"`** → adopt without `--digest`. Not an error; say nothing about it.
+
+The digest never blocks: whatever this step returns, the adopt runs. Skip the step for `--dry-run`.
+
 ## Modes
 
 `--mode` defaults to **`replace`** — a full snapshot: rows whose slug left the payload are
@@ -27,6 +52,13 @@ touches manual rows or human-owned columns). Use **`--mode merge`** to add witho
 - `--dry-run` — validate the payload and cross-check its slugs against the synced spine
   **without pushing**. Useful to sanity-check `unknownSlugs` before adopting for real.
 - `--no-verify` — skip the post-ingest server read-back verification (see `verify` below).
+- `--summary "<sentence>"` — optional: one plain sentence, at most 200 characters, on what this
+  adopt changes, naming the tables, endpoints or channels, with no counts. Written from the digest
+  draft's working material (the sync-digest reference, *The push sentence*); omit it rather than
+  guess.
+- `--digest <draftPath>` — optional: the digest draft from the step above, with your sentences
+  written in. The CLI validates it, strips the working material and sends it with the adopt. A
+  draft it cannot use is dropped with a warning (`digestReport`) and the adopt still runs.
 
 ## Exit codes
 
@@ -48,6 +80,12 @@ If `unlinked` or `unresolvedRefs` is non-zero, tell the user which slugs were un
 reports `unknownSlugs`) and that re-running `/analyze` + `/sync` to add those nodes will
 **auto-resolve** them on the next push (the server's re-resolution pass) — nothing was dropped,
 they are just waiting for their node.
+
+### `digestReport` — what became of the digest
+
+Present only when `--digest` was passed. `sent: true` and `reason: "dry_run"` need no mention. Any
+other `sent: false` means the draft was dropped and the adopt went ahead without it: say so in one
+line with its `detail`, and do not re-run the adopt for the digest's sake.
 
 ### `verify` — the post-ingest server read-back
 
