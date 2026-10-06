@@ -25,5 +25,8 @@
         ]
       }
     ]
-  }
+  },
+  "modules": [
+    "./pmap-guard.js"
+  ]
 }

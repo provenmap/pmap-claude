@@ -9,7 +9,7 @@ Config schema, credential source, and the rebind flow:
 `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md`.
 
 > **Security rule:** Never ask the user to paste `bindingToken` or `apiSecret` into the
-> chat — they edit the file directly, then confirm.
+> chat — they edit the file directly, then confirm. Never read `credentials.json` yourself.
 
 ## Step 1: Ensure the config file exists
 
@@ -21,10 +21,13 @@ If it exists, read it and continue — never overwrite the user's file. Either w
 
 ## Step 2: Detect current state
 
-`.provenmap/credentials.json` has both fields (or `PMAP_BINDING_TOKEN`/`PMAP_API_SECRET`
-are set) → show the settings, secret masked (`pmap_cp_live_****`), skip to Step 4. Else
-Step 3 — and if `config.json` still carries `bindingToken`/`apiSecret`, say they are
-ignored (credentials live in `credentials.json`) and to remove them.
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --check
+```
+
+`credentials` gives each field's shape, never its value. Both fields `ok` → show the
+settings with `apiSecretMasked`, skip to Step 4. Else Step 3; `legacyConfigFields` → say
+`config.json`'s credential fields are ignored; remove them.
 
 ## Step 3: Fill in credentials (in the file, not the chat)
 
@@ -36,8 +39,8 @@ skill) and set `branch` in `config.json` (must match the binding, default `main`
 **"Yes — verify now"** / **"Not yet"**.
 
 - **Not yet**: stop — they can re-run `/configure` when ready.
-- **Yes**: re-read it. Missing, empty or malformed (`apiSecret` must start with
-  `pmap_cp_live_`, `pmap_cp_test_`, or the older `ck_cp_live_`)? Name the field that is wrong and re-prompt. Else Step 4.
+- **Yes**: re-run `--check`. `file` `unreadable` (not JSON), a field `missing`, or `apiSecret`
+  `malformed` (wrong prefix)? Name what is wrong and re-prompt. Else Step 4.
 
 ## Step 4: Verify credentials
 
@@ -62,12 +65,12 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-boards.js
 
 Find the root board (`isChildBoard === false`): **one** → set `boardSlug` to its slug;
 **several** → ask the user which to use; **none** → warn them to create a board in the
-ProvenMap UI first (config can still be saved, but `/analyze`, `/sync` and `/ground` won't work until a root board exists). Write `boardSlug` into `.provenmap/config.json`, preserving the user's other fields.
+ProvenMap UI first (config can still be saved; `/analyze`, `/sync` and `/ground` need a root board). Write `boardSlug` into `.provenmap/config.json`, preserving the user's other fields.
 
 ## Step 6: Confirmation
 
 Report complete: both file locations, connection details (URL, branch, root board
-slug) with the secret masked, the test result, and that `.provenmap/` is gitignored.
+slug) with `apiSecretMasked`, the test result, and that `.provenmap/` is gitignored.
 
 ## Reconfiguration
 
