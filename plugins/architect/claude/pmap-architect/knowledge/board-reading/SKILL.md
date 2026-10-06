@@ -15,10 +15,16 @@ description: How to orient on and evolve a ProvenMap board over MCP — read the
 
 To orient on a board, read in this order (each call is cheap; batch where possible):
 
-1. `get_board_tree` — every descendant layer board (slug, name, drill path).
+1. `get_board_tree` — one level of layer boards (slug, name, drill path, `childCount`): `depth` ≤ 2
+   (default 1), 100 rows per call with `more`/`offset` to page. Drill by calling again with a
+   child's slug; never walk the whole tree — workspaces hold thousands of boards.
 2. `get_workboard_details` — the board itself: structure, nodes, edges, semantic styles.
-3. `get_hub_status` — work item counts, latest insight batch, binding health (`scope: 'tree'`
-   aggregates the subtree).
+3. `get_hub_status` — what the hub shows: the ranked attention queue, work items by status,
+   insight counts, each repo's freshness and scheduled-run health, coverage and aspect KPIs
+   (`scope: 'tree'` on the root gives the fleet view instead). The queue names only a repo's
+   latest stop; for run history ("have the scheduled runs been failing?") add
+   `include: ['scheduledRuns']` — each repo's newest runs with outcome, reason and boards
+   refreshed/pushed, 5 per repo or 20 with `'rows'`, on either scope.
 4. `list_work_items` / `list_insights` — what work and insights are already in flight.
 
 Summarize: purpose, the domains/containers, layer structure, and anything in flight — slug-first,
@@ -28,7 +34,7 @@ then invite direction.
 
 Before authoring anything, determine the board's class from three facts:
 
-1. **Tree position** — `get_board_tree('root')`: is this the root, a node's layer board, or
+1. **Tree position** — `get_board_tree` on the board (one level, drill by slug): is this the root, a node's layer board, or
    absent from the tree (standalone)?
 2. **Bindings** — `list_source_bindings(workBoardSlug)`: a code-plugin binding (governing or
    reference) makes the board an **app board** — the only class where work items are legal.

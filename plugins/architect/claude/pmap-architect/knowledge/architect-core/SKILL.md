@@ -153,17 +153,20 @@ token; the architect's own web-app edits live in their own session and are never
 Two MCP-batch modes compute deterministic state (they need the `/login` grant; without it they
 print the canonical not-configured message — relay it):
 
-- `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --classify-tree [--refresh]` — the taxonomy
-  table above computed for the whole tree, plus **bind-eligibility per board** (the app-nesting
-  pre-check). Cached ~1h. Read it instead of fanning out `list_source_bindings` yourself; a
-  server refusal that contradicts the cache means rerun with `--refresh`.
+- `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --classify-tree [--board <slug>] [--offset <n>] [--refresh]` — the taxonomy
+  table above for **one level per call** (the board, root by default, and its direct children;
+  100 per page), plus **bind-eligibility per board** (the app-nesting pre-check). A child with
+  layers below shows `+N layers`: drill by calling again with `--board <slug>`; `--offset <n>`
+  pages a level past 100. A workspace can hold thousands of boards — never walk the whole tree.
+  Cached ~1h per (board, offset). Read it instead of fanning out `list_source_bindings` yourself;
+  a server refusal that contradicts the cache means rerun with `--refresh`.
 - `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --attention` — the ranked attention queue +
   the "since your last visit" delta. Print its `display` verbatim; add judgment on top, never
   a rebuilt table.
 - `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --next` — the `/start` answer, live: the
   ranked next-step ladder under a one-line state header. Print its `display` verbatim.
 - `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command <name> [--facts '<flat json>']` —
-  the brief every command closes on, offline (cached map, snapshots, drafts): JSON state,
+  the brief every command closes on, offline (cached root-level map, snapshots, drafts): JSON state,
   gates, candidates, hand-offs — never printed; you write the Outcome from it
   (`${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`). A hand-off is another session's work (developers in
   their repo, the web app) — never a rung to run here.

@@ -21,8 +21,7 @@ Argument given → that board. No argument →
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --app-readiness
 ```
 
-prints the `new_app` candidates from the workspace map (print verbatim; it says when the map
-needs `--classify-tree` first). Several candidates → AskUserQuestion. A board that is an app
+prints the `new_app` candidates the hub flags (print verbatim). Several candidates → AskUserQuestion. A board that is an app
 but **not** marked `new_app` → confirm first ("marked as an existing app — prep it anyway?").
 Not an app at all → the report says so; route to `/new-app` (plan it) or `/board` (orient) and
 stop.

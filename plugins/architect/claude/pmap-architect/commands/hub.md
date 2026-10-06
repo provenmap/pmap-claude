@@ -12,24 +12,28 @@ staleness/verification semantics.
 ## Workflow
 
 1. **Attention queue** — run and print the `display` **verbatim** (it includes the "since your
-   last visit" delta and the ranked queue):
+   last visit" delta, the ranked queue, and each scheduled repo's recent runs):
 
    ```bash
    node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --attention
    ```
 
-   Then add judgment on top: for `implemented` claims worth checking now, sample `get_work_item`
-   for `verifiedAt` (say when you sampled); connect queue items to what you know from the
-   session. The report's "Waiting for first push" boards (also `governing · never pushed` in
-   the classify table) are board-init territory — the bootstrap offer is already in the line.
-   The report's "New apps awaiting build prep" boards are app-readiness territory — the
-   `/prepare-app` pointer is already in the line.
-2. **Then the portfolio** — `--classify-tree` (cached ~1h); print its table verbatim. It
-   already carries class, binding flavor, and the "+N not classified" cap line.
+   The queue is the hub's own, app by app, most in need first — the same facts the browser
+   shows. Add judgment on top: for implemented claims awaiting proof worth checking now, sample
+   `get_work_item` for `verifiedAt` (say when you sampled); connect queue items to what you know
+   from the session. A stopped scheduled run's line already carries its fix; a repo waiting for
+   its first push carries the bootstrap offer; a new app awaiting prep carries `/prepare-app`.
+2. **Then the portfolio** — `--classify-tree` (one level, cached ~1h); print its table verbatim.
+   It carries class and binding flavor; a board with layers below shows `+N layers`. To dig
+   into one, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --classify-tree --board <slug>`
+   and print it verbatim.
 3. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command hub` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
-Script not configured (exit 1, no grant) → fall back to the direct reads: `get_hub_status
-(scope: 'tree')` + `list_work_items(scope: 'tree')` at root, render the same queue shape.
+Script not configured (exit 1, no grant) → fall back to the direct read: `get_hub_status
+{workBoardSlug: 'root', scope: 'tree', include: ['scheduledRuns']}` and render
+`fleetAttention.rows` app by app — each fact's `label` as written, a stopped run's `fix` beside
+it — then `fleetAttention.more`, then per repo in `scheduledRuns` the newest run's outcome and
+reason, and the last success when it did not succeed.
 
 Empty root state → skip the dashboard, offer `/setup-workspace` (the workspace is waiting for
 its estate: map what exists, or found something new).

@@ -164,7 +164,7 @@ architect-core's taxonomy — work items are legal only on code-bound boards):
    the approach is already decided — a settled change, a prescriptive bound document, a
    promoted insight.
 3. **Sweep candidates — holistically.** Estate pass first: place the ask on the whole estate
-   (the `--classify-tree` cache or `get_board_tree`) — which sibling app boards it touches,
+   (`--classify-tree` or `get_board_tree`, one level at a time, drilling by slug) — which sibling app boards it touches,
    which root-landscape systems are implicated. Then the close-in sweep — facts from reads,
    ranking from judgment: spine radius (`trace_impact` on each seed with
    `include: ['workItems']` — what the change reaches, which of it only the code proves, and
