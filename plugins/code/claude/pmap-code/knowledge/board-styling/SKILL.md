@@ -44,7 +44,9 @@ so use it freely to make the diagram explain itself, with or without a token: ke
 larger, incidental ones smaller. Keep `lg`/`xl` a minority anyway (the validator warns, it does
 not block). `xs` is a legibility choice, not a peripheral marker: the label renders below the
 shape on one truncating line, so it suits icon-backed short names; an icon-less or long-named
-node takes `sm`.
+node takes `sm`. Size also decides the icon strategy: a node at `lg` or above never takes
+`icon_only` (the glyph would fill the box) — it keeps `shape_with_icon`, or `shape_only` without
+an icon, and the validator rejects anything else.
 
 ## The four moves
 

@@ -137,7 +137,10 @@ rejected at apply time. The values: `circle`, `square`, `rectangle`, `rounded-re
 `note`, `browser`, `mobile-device`, `package`.
 
 `displayStrategy`: `icon_only` (people, well-known services), `shape_only`, `shape_with_icon`
-(the default choice for systems).
+(the default choice for systems). Size decides it above `md`: `icon_only` draws the glyph over
+the whole box, so a node sized `lg`, `xl` or `xxl` keeps its shape — `shape_with_icon`, or
+`shape_only` when it has no icon. The validator rejects `icon_only` on a node the plan enlarges,
+or one the board already holds at that size; `icon_only` belongs to `xs`/`sm`/`md` nodes.
 
 ### Real brand icons first — Lucide is the fallback, not the default
 

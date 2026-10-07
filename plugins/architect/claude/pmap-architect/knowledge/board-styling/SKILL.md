@@ -66,7 +66,10 @@ Styling is judgment guided by facts. The pipeline is always the same four moves:
   key components larger, incidental ones smaller, and a size needs no accompanying token. Keep
   lg/xl a minority anyway: if everything is large, nothing is (the validator warns, it does not
   block). `xs` is a legibility choice — the label renders below the shape on one truncating
-  line, so it suits icon-backed short names; an icon-less or long-named node takes `sm`.
+  line, so it suits icon-backed short names; an icon-less or long-named node takes `sm`. Size
+  also decides the icon strategy: a node at `lg` or above never takes `icon_only` (the glyph
+  would fill the box) — it keeps `shape_with_icon`, or `shape_only` without an icon, and the
+  validator rejects anything else.
 - **One Role token per archetype per board — group first, then choose.** Among the archetypes
   that earn a Role token at all, the rule constrains containers that *share* an archetype; it
   does not mean every container on the board takes the same token. Group containers by
