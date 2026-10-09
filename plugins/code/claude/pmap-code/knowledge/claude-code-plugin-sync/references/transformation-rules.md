@@ -35,4 +35,8 @@ and framework and language go in the detailed description.
 
 ## Source References
 
-When `sourceSlug` and `sourceId` are provided, file paths are attached as source references for code traceability.
+A node with a `path` is pushed with one source reference carrying that repo-relative path and
+nothing else. The platform fills in the rest: the source it belongs to from the board's binding,
+and the link to open it from the repository URL and branch recorded on that binding (`/login`
+records the repository; a push from a binding that has none records it once). The plugin never
+builds a link. `"includeSourceReferences": false` in `config.json` omits the references.

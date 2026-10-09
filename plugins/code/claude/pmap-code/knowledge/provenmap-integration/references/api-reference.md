@@ -225,6 +225,7 @@ X-CodePlugin-Secret: {apiSecret}
 | `callout`           | Annotations                              |
 | `leader_annotation` | Leader lines for annotations             |
 | `text`              | Freeform text blocks                     |
+| `decoration`        | Hand-placed markup: stamp, brace, pin, marker, index card, highlighter |
 
 ---
 

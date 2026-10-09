@@ -14,7 +14,7 @@ When creating or updating nodes, structure the call EXACTLY as:
       "description": "string",
       "detailedDescription": "string | null",
       "archeType": "string | null (archetype name from get_archetypes; this sets the visual shape)",
-      "primitiveType": "node | container | region | axis | callout | leader_annotation | text (semantic kind, NOT the shape — 'container' for grouping boxes that hold children, 'node' for regular elements; the shape comes from archeType)",
+      "primitiveType": "node | container | region | axis | callout | leader_annotation | text | decoration (semantic kind, NOT the shape — 'container' for grouping boxes that hold children, 'node' for regular elements; the shape comes from archeType)",
       "parentNodeSlug": "string | null (slug of the container node this belongs to)",
       "tags": ["string"],
       "attributes": {
