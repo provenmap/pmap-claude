@@ -1,7 +1,7 @@
 ---
 name: clients-aspect-extraction
 user-invokable: false
-description: Extracts a repository's outbound service calls (typed HTTP clients, gRPC clients, service-discovery addresses) into an ApiClientsPayload for /adopt --aspect api.clients. Use when adopting the api.clients aspect. Reads .NET AddHttpClient/AddGrpcClient registrations, Aspire WithReference, Refit, fetch/axios base URLs, Feign, gRPC stubs — never calls the services.
+description: Extracts a repository's outbound service calls (typed HTTP clients, gRPC clients, service-discovery addresses) into an ApiClientsPayload for /aspects --aspect api.clients. Use when extracting the api.clients aspect. Reads .NET AddHttpClient/AddGrpcClient registrations, Aspire WithReference, Refit, fetch/axios base URLs, Feign, gRPC stubs — never calls the services.
 license: MIT
 compatibility: Claude Code plugin. Requires a synced spine (.provenmap/boards/<board>.json) so each client can link to the node that makes the calls.
 metadata:

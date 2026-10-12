@@ -1,7 +1,7 @@
 ---
 name: pages-aspect-extraction
 user-invokable: false
-description: Extracts a repository's frontend routes/pages (route tree, render tree, data dependencies, guards, forms) into a UiPagesPayload for /adopt --aspect ui.pages. Use when adopting the ui.pages aspect. Reads Next.js App/Pages Router, Remix, TanStack Router, React Router, SvelteKit, or Nuxt route files — never renders or starts the app.
+description: Extracts a repository's frontend routes/pages (route tree, render tree, data dependencies, guards, forms) into a UiPagesPayload for /aspects --aspect ui.pages. Use when extracting the ui.pages aspect. Reads Next.js App/Pages Router, Remix, TanStack Router, React Router, SvelteKit, or Nuxt route files — never renders or starts the app.
 license: MIT
 compatibility: Claude Code plugin. Requires a synced spine (.provenmap/boards/<board>.json) so pages can reuse the node slugs /analyze already assigned them.
 metadata:
@@ -90,4 +90,4 @@ Read `.provenmap/boards/<board-slug>.json` for the node slugs the spine already 
 
 ## Payload file — one per board layer
 
-Write the payload to `.provenmap/aspects/tmp/pages-payload.json`. When adopting onto a layered board's sub-boards, write one payload per sub-board instead, named `.provenmap/aspects/tmp/pages-payload-<sub-board>.json` (e.g. `pages-payload-portal-app.json`) — the inspector's route→page correlation merges every `pages-payload*.json` in that directory, so this suffix convention is what keeps drill-down pages correlatable.
+Write the payload to `.provenmap/aspects/tmp/pages-payload.json`. When extracting onto a layered board's sub-boards, write one payload per sub-board instead, named `.provenmap/aspects/tmp/pages-payload-<sub-board>.json` (e.g. `pages-payload-portal-app.json`) — the inspector's route→page correlation merges every `pages-payload*.json` in that directory, so this suffix convention is what keeps drill-down pages correlatable.

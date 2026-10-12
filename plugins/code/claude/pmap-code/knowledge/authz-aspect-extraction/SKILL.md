@@ -1,7 +1,7 @@
 ---
 name: authz-aspect-extraction
 user-invokable: false
-description: Extracts a repository's authorization model (roles, resource types, permissions, policies) into an AuthzRegistryPayload for /adopt --aspect authz.registry. Use when adopting the authz.registry aspect. Reads CASL rule definitions, Cerbos policy YAML, OPA Rego policies, Oso Polar files, AWS IAM policy documents, or DB-backed RBAC table schemas — never evaluates a policy or queries live rows.
+description: Extracts a repository's authorization model (roles, resource types, permissions, policies) into an AuthzRegistryPayload for /aspects --aspect authz.registry. Use when extracting the authz.registry aspect. Reads CASL rule definitions, Cerbos policy YAML, OPA Rego policies, Oso Polar files, AWS IAM policy documents, or DB-backed RBAC table schemas — never evaluates a policy or queries live rows.
 license: MIT
 compatibility: Claude Code plugin. Requires a synced spine (.provenmap/boards/<board>.json) so the registry's ownerSlug can link to a node slug.
 metadata:
@@ -72,7 +72,7 @@ actually uses; don't prefer one over another when several appear together.
 - `slug` — a FRESH aspect-local identity you generate (kebab-case, e.g. `org-admin`, `billing-viewer`) —
   **not** a spine node slug. Keep it stable across re-extracts; the server reconciles by it.
 - `inherits[]` — slugs of OTHER roles in this SAME `roles[]` array that this role inherits
-  permissions from. Self-referential: it points within the payload, never at the spine. `/adopt`
+  permissions from. Self-referential: it points within the payload, never at the spine. `/aspects`
   validates every entry resolves to a `roles[].slug` present in this same payload (blocking — see
   validation below).
 - `isBuiltIn` — `true` for a role the engine ships by default (e.g. a Cerbos derived role, a
@@ -97,7 +97,7 @@ actually uses; don't prefer one over another when several appear together.
 distinct grant/deny rule.
 
 - `roleSlug` — **must** name a role in this SAME payload's `roles[]`. This is the load-bearing
-  cross-reference `/adopt` checks (blocking, via `validateIntraPayloadRefs`) — get a role slug wrong
+  cross-reference `/aspects` checks (blocking, via `validateIntraPayloadRefs`) — get a role slug wrong
   (a typo, or a role that exists in the source but wasn't also emitted into `roles[]`) and the whole
   payload is rejected before it ever reaches the server.
 - `action` — the raw verb as declared (`read`, `write`, `delete`, a CASL action string, an IAM
@@ -136,33 +136,33 @@ other aspect, **`ownerSlug` is the ONLY field checked against the spine.** Every
 permission/policy identity is either this aspect's own fresh generate (`roles[].slug`,
 `resourceTypes[].slug`) or a reference to another row within this SAME payload (`roles[].inherits[]`,
 `resourceTypes[].parentType`, `permissions[].roleSlug`, `permissions[].resourceType`) — none of them
-name a node on the architecture graph, so none of them belong in the spine cross-check. `/adopt`
+name a node on the architecture graph, so none of them belong in the spine cross-check. `/aspects`
 enforces this split for you:
 
 - **Spine cross-check (warn, never block)** — `ownerSlug` only, via `collectSpineSlugs`.
-- **Intra-payload validation (blocking)** — `/adopt` rejects the payload before pushing if any of
+- **Intra-payload validation (blocking)** — `/aspects` rejects the payload before pushing if any of
   these don't resolve within the SAME payload: a role's `inherits[]` entry against `roles[].slug`; a
   resource type's `parentType` against `resourceTypes[].slug`; a permission's `roleSlug` against
   `roles[].slug`; a permission's `resourceType` against `resourceTypes[].slug`. This is
   **existence-only** — it does not detect a role inheriting from itself transitively, or a
   resource-type parent cycle (an explicit v1 scope cut). Fix any reported mismatch before
-  re-adopting; it means the extraction contradicted itself, not that something is merely unsynced.
+  re-running `/aspects`; it means the extraction contradicted itself, not that something is merely unsynced.
 
 ## Cross-aspect tip
 
 `ui.pages`' `authGuards[].requiredRoles[]` and `api.surface`'s `requiredRoles[]` both name role slugs
 from this aspect. Keep the `roles[].slug` you generate here stable across re-extracts so those two
-aspects' role references resolve against the same identity once `authz.registry` is adopted too — the
-aspects reconcile independently (adopting them in any order is fine), but consistent slugs are what
+aspects' role references resolve against the same identity once `authz.registry` is on the board too — the
+aspects reconcile independently (extracting them in any order is fine), but consistent slugs are what
 makes the cross-references meaningful once all three are on the board.
 
 ## Output + state
 
-Write the payload to `.provenmap/aspects/tmp/authz-payload.json`, then adopt it the same way every
+Write the payload to `.provenmap/aspects/tmp/authz-payload.json`, then push it the same way every
 other aspect kind does:
 
 ```
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-adopt.js --aspect authz.registry --payload .provenmap/aspects/tmp/authz-payload.json --mode <mode>
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-aspects.js --aspect authz.registry --payload .provenmap/aspects/tmp/authz-payload.json --mode <mode>
 ```
 
 State is recorded exactly like every other aspect kind — `writeAspectState()`'s existing

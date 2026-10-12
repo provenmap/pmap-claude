@@ -1,26 +1,9 @@
 ---
 category: connect
-description: "Account · List all pmap-architect commands with descriptions and the plugin version"
-allowed-tools: Bash(node:*)
+description: "Account · Renamed — every command of this plugin is in pmap-workspace now, under the same name"
 next-steps: none
 ---
 
-Show the user every command this plugin ships, what each one does, and the
-plugin version. The script renders the final output itself — your only job is to
-run it and pass its output through.
+Print this, verbatim, and stop:
 
-## Workflow
-
-1. Run the help script:
-
-   ```bash
-   node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-help.js
-   ```
-
-2. Reproduce the script's stdout **verbatim in your reply** — write it out in
-   full; the Bash output panel is collapsed for the user, so nothing shows
-   unless you do. Print it fresh each call (not "same as last run"), and don't
-   reformat, reorder, summarise, or add commentary.
-
-3. If the script exits non-zero, print its output verbatim and stop. Do not
-   fabricate command lists.
+> **ProvenMap Architect is now ProvenMap Workspace.** Same plugin, new name: install **pmap-workspace** from the same ProvenMap marketplace this plugin came from (`/plugin install pmap-workspace@provenmap` on Claude Code; `codex plugin add pmap-workspace@provenmap` on Codex; **Customize → Plugins** in Cowork), restart Claude Code, then uninstall pmap-architect. Your login carries over — no new `/login`. Every command keeps its name under `/pmap-workspace:`, except `/setup-workspace`, which is `/pmap-workspace:setup` now. This plugin receives no further updates.

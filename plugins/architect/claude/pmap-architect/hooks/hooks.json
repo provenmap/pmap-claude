@@ -1,5 +1,5 @@
 {
-  "description": "ProvenMap Architect hooks: offline session-start state line (grant, expiry, host MCP entry) — reads no .provenmap",
+  "description": "pmap-architect retirement stub: one offline session-start line naming the new plugin (pmap-workspace)",
   "hooks": {
     "SessionStart": [
       {
@@ -7,14 +7,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js\" --session-start --host claude",
+            "command": "node -e \"console.log('ProvenMap Architect is now ProvenMap Workspace. Install pmap-workspace from the same ProvenMap marketplace, restart Claude Code, then uninstall pmap-architect. Your login carries over. Run /pmap-architect:start for details.')\"",
             "timeout": 10
           }
         ]
       }
     ]
-  },
-  "modules": [
-    "./pmap-guard.js"
-  ]
+  }
 }

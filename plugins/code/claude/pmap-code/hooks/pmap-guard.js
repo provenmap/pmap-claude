@@ -51,7 +51,7 @@ function secretDeny(target) {
   return [
     `ProvenMap guard: ${target} holds a ProvenMap credential, and credentials never enter the chat.`,
     architect
-      ? "Run /pmap-architect:status to check the token, or /pmap-architect:login to replace it."
+      ? "Run /pmap-workspace:status to check the token, or /pmap-workspace:login to replace it."
       : "Run /pmap-code:configure to check the credentials (its script reports each field's shape and the masked secret), or /pmap-code:login to replace them. The user edits the file by hand, never through the chat.",
   ].join(" ");
 }

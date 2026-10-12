@@ -68,7 +68,7 @@ completed `/login` — use that and skip the call.
 4. **Candidates or justified.** A move is one of the brief's candidates, or a named `state` fact
    justifies it. No invented flags, no invented commands, no command the state makes impossible.
    Another plugin's command is never a move — that is a hand-off.
-   - Bad: `Next: /work-items --force` (no such flag) · `Next: /pmap-architect:insights` (another session)
+   - Bad: `Next: /work-items --force` (no such flag) · `Next: /pmap-workspace:insights` (another session)
    - Good: `↪ The architect can review payments-overview in ProvenMap now.`
    - The one move no brief carries: when a script failed in a way the run could neither explain
      nor work around, `/report-bug` may follow the fix-or-retry move — it drafts a report with

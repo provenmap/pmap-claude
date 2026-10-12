@@ -144,7 +144,7 @@ or one the board already holds at that size; `icon_only` belongs to `xs`/`sm`/`m
 
 ### Real brand icons first — Lucide is the fallback, not the default
 
-For every node whose archetype is a brand, cloud provider or SaaS integration (architect plugin
+For every node whose archetype is a brand, cloud provider or SaaS integration (workspace plugin
 only — these MCP tools exist in the architect flow, not in the code plugin), resolve names against
 the catalog with ONE batched `match_icons` call, before the plan's tokens and sizes are final:
 

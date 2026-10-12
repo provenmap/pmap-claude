@@ -18,7 +18,7 @@ non-obvious angle per row, the rows set aside. The user takes that set or picks 
 Agents author the picks in parallel from a brief, built around the angle; a script pushes them
 in order; a report closes.
 
-The same skill serves the ProvenMap Code, Connect and Architect plugins. Only the universe
+The same skill serves the ProvenMap Code, Connect and Workspace plugins. Only the universe
 differs: the bound board's tree for code and connect, the whole workspace for the architect.
 
 ## The two answer shapes

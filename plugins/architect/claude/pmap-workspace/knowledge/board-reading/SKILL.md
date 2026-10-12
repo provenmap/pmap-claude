@@ -1,0 +1,188 @@
+---
+name: board-reading
+description: How to orient on and evolve a ProvenMap board over MCP — read the layered graph, analyze it, and make governed diagram edits. Use when exploring a board, answering architecture questions, assessing quality, or adding/updating/removing nodes and edges. Key capabilities: orientation sequence, board-class detection (landscape/app/layer), question-scoped reading and the answer-mode heuristic, cross-board navigation (layers), analysis types and assessment criteria, the diagram tool contract (slugs are the wiring), archetype attributes and who owns which fields, working-copy narration.
+---
+
+# Board Reading & Editing
+
+<!-- Distilled from platform board-orchestrator prompt builders:
+     services/prompts/modes/standard/hydrated-board.prompt.ts +
+     empty-board.prompt.ts (orientation, work item detection, operations) and
+     base/diagram-tool-contract.ts (payload shape + slug discipline).
+     references/ carries the detailed criteria and payload shapes. -->
+
+## Orientation sequence
+
+To orient on a board, read in this order (each call is cheap; batch where possible):
+
+1. `get_board_tree` — one level of layer boards (slug, name, drill path, `childCount`): `depth` ≤ 2
+   (default 1), 100 rows per call with `more`/`offset` to page. Drill by calling again with a
+   child's slug; never walk the whole tree — workspaces hold thousands of boards.
+2. `get_workboard_details` — the board itself: structure, nodes, edges, semantic styles.
+3. `get_hub_status` — what the hub shows: the ranked attention queue, work items by status,
+   insight counts, each repo's freshness and scheduled-run health, coverage and aspect KPIs
+   (`scope: 'tree'` on the root gives the fleet view instead). The queue names only a repo's
+   latest stop; for run history ("have the scheduled runs been failing?") add
+   `include: ['scheduledRuns']` — each repo's newest runs with outcome, reason and boards
+   refreshed/pushed, 5 per repo or 20 with `'rows'`, on either scope.
+4. `list_work_items` / `list_insights` — what work and insights are already in flight.
+5. **What changed** — the change record, read from git by the code plugin's `/changes`, one
+   period per repo per week or month. On any board, `get_change_diary` tells one week as
+   ranked pieces of work (each with the rules it hit and whether that breaks callers, its
+   people, and on the root the systems that depend on it, two hops out, a second hop naming
+   the direct dependent it comes `via`), with the active and silent apps;
+   `list_change_periods` lists the weeks (commits, agent share, rules answered Changed, flags,
+   whether a work item was behind it, person-and-agent pairs), paged with `nextAfter`;
+   `get_change_period` reads one in full. Quote their sentences, never rank or count people,
+   and say "not recorded" where a work item was not recorded.
+
+Summarize: purpose, the domains/containers, layer structure, and anything in flight — slug-first,
+then invite direction.
+
+## Classifying the board (the architect-core taxonomy, computed)
+
+Before authoring anything, determine the board's class from three facts:
+
+1. **Tree position** — `get_board_tree` on the board (one level, drill by slug): is this the root, a node's layer board, or
+   absent from the tree (standalone)?
+2. **Bindings** — `list_source_bindings(workBoardSlug)`: a code-plugin binding (governing or
+   reference) makes the board an **app board** — the only class where work items are legal.
+3. **Layer flag** — `isChildLayer` on the board details: true + no binding = **plain layer**;
+   facet work routes up to the nearest bound ancestor.
+
+Root with zero nodes/edges and no bindings anywhere = the **empty-workspace state** — offer
+`/setup` instead of orienting on nothing. Root orientation is a **portfolio** read
+(apps, health, cross-app edges), not a canvas walk.
+
+The orientation move each class deserves — and the working moves that need more than a line
+(drilling a container into its own board, reading the `--group-plan` grouping review, inline
+styling scope) — is in [references/orientation.md](references/orientation.md).
+
+## Question-scoped reading and the answer mode
+
+For a direct question (`/ask-board`), read only what the question needs — no full orientation:
+pick the analysis pattern (structural / dependency / assessment / compliance / documentation —
+see [references/analysis-patterns.md](references/analysis-patterns.md)), pull the needed slices
+(`get_nodes`, `get_edges` with `nodeSlugs`, `get_node_aspects`), follow `childBoardSlug` only
+when the answer lives a layer down.
+
+**A dependency or impact question is one call, not a walk.** `trace_impact` (what depends on
+this), `trace_dependencies` (what this depends on) and `find_path` (how A comes to depend on B)
+fold the whole tree under `workBoardSlug` — the drawn edges, the layers through their boundary
+ports, and what aspect rows prove (code using a table, a client calling an endpoint, a node
+subscribed to a channel, a page fetching) — and return the hits nearest first. Pass `from` (and
+`to`) exactly as `find_elements` returns an element; span `root` to follow dependencies between
+apps, an app board to stay inside one. Three things to carry into the answer:
+
+- `provenance` — `drawn` is a line on the diagram; `derived` is proven by an aspect row and may
+  not be drawn. Say which. `summary.derivedOnly` counts what the diagram does not show.
+- `resolution` — how many reference links in the tree resolved. When some did not, the counts
+  are a floor; say so.
+- `truncated` — `depth` means more lies beyond (raise `depth`), `limit` means only the nearest
+  were listed (`summary.total` is the full count).
+
+**Present it the way the web app does**: the gist first, then a picture (systems by hop for
+impact, a tree for dependencies, one line for a route), then a table, then what limits the
+answer and what to do next. The shapes, how to read a hit, and worked examples are in
+[references/dependency-answers.md](references/dependency-answers.md); read it before writing the
+answer.
+
+`found: false` from `find_path` is an answer — the two are independent as far as the rows say.
+The result's `trail` goes to `create_insight` unchanged, and its hits are the payload of a drawn
+answer. Pass the trace itself along as that insight's `traceAsk` (`question`: `impact`,
+`dependencies` or `path`; `spanSlug`: the `workBoardSlug` you traced on; `request`: the rest of
+the trace's input), so whoever opens the insight can run the trace again. An older server
+ignores the field. When these tools are absent (older server), walk it by hand: `get_edges` with
+`nodeSlugs`, one hop at a time.
+
+**Answer-mode heuristic:** prose is the default, and a trace answer is already drawn in text
+(above). Escalate to a _drawn_ answer when the user wants the subgraph on a canvas — a
+trace they will keep exploring, cross-app flows, "show me how X reaches Y", anything where prose
+would enumerate more than ~5 elements plus their relationships. The drawn form:
+`create_context_board {name, question}` generates an ephemeral standalone `contextmap` (outside
+the tree — clean by construction); draw the answer-subgraph on it with the normal diagram
+tools (ungoverned — nothing is staged), hand back its slug + a prose précis, and clean up with
+`delete_context_board` when the conversation is done — never `discard_write_session`, which
+would revert the architect's whole working copy. When the tool is absent (older server), fall
+back to `create_insight` with a `trail` of stops, each naming a board slug and node slug
+directly — highlights on the existing canvas; never fake a board.
+
+## Layered boards & cross-board navigation
+
+Boards form a hierarchy: L0 overview (10–30 nodes) → L1 domain → L2 component → L3 detail. A node
+whose `childBoardSlug` is set **drills into** a deeper child/layer board:
+
+- `get_child_boards(workBoardSlug)` — list a board's direct layers.
+- `get_parent_board(workBoardSlug)` — walk up (null fields at root).
+- `get_nodes` / `get_workboard_details` with a child slug — read into any board you discover.
+
+When a question needs detail that lives inside a node's child board, follow the `childBoardSlug`
+into it **before** answering.
+
+## Reading the request
+
+Detect what the user wants (from the platform's work-item-detection signals):
+
+| Signal       | Keywords                               | Shape                                                         |
+| ------------ | -------------------------------------- | ------------------------------------------------------------- |
+| Creation     | add, create, new, introduce, build     | new elements integrating with existing structure              |
+| Modification | update, change, rename, move, reparent | `get_nodes` first, then `update_nodes`                        |
+| Deletion     | remove, delete, drop                   | identify cascade effects first                                |
+| Analysis     | show, what, why, how, analyze, assess  | read tools only — report what exists, no speculation          |
+| Hybrid       | and, also, then                        | execute in order: analyze → delete → modify → create → verify |
+
+Ambiguous element reference → list the candidates with slugs and ask which one. See
+[references/analysis-patterns.md](references/analysis-patterns.md) for the analysis types,
+assessment criteria (coupling, single points of failure, cycles, orphans, boundary violations),
+and response templates.
+
+## Editing the diagram — the tool contract
+
+Diagram writes (`create_nodes`, `update_nodes`, `delete_nodes`, `create_edges`, `update_edges`,
+`delete_edges`, `apply_diagram_info`, `apply_semantic_styles`, `apply_composition`,
+`apply_icon_shape_styles` — styling methodology: the board-styling skill) are exposed and
+journaled: every write joins the architect's working copy, and **nothing is staged until the
+session commits** (on a governed board, commit generates one reviewable `board_diff` work item per
+governed root).
+Narrate the journal after a batch: "Saved to your working copy — N uncommitted changes across
+M boards."
+
+The critical rules (verbatim from the platform contract):
+
+- **SLUGS ARE THE WIRING.** An edge's `sourceSlug`/`targetSlug` and a node's `parentNodeSlug`
+  MUST be the EXACT slug of a node you create in the same call, or one returned by `get_nodes`.
+  Copy it character-for-character; never invent, abbreviate, rename, or alter a slug.
+- Create ALL nodes BEFORE any edges. An edge referencing a slug no node defines fails with
+  "node … not found" and lists the valid slugs — pick one of those exactly and retry.
+- A node's `slug` is its identity and cannot be changed. The container field is
+  `parentNodeSlug`; the identifier is the `slug`.
+- A node whose `parentNodeSlug` another node points at IS a container: set that parent's
+  `primitiveType` to `container`.
+- The array IS the operation — build the complete array and send it in ONE call.
+- Call `get_archetypes` before creating: the archetype name sets the visual shape;
+  `primitiveType` is the semantic kind, not the shape.
+
+Full payload shapes: [references/diagram-payloads.md](references/diagram-payloads.md).
+
+**Archetype attributes.** An archetype also declares a **field contract** — the properties its
+elements carry in the app — and an `attributes` map on any create/update call fills it.
+`get_archetypes` with `includeFields` (always paired with `names`) reads the contract;
+`get_nodes` / `get_edges` return an `attributes` map on elements that have stored values. The
+split of ownership is the point: a bound app board's `/sync` resolves what a repository proves
+(language, version, dependencies) and deliberately leaves ownership, lifecycle and operational
+facts — `owner`, `stage`, `status`, `sla`, `criticality`, `cloudProvider` — absent, because only
+an architect knows them. Fill those where a workflow already has you asking; never guess one, and
+never turn the panel into a questionnaire. Merge is per key, so omitting a field never clears it.
+See [references/archetype-attributes.md](references/archetype-attributes.md).
+
+## Operation discipline
+
+- **Additive:** integrate, don't isolate — place new elements in the right existing container,
+  match granularity and naming, and proactively propose edges to existing nodes.
+- **Modification:** slug and archetype can never change (create a new element instead);
+  reparent via `parentNodeSlug`; report side effects.
+- **Deletion:** deleting a node removes its connected edges automatically; children are NOT
+  deleted — they become standalone. State the cascade before deleting when it is significant;
+  on a governed board the removal becomes a staged mark only when the session commits.
+- **Batch edits:** all writes share the one working copy automatically; close with the
+  preview → commit move (architect-core) — or discard, which reverts the whole session.

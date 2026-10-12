@@ -110,7 +110,7 @@ Polyglot projects produce a unified board with cross-language relationships (HTT
 | `/work-items` | Pull architect-authored work items for the board and pick one to implement |
 | `/work-items <workItemId>` | Claim, implement, verify, and resolve a specific work item (write-capable — edits project files) |
 | `/discover [count] [--auto] [--lens …] [--board <slug>] [focus]` | Discover the insights and context boards worth showing — ranked by the graph, picked by you or chosen for you, authored in parallel, pushed to ProvenMap |
-| `/adopt [--aspect <kind> \| --db \| --api]` | Extract a code aspect (database schema, API surface, frontend pages, event catalog) onto the bound board |
+| `/aspects [--aspect <kind> \| --db \| --api]` | Extract a code aspect (database schema, API surface, frontend pages, event catalog) onto the bound board |
 | `/monitor` · `/monitor setup` | Correlate monitoring signals (errors, logs, cloud costs) with the board and push findings as a draft insight; `setup` configures sources + a recurring run |
 | `/status` | Show the lifecycle dial, config state, analysis summary, and per-board sync status |
 | `/help` | List commands grouped by lifecycle stage, with the plugin version |

@@ -3,10 +3,10 @@
 The command body carries the preflight, the feature check and Step 1 (the plan). This reference
 is the contract for the rest: follow it clause by clause; improvise nothing. Every CLI `display`
 prints verbatim. `<cli>` below is `${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js` for the Code plugin
-and `${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js` for the Architect plugin. The
+and `${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js` for the Workspace plugin. The
 modes and their exit codes are identical; two spellings differ and are written out where they
 occur: the Code CLI takes `--domain code` (and `--host claude` on a push)
-and records an insight with `--save-insight`, the Architect CLI takes neither and records an
+and records an insight with `--save-insight`, the Workspace CLI takes neither and records an
 insight with `--push-insight`.
 
 ## Step 2 — Read (before suggesting anything)
@@ -26,7 +26,7 @@ draws.
 **Read.** Code plugin: open each row's anchor `files` (for a glob or a folder, the one or two
 files that hold its main types or entry points), in parallel, one message per batch; open a
 caller from `shows` when the anchor alone does not explain the dependency. About two files per
-row, never more than 20 in all. No whole-repo search, no builds, nothing runs. Architect plugin
+row, never more than 20 in all. No whole-repo search, no builds, nothing runs. Workspace plugin
 (rows carry no files): the row's description and detail are the evidence; read an element
 further with the architect's read tools only when a row is too thin to judge. What to look for:
 what the part actually holds and decides (state, a cache, a lock, a retry, a global, a schema,
@@ -52,7 +52,7 @@ a default), how its callers depend on it, and what happens when it fails or chan
   names the thing ("Why does every Razor page share one `BasketState`?", not "Why does
   everything run through `basket-state`?"), `angle` (≤320) — the finding in one or two
   sentences: what the code does, then what follows, `evidence` — up to 3 `path:line` you read
-  (Code: required on a pick, and every path must exist; Architect: may be empty), `pick: true`
+  (Code: required on a pick, and every path must exist; Workspace: may be empty), `pick: true`
   for the rows in the set.
 - `setAside[]` — `{ id, reason }` (reason ≤160).
 
@@ -68,7 +68,7 @@ Then run the curate mode:
 ```bash
 # Code
 node <cli> --curate <curationFile> [--board-slug <slug>] --domain code
-# Architect
+# Workspace
 node <cli> --curate <curationFile> [--board <slug>]
 ```
 
@@ -113,7 +113,7 @@ only new anchors), then ask this step again without **Refocus**.
 ```bash
 # Code
 node <cli> --briefs <ids|recommended> --rules ${CLAUDE_PLUGIN_ROOT}/knowledge/discover-authoring/references/authoring.md [--board-slug <slug>] [--plan <path>] --domain code
-# Architect
+# Workspace
 node <cli> --briefs <ids|recommended> --rules ${CLAUDE_PLUGIN_ROOT}/knowledge/discover-authoring/references/authoring.md [--board <slug>] [--plan <path>]
 ```
 
@@ -143,12 +143,12 @@ lands results as it goes.
 For each output of the wave, in plan order:
 
 - an **insight** brief's output — Code:
-  `node <cli> --save-insight <output> --require-pack --push --host claude --domain code`; Architect:
+  `node <cli> --save-insight <output> --require-pack --push --host claude --domain code`; Workspace:
   `node <cli> --push-insight <output> --require-pack --push [--board <slug>]`.
 - a **context-board** brief's output — Code:
-  `node <cli> --push-context-board <output> --require-pack --push --host claude --domain code`; Architect:
+  `node <cli> --push-context-board <output> --require-pack --push --host claude --domain code`; Workspace:
   `node <cli> --push-context-board <output> --require-pack --push [--board <slug>]`.
-- `--board <slug>` on the Architect CLI names the subtree the plan was built for when it was not
+- `--board <slug>` on the Workspace CLI names the subtree the plan was built for when it was not
   the whole tree; the pack it validates against is the one `--discover` cached for that root.
   The Code CLI reads that root from the run's ledger — never pass `--board-slug` on
   a push, and never build a pack for an insight's own board: a trail crosses boards, and only
@@ -157,7 +157,7 @@ For each output of the wave, in plan order:
 Exit 0 → print the one-line outcome (pushed, or `notAvailable` with its message). Exit 3 with
 `validationErrors[]` → fix the listed fields in the output file yourself (copy any "did you mean"
 value verbatim) and retry ONCE; still failing → leave it, say which item and why, continue with
-the next. Exit 3 with `errorType: "auth_invalid"`, or exit 1 → the **connect-now offer** (Code) or the command's failure branch (Architect); on `complete` resume this push. Any `warnings[]` print once; never loop on a warning. A missing
+the next. Exit 3 with `errorType: "auth_invalid"`, or exit 1 → the **connect-now offer** (Code) or the command's failure branch (Workspace); on `complete` resume this push. Any `warnings[]` print once; never loop on a warning. A missing
 output file (the agent replied `not written`) is skipped with its reason.
 
 Push from THIS session, never from an agent: one paced writer.
@@ -165,7 +165,7 @@ Push from THIS session, never from an agent: one paced writer.
 ## Step 8 — Report
 
 ```bash
-node <cli> --report            # Architect
+node <cli> --report            # Workspace
 node <cli> --report --domain code   # Code
 ```
 

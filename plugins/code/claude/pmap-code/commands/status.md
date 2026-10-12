@@ -6,7 +6,7 @@ next-steps: none
 ---
 
 Show the full ProvenMap status for this project — configuration, archetype
-precondition, boards (analysis + sync state + changed files), and adopted
+precondition, boards (analysis + sync state + changed files), and
 aspects. The script renders the final report itself — your only job is to run
 it and pass its output through.
 

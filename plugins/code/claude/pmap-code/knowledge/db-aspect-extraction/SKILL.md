@@ -1,7 +1,7 @@
 ---
 name: db-aspect-extraction
 user-invokable: false
-description: Extracts a repository's database schema (tables, columns, foreign keys, indexes) into a DatabaseSchemaPayload for /adopt --db. Use when adopting the database.schema aspect. Reads Drizzle, Prisma, TypeORM, SQLAlchemy, raw SQL migrations, or a committed pg_dump — never a live database.
+description: Extracts a repository's database schema (tables, columns, foreign keys, indexes) into a DatabaseSchemaPayload for /aspects --db. Use when extracting the database.schema aspect. Reads Drizzle, Prisma, TypeORM, SQLAlchemy, raw SQL migrations, or a committed pg_dump — never a live database.
 license: MIT
 compatibility: Claude Code plugin. Requires a synced spine (.provenmap/boards/<board>.json) so tables can link to node slugs.
 metadata:
@@ -50,4 +50,4 @@ Read `.provenmap/boards/<board-slug>.json` for the node `slug`s the spine alread
   - `evidence[]`: `{ file, line, snippet }` for each call site — this is what a human clicks through to verify the link.
   - A reference to a node the spine doesn't have yet is fine — emit the slug anyway; it lands unresolved (`node_raw`) and auto-resolves after the next `/sync`.
 
-Prune `references` to real, evidenced usages. A table with no owner and no references still adopts fine (it just shows as unlinked until you enrich the spine).
+Prune `references` to real, evidenced usages. A table with no owner and no references still pushes fine (it just shows as unlinked until you enrich the spine).

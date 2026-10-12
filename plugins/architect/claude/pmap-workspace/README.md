@@ -1,0 +1,75 @@
+# ProvenMap Workspace
+
+Your whole ProvenMap workspace, from Claude Code. Explore the board graph,
+review insights, and author work items — living specs — with the platform keeping governance: **writes
+gather in your working copy**, and committing generates a reviewable plan (one work item per governed
+app) in ProvenMap — never direct truth.
+
+Where the ProvenMap code plugins serve developers (analyze a codebase or document set → push
+boards → implement work items), this plugin serves **architects and leads**: the people reasoning over boards,
+deciding what the architecture should become, and turning insights and documents into work.
+
+Published as **pmap-architect** until 2026-10: if that is installed, install pmap-workspace and
+uninstall it. Your login carries over, and every command keeps its name (`/setup-workspace` is
+`/setup` now).
+
+## Install
+
+Add the ProvenMap marketplace once, then install the plugin:
+
+```bash
+/plugin marketplace add provenmap/pmap-claude
+/plugin install pmap-workspace@provenmap
+```
+
+Restart Claude Code so the commands load. Scope the install with `--scope user` (default), `--scope project`, or `--scope local`. Claude **Cowork** installs from the same marketplace.
+
+## Connect
+
+The plugin talks to the ProvenMap **MCP server** with a workspace-scoped bearer token
+(`pmap_mcp_live_…`) — no repo binding, no project files:
+
+1. Run `/pmap-workspace:login` — sign in through the browser, pick workspace, scope
+   (`read` or `read_write`) and an optional board-subtree restriction there. The token is stored
+   for you and wired into this host's MCP config; it never transits the chat.
+2. Restart the session so the MCP server loads.
+3. Verify with `/pmap-workspace:status`.
+
+No browser, or no admin permission to approve? Mint a token in ProvenMap (**workspace command
+center (hub) → Workspace agent access**), set it as `PMAP_MCP_TOKEN` in your environment, and run
+`/pmap-workspace:configure`.
+
+## Commands
+
+| Command                                                   | What it does                                                                                   |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `/pmap-workspace:start [ask]`                            | **Start here** — the surfaces card, the ranked next step, and a menu to run it; routes any open-ended ask |
+| `/pmap-workspace:setup`                        | Bootstrap an empty workspace: estate interview → landscape → app boards → binding handoff      |
+| `/pmap-workspace:new-app <idea>`                         | Plan a new system on the landscape: grill, place, sketch the target, draft the founding work item |
+| `/pmap-workspace:prepare-app`                            | Take a new app from placed to build-ready — spec work items + skills, resumable any time         |
+| `/pmap-workspace:author-work-item [slug]`                   | Guided work item authoring: context pull, the grill, a well-grounded draft work item                 |
+| `/pmap-workspace:adopt-adr`                              | Adopt a decision: durable record + compliance review + per-app remediation work items             |
+| `/pmap-workspace:work-items`                                | Turn anything into governed, well-anchored work; manage the queue                              |
+| `/pmap-workspace:ask-board <question>`                   | Ask the architecture a question — slug-grounded answer or highlighted subgraph                 |
+| `/pmap-workspace:assess`                                 | Structured review: frame, sweep, defend the insights, record the batch                         |
+| `/pmap-workspace:insights`                               | Review insight batches; promote reviewed insights into draft work items                           |
+| `/pmap-workspace:board [slug]`                           | Work a board conversationally — portfolio view on the landscape, canvas elsewhere              |
+| `/pmap-workspace:hub`                                    | The command center, attention-first: what needs you, then the portfolio                        |
+| `/pmap-workspace:login` `:configure` `:status` `:logout` | Connection lifecycle (MCP token)                                                               |
+| `/pmap-workspace:help` `:update`                         | Command reference · plugin update                                                              |
+
+## How governance works
+
+Reads are unrestricted within the token's workspace (and board restriction, if set). The token
+acts as **you**: writes join your one workspace working copy — the same session the ProvenMap
+web app shows — where they stay undoable until you decide. **Committing** the working copy
+generates a reviewable plan: one `board_diff` work item per governed app, named by your commit
+message; **discarding** reverts everything since the last decision. Deleting a draft work item
+removes it; the board keeps what you committed. Architects propose; the platform review decides.
+
+## Working with documents
+
+Drop a PRD, RFC, or design doc into the session and ask for it to become board work: the plugin
+reads it directly, drafts work items anchored to the right board elements, and everything
+still gathers in your working copy for a reviewed commit. Documents bound to a board are also
+readable server-side.

@@ -1,7 +1,7 @@
 ---
 name: api-aspect-extraction
 user-invokable: false
-description: Extracts a repository's API surface (endpoints, protocols, auth, params) into an ApiSurfacePayload for /adopt --api. Use when adopting the api.surface aspect. Reads OpenAPI specs, NestJS/Express controllers, tRPC routers, or GraphQL SDL — never calls the endpoints.
+description: Extracts a repository's API surface (endpoints, protocols, auth, params) into an ApiSurfacePayload for /aspects --api. Use when extracting the api.surface aspect. Reads OpenAPI specs, NestJS/Express controllers, tRPC routers, or GraphQL SDL — never calls the endpoints.
 license: MIT
 compatibility: Claude Code plugin. Requires a synced spine (.provenmap/boards/<board>.json) so endpoints can link to node slugs.
 metadata:

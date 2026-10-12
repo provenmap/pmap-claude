@@ -1,37 +1,16 @@
 {
   "name": "pmap-architect",
   "commands": [
-    "./commands/adopt-adr.md",
-    "./commands/archetypes.md",
-    "./commands/ask-board.md",
-    "./commands/assess.md",
-    "./commands/author-playbook.md",
-    "./commands/author-work-item.md",
-    "./commands/board.md",
-    "./commands/configure.md",
-    "./commands/discover.md",
     "./commands/help.md",
-    "./commands/hub.md",
-    "./commands/insights.md",
-    "./commands/login.md",
-    "./commands/logout.md",
-    "./commands/new-app.md",
-    "./commands/prepare-app.md",
-    "./commands/report-bug.md",
-    "./commands/run-playbook.md",
-    "./commands/setup-workspace.md",
     "./commands/start.md",
-    "./commands/status.md",
-    "./commands/style-board.md",
-    "./commands/update.md",
-    "./commands/work-items.md"
+    "./commands/update.md"
   ],
-  "displayName": "ProvenMap Architect",
-  "version": "1.3.6",
+  "displayName": "ProvenMap Architect (renamed)",
+  "version": "1.4.1",
   "metadata": {
-    "releasedAt": "2026-10-09"
+    "releasedAt": "2026-10-12"
   },
-  "description": "Architect workbench for ProvenMap boards — explore the board graph, review insights, and author work items from Claude Cowork, Claude Code, or Codex. Connects to the ProvenMap MCP server; writes gather in your working copy, and committing generates a reviewable plan (one work item per governed app).",
+  "description": "Renamed — this plugin is ProvenMap Workspace (pmap-workspace) now. Install pmap-workspace; your login carries over.",
   "author": {
     "name": "ProvenMap",
     "email": "contact@provenmap.com"
@@ -41,10 +20,8 @@
   "license": "BUSL-1.1",
   "keywords": [
     "architecture",
-    "boards",
-    "work-items",
-    "insights",
+    "workspace",
     "provenmap",
-    "mcp"
+    "retired"
   ]
 }

@@ -223,7 +223,7 @@ The upkeep run a host schedule fires, so the boards follow the code without anyo
 commands after each merge (the provenmap-integration skill's `references/recurring-runs.md` has
 the recipes). It is `--auto` narrowed: every `--auto` stop applies, it refreshes only boards
 that are already built — never builds a new one, never accepts a proposal — and it ends by
-syncing what the portal has not seen. The script owns the loop, exactly as in `--auto`. It runs
+syncing what the portal has not seen and recording the change periods git has since the last run. The script owns the loop, exactly as in `--auto`. It runs
 in the repo where `/analyze` ran, and every run — refreshed, up to date or stopped — is recorded
 on the platform and shown on the board's binding. A Step -2 or Step -1 stop — a
 preflight exit 1, 2 or 11, the archetype gate's exit 10, or a precondition exit 1 or 2 — prints
@@ -257,6 +257,12 @@ only for a stop it cannot see, such as the gate; omit the key on a run that got 
    mismatch stops as that step says; any `pmap-sync.js` exit other than 0 → relay its `error`
    verbatim, push nothing further, and leave the remaining boards for `/sync`. Never pass
    `--no-verify`.
+3.5. **Change periods:** after the sync (whether or not it pushed), run the three steps of
+   `${CLAUDE_PLUGIN_ROOT}/knowledge/claude-code-plugin-sync/references/change-periods.md` with its
+   **scheduled** prose budget: compute (`pmap-changes.js --model <model> --host claude --domain code`),
+   write sentences for the open period and the last closed one only (`fill` entries with
+   `period` 0 or 1), never dispatch agent waves, then `--send`. `changes: "none"` or
+   `"unsent"` is one line in the Outcome, never a stop.
 4. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command analyze --facts '{"mode":"scheduled"}'` (a Step -2/-1 stop adds `"reasonText":"<the CLI line>"`)
    → Done · Left · Next per the outcome skill. The call also records the run: its JSON carries
    `scheduledRun` (`outcome`, `reason`, `reasonText`, counts, and whether the platform has the
@@ -484,9 +490,10 @@ If ProvenMap configuration exists:
 3. If drilling down, validate that:
    - The parent board exists in the manifest
    - The target node exists in the parent's analysis data
-   - Check if a matching child board already exists on the server (from Step 0.5 board list)
-   - If found on server → use the server's board slug
-   - If not found → generate a child `boardSlug` locally (e.g., `<parent-slug>--<node-slug>`)
+   - The child `boardSlug` is the plan unit's slug — never generate one. The plan names a unit
+     after the board already standing at that parent node (the manifest's boards, which after a
+     restore are the server's tree), else `<parent-slug>--<node-slug>`; a board on the server the
+     plan did not re-plan is listed by `--coverage` under "On ProvenMap but not in this plan".
 4. Check if board data already exists at `.provenmap/boards/<board-slug>.json` — if so, load
    it for incremental mode
 
@@ -1459,3 +1466,13 @@ Then add ONLY what the script cannot know:
 Never restate numbers **in your own prose** that the board report or plan dashboard already
 shows — this scopes your commentary only; the board report and the final plan dashboard
 (progress line included) are printed in full, verbatim, every run.
+
+**The change-periods hint** (interactive runs only — never on `--scheduled`, which records
+the periods itself): after the dashboard, run
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-changes.js --check
+```
+
+and print its `display` when it is non-empty (closed periods `/changes` has not recorded yet);
+print nothing otherwise. The call is one context read and never stops the run.

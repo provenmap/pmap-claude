@@ -6,8 +6,8 @@ offer, don't assume — and never place secret **values** in the chat or in any 
 you author (name the env vars instead).
 
 Three commands are worth scheduling today, each with `--scheduled` so the run is recorded: `/analyze --scheduled` (keep the boards following
-the code — refresh the boards whose claimed files changed, then sync them; a run where nothing
-changed reads no code and pushes nothing), `/monitor --scheduled` (correlate the latest signals with the
+the code — refresh the boards whose claimed files changed, sync them, then record the change
+periods git has since the last run; a run where nothing changed reads no code and pushes nothing), `/monitor --scheduled` (correlate the latest signals with the
 board) and `/ground --scheduled` (re-check the evidence links against the documents — a run whose pull reports
 nothing drifted, missing or unlinked closes on the Outcome without proposing anything, so a daily
 cadence is cheap).

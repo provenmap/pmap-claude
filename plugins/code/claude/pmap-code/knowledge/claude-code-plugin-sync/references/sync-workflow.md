@@ -65,6 +65,11 @@ Parse the JSON output:
 - `boardUrls`: map of board slug → clickable "view this board" URL (built by the server). A value may
   be `null` when the server can't resolve it. **Keep this map** — you'll print these links in Step 6
   after each board syncs.
+- `redirectedDrillDowns` + `display` (present only when non-empty): a parent node the local analysis
+  points at a slug other than the board the server already has at that node — the push would create a
+  twin and orphan the existing board's subtree. The push CLI refuses it in Step 4 (exit 3, same
+  `display` as its `error`); print the `display` verbatim now and **stop before Step 4**: the way out
+  is `/analyze` (the plan takes the server's slugs), never a push.
 - `orphanedChildBoards` + `display` (present only when non-empty): child boards still on the server
   that the latest local analysis of their parent no longer drills into. A sync replaces board *data*,
   never boards — **keep the `display`** and print it verbatim at the end of Step 6.
@@ -171,30 +176,7 @@ move to the next layer. Keep the batch at 3 — this is one server's rate budget
 limit. If any board in a batch fails with a rate-limit or 5xx error, finish the layer serially before
 continuing.
 
-The sync digest is **one per sync**, not one per board: compute it once (4a) for every board this
-sync pushes, before the first push, then push each board (4b). It is what tells the hub what this
-sync changed and who was involved.
-
-### 4a. Sync digest — once, before the first push
-
-Read `${CLAUDE_PLUGIN_ROOT}/knowledge/claude-code-plugin-sync/references/sync-digest.md` once per session
-and follow its steps 1 and 2, naming every board this sync pushes, in push order, shallowest first:
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-digest.js \
-  --boards <board-slug>,<board-slug>,... \
-  --model <the model you are running as> \
-  --host claude --domain code
-```
-
-- **`digest: "written"`** → write the sentences its `fill` lists by that reference's writing rules
-  (`pmap-digest.js --fill <draftPath> --prose <n>="<sentence>"`, one `--prose` per entry), and pass
-  the draft at `draftPath` to the **first** push below with `--digest`.
-- **`digest: "none"`** → push every board without `--digest`. Not an error; say nothing about it.
-
-The digest never blocks: whatever this step returns, every board is pushed.
-
-### 4b. Push
+### Push
 
 Run the ProvenMap sync CLI with the board's analysis file and board slug:
 
@@ -204,21 +186,17 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-sync.js \
   --analysis .provenmap/boards/<board-slug>.json \
   --smart-sync \
   --summary "<one sentence>" \
-  --digest <draftPath> \
   --host claude --domain code
 ```
 
-`--digest` goes on **one push only**: the first board you push. Once it rides a push the CLI deletes
-the draft, so every other push leaves the flag out. If that push does not land (`digestReport.reason:
-"not_pushed"`), the draft is kept: pass it to the next push instead. Leave out `--digest` everywhere
-when 4a wrote no draft, and `--summary` when you have no sound sentence — see the two options below.
+Leave out `--summary` when you have no sound sentence — see the option below.
 
 **CLI options:**
 
 - `--board-slug <slug>`: **required** — board slug to sync to
 - `--analysis <path>`: **required** — analysis file path
 - `--config <path>`: config file path (default: `.provenmap/config.json`, rarely needed)
-- `--dry-run`: validate and transform only, don't push to the API (and send no digest)
+- `--dry-run`: validate and transform only, don't push to the API
 - `--smart-sync`: enable diff-based sync (pulls server state, computes the diff for the report and
   the post-push confirmation; the push itself always carries the full board)
 - `--force-pull`: force refresh of server elements before computing the diff
@@ -227,16 +205,11 @@ when 4a wrote no draft, and `--summary` when you have no sound sentence — see 
 - `--host claude --domain code`: plugin identity stamped on the push (hub display data)
 - `--summary "<sentence>"`: optional — one plain sentence, at most 200 characters, on what this push
   changes for this board: what it gained, lost or rewired, naming the elements, with no counts. It
-  is what the hub's activity feed shows for this push, beside who pushed it. Its source is the
-  digest draft's working material (the sync-digest reference, *The push sentence*): this board's
-  entry in `working.boards` and the commit messages since the last sync. On a board's first sync
-  say what was mapped. With no draft, write it only from what this session
-  itself changed; when you do not know what changed, omit the flag — never guess; the hub then
-  shows the push without a sentence.
-- `--digest <draftPath>`: optional, on the sync's first push only — the digest draft from 4a, with
-  your sentences written in. The CLI validates it, strips the working material and sends it with
-  the push. A draft it cannot use
-  is dropped with a warning (`digestReport`) and the push still goes.
+  is what the hub's activity feed shows for this push, beside who pushed it. Write it only from
+  what this session itself changed — the analysis it just ran, the nodes and edges it added,
+  renamed or removed (`/analyze`'s board report names them). On a board's first sync say what was
+  mapped. When you do not know what changed, omit the flag — never guess; the hub then shows the
+  push without a sentence. Who did what over time is `/changes`'s record, not this sentence's.
 
 ## Step 5: Parse the CLI output
 
@@ -248,6 +221,9 @@ The CLI outputs one JSON object to stdout. Branch on `success`:
 - **`success: false`** — report the `error` field. If `errorType` is `auth_invalid`, the credentials
   were rejected (revoked binding or rotated secret) — make the **connect-now offer** from the command
   rather than reporting a generic API error.
+- **`redirectedDrillDowns` present (exit 3) — a drill-down would duplicate a board.** The `error` is
+  the full panel: print it verbatim and stop; `/analyze` rebuilds the board with the plan's
+  slugs (the server's), and nothing was pushed.
 - **`error` starting `Invalid archetypes:` (exit 3) — the catalogue gap.** The board assigns an
   archetype this server's catalogue does not serve; the CLI validates against the live catalogue
   before pushing, so nothing was sent. Say, verbatim: **"This ProvenMap server's archetype catalogue
@@ -257,11 +233,6 @@ The CLI outputs one JSON object to stdout. Branch on `success`:
   is the only way to propose additions.
 - The CLI output may carry a `stylingReport` field (absent means the domain has no styling) — hold it
   for Step 6.
-- `digestReport` (present only when `--digest` was passed): `sent: true` and `reason: "dry_run"`
-  need no mention. Any other `sent: false` means the draft was dropped and the push went ahead
-  without it — report it in one line with its `detail` (`reason: "not_pushed"`: the push itself
-  failed; report that error, not the digest).
-
 Always report `serverPullStatus` when it is not "fresh" — "cached" is fine to omit; a failed pull
 aborts with its own error.
 

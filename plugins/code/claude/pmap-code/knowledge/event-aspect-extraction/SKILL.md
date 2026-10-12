@@ -1,7 +1,7 @@
 ---
 name: event-aspect-extraction
 user-invokable: false
-description: Extracts a repository's event/messaging catalog (channels, event types, subscriptions) into an EventCatalogPayload for /adopt --aspect event.catalog. Use when adopting the event.catalog aspect. Reads AsyncAPI specs, Kafka/kafkajs configs, AWS SQS/SNS/EventBridge infra-as-code, RabbitMQ, Google Pub/Sub, Redis Streams, or NATS declarations, and .NET event buses (IEventBus-style RabbitMQ, MassTransit, Dapr pub/sub) with their integration-event records — never connects to a live broker.
+description: Extracts a repository's event/messaging catalog (channels, event types, subscriptions) into an EventCatalogPayload for /aspects --aspect event.catalog. Use when extracting the event.catalog aspect. Reads AsyncAPI specs, Kafka/kafkajs configs, AWS SQS/SNS/EventBridge infra-as-code, RabbitMQ, Google Pub/Sub, Redis Streams, or NATS declarations, and .NET event buses (IEventBus-style RabbitMQ, MassTransit, Dapr pub/sub) with their integration-event records — never connects to a live broker.
 license: MIT
 compatibility: Claude Code plugin. Requires a synced spine (.provenmap/boards/<board>.json) so channels can link to node slugs.
 metadata:
@@ -122,7 +122,7 @@ in `subscriptions[]`; a type listed without a subscription is read as one the se
 per distinct consumer binding.
 
 - **`eventTypeName`** — `null` means "subscribes to the whole channel"; set it to name one specific typed
-  event. **It must match a `name` in this SAME channel's own `eventTypes[]`** — `/adopt` validates this
+  event. **It must match a `name` in this SAME channel's own `eventTypes[]`** — `/aspects` validates this
   locally before pushing (a blocking error, not a spine warning, since it's the extraction contradicting
   itself, not an unsynced reference). Never point it at another channel's event type.
 - **`consumerNode`** — the node slug of the service holding this subscription. Must resolve against the
@@ -150,7 +150,7 @@ field below must be one of them (except `channels[].slug` itself — see the gol
 
 ## Cross-aspect tip
 
-If you're also adopting `api.surface` for this repo, an endpoint's `outboundEvents[].channelSlug` can
+If you're also extracting `api.surface` for this repo, an endpoint's `outboundEvents[].channelSlug` can
 point at a channel modeled here — keep the channel `slug` you generate identical across both extractions so
 the two aspects reconcile against the same identity instead of silently describing two different
 channels with the same name.

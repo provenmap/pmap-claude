@@ -1,0 +1,20 @@
+{
+  "description": "ProvenMap Workspace (pmap-workspace) hooks: offline session-start state line (grant, expiry, host MCP entry) — reads no .provenmap",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js\" --session-start --host claude",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "modules": [
+    "./pmap-guard.js"
+  ]
+}

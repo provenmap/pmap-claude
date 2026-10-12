@@ -1,71 +1,13 @@
-# ProvenMap Architect
+# ProvenMap Architect (renamed)
 
-Architect workbench for ProvenMap boards, running in Claude Code. Explore the board graph,
-review insights, and author work items — living specs — with the platform keeping governance: **writes
-gather in your working copy**, and committing generates a reviewable plan (one work item per governed
-app) in ProvenMap — never direct truth.
+**This plugin is [ProvenMap Workspace](https://provenmap.com) (`pmap-workspace`) now.** Same commands, new name: it works across your whole ProvenMap workspace, beside ProvenMap Code's one repo. Your login carries over, so there is nothing to reconnect.
 
-Where the ProvenMap code plugins serve developers (analyze a codebase or document set → push
-boards → implement work items), this plugin serves **architects**: the people reasoning over boards,
-deciding what the architecture should become, and turning insights and documents into work.
+## What to do
 
-## Install
+Install **pmap-workspace** from the same ProvenMap marketplace this plugin came from (`/plugin install pmap-workspace@provenmap` on Claude Code; `codex plugin add pmap-workspace@provenmap` on Codex; **Customize → Plugins** in Cowork), then restart Claude Code and uninstall `pmap-architect`.
 
-Add the ProvenMap marketplace once, then install the plugin:
+Every command keeps its name under `/pmap-workspace:`, except `/setup-workspace`, which is `/pmap-workspace:setup` now. This plugin ships three commands (`/start`, `/help`, `/update`) and a session-start line that say exactly this, and nothing else; it receives no further updates.
 
-```bash
-/plugin marketplace add provenmap/pmap-claude
-/plugin install pmap-architect@provenmap
-```
+## License
 
-Restart Claude Code so the commands load. Scope the install with `--scope user` (default), `--scope project`, or `--scope local`. Claude **Cowork** installs from the same marketplace.
-
-## Connect
-
-The plugin talks to the ProvenMap **MCP server** with a workspace-scoped bearer token
-(`pmap_mcp_live_…`) — no repo binding, no project files:
-
-1. Run `/pmap-architect:login` — sign in through the browser, pick workspace, scope
-   (`read` or `read_write`) and an optional board-subtree restriction there. The token is stored
-   for you and wired into this host's MCP config; it never transits the chat.
-2. Restart the session so the MCP server loads.
-3. Verify with `/pmap-architect:status`.
-
-No browser, or no admin permission to approve? Mint a token in ProvenMap (**workspace command
-center (hub) → Architect access**), set it as `PMAP_MCP_TOKEN` in your environment, and run
-`/pmap-architect:configure`.
-
-## Commands
-
-| Command                                                   | What it does                                                                                   |
-| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `/pmap-architect:start [ask]`                            | **Start here** — the surfaces card, the ranked next step, and a menu to run it; routes any open-ended ask |
-| `/pmap-architect:setup-workspace`                        | Bootstrap an empty workspace: estate interview → landscape → app boards → binding handoff      |
-| `/pmap-architect:new-app <idea>`                         | Plan a new system on the landscape: grill, place, sketch the target, draft the founding work item |
-| `/pmap-architect:prepare-app`                            | Take a new app from placed to build-ready — spec work items + skills, resumable any time         |
-| `/pmap-architect:author-work-item [slug]`                   | Guided work item authoring: context pull, the grill, a well-grounded draft work item                 |
-| `/pmap-architect:adopt-adr`                              | Adopt a decision: durable record + compliance review + per-app remediation work items             |
-| `/pmap-architect:work-items`                                | Turn anything into governed, well-anchored work; manage the queue                              |
-| `/pmap-architect:ask-board <question>`                   | Ask the architecture a question — slug-grounded answer or highlighted subgraph                 |
-| `/pmap-architect:assess`                                 | Structured review: frame, sweep, defend the insights, record the batch                         |
-| `/pmap-architect:insights`                               | Review insight batches; promote reviewed insights into draft work items                           |
-| `/pmap-architect:board [slug]`                           | Work a board conversationally — portfolio view on the landscape, canvas elsewhere              |
-| `/pmap-architect:hub`                                    | The command center, attention-first: what needs you, then the portfolio                        |
-| `/pmap-architect:login` `:configure` `:status` `:logout` | Connection lifecycle (MCP token)                                                               |
-| `/pmap-architect:help` `:update`                         | Command reference · plugin update                                                              |
-
-## How governance works
-
-Reads are unrestricted within the token's workspace (and board restriction, if set). The token
-acts as **you**: writes join your one workspace working copy — the same session the ProvenMap
-web app shows — where they stay undoable until you decide. **Committing** the working copy
-generates a reviewable plan: one `board_diff` work item per governed app, named by your commit
-message; **discarding** reverts everything since the last decision. Deleting a draft work item
-removes it; the board keeps what you committed. Architects propose; the platform review decides.
-
-## Working with documents
-
-Drop a PRD, RFC, or design doc into the session and ask for it to become board work: the plugin
-reads it directly, drafts work items anchored to the right board elements, and everything
-still gathers in your working copy for a reviewed commit. Documents bound to a board are also
-readable server-side.
+BUSL-1.1
