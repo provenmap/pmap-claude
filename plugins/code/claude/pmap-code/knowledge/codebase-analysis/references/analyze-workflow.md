@@ -257,11 +257,10 @@ only for a stop it cannot see, such as the gate; omit the key on a run that got 
    mismatch stops as that step says; any `pmap-sync.js` exit other than 0 → relay its `error`
    verbatim, push nothing further, and leave the remaining boards for `/sync`. Never pass
    `--no-verify`.
-3.5. **Change periods:** after the sync (whether or not it pushed), run the three steps of
-   `${CLAUDE_PLUGIN_ROOT}/knowledge/claude-code-plugin-sync/references/change-periods.md` with its
-   **scheduled** prose budget: compute (`pmap-changes.js --model <model> --host claude --domain code`),
-   write sentences for the open period and the last closed one only (`fill` entries with
-   `period` 0 or 1), never dispatch agent waves, then `--send`. `changes: "none"` or
+3.5. **Change periods:** after the sync (whether or not it pushed), run `/changes` with no
+   arguments: its Steps 1–3 only, from
+   `${CLAUDE_PLUGIN_ROOT}/knowledge/claude-code-plugin-sync/references/change-periods.md` — this run
+   already passed the preflight, and step 4 is the only Outcome. `changes: "none"` or
    `"unsent"` is one line in the Outcome, never a stop.
 4. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command analyze --facts '{"mode":"scheduled"}'` (a Step -2/-1 stop adds `"reasonText":"<the CLI line>"`)
    → Done · Left · Next per the outcome skill. The call also records the run: its JSON carries

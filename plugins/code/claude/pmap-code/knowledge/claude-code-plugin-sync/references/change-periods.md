@@ -35,8 +35,11 @@ yourself to be; omit the flag when you do not know it.
 The CLI reads the branch's history once for the whole window, buckets commits into periods by
 the date each landed, and computes only the periods the server does not have: a closed period
 already recorded from git is skipped, the open period (today falls in it) is rewritten on every
-run, and a period the server converted from an older record is replaced by git truth. Branch on
-`changes` in its JSON:
+run, and a period the server converted from an older record is replaced by git truth. So a run
+picks up where the last one left off, and a binding with nothing recorded yet gets the whole
+backfill window. The same holds whether `/changes` or `/analyze --scheduled` ran it, and so does
+everything below: both runs write the same periods with the same prose. Branch on `changes` in
+its JSON:
 
 - **`changes: "none"`** — nothing to write. `reason` is `nothing_missing` (every period in the
   window is recorded), `older_server` (this ProvenMap server predates change periods),
@@ -91,18 +94,17 @@ only writer of both.
 
 ### The prose budget
 
-Every period gets its facts; prose is spent newest period first.
+Every period gets its facts; prose is spent newest period first, and on every period the run
+computed. A run after a short gap has only a period or two to write; the first run on a binding
+writes the whole backfill.
 
-- **Interactive:** write up to **24** `fill` entries inline yourself. Beyond 24, write the first
+- Write up to **24** `fill` entries inline yourself. Beyond 24, write the first
   24 inline, then dispatch the remaining periods to `change-period-author` agents (the Task tool)
   in waves of at most 4, **one agent per period**, in a single message per wave. Each dispatch
   prompt says exactly: the draft path, the period index, its slot numbers, "read the draft and
   the writing rules in this reference, write the sentences with `--fill`, reply with one line".
   Wait for a wave to finish before the next. When the host cannot launch agents, do the same
   work yourself, one period at a time, newest first — say so in one line first.
-- **Scheduled** (`/analyze --scheduled`): narrate the **open period and the last closed one
-  only** (`period` 0 and 1 in `fill`); leave every older slot null and **never dispatch agent
-  waves** — a scheduled run has no one to read them.
 - **`--facts-only`:** no prose at all.
 
 ### Writing rules
