@@ -33,6 +33,6 @@ review workflow and promotion semantics live in
 ## Failure branches
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- 401 → `Your ProvenMap MCP access token was rejected — run /login to reconnect`
 - `promote_insights` / `create_insight` absent → read-only token: review still works;
   promotion needs a `read_write` token.

@@ -49,4 +49,4 @@ its estate: map what exists, or found something new).
 ## Failure branches
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- 401 → `Your ProvenMap MCP access token was rejected — run /login to reconnect`

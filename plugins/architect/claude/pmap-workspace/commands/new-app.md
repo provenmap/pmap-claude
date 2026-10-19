@@ -73,7 +73,7 @@ Converted as `new_app` → one AskUserQuestion: **Prep the build now?**
 ## Failure branches
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- 401 → `Your ProvenMap MCP access token was rejected — run /login to reconnect`
 - Empty root, nothing to place on → `/setup` territory; say so.
 - Write tools absent → read-only token: grill, emit the plan as markdown, name the
   `read_write` need.

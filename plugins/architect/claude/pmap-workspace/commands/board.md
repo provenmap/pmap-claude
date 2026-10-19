@@ -62,7 +62,7 @@ working copy.
 ## Failure branches
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- 401 from any call → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- 401 from any call → `Your ProvenMap MCP access token was rejected — run /login to reconnect`
 - "board not found" on a slug the tree did not return → likely outside the token's board
   restriction; say so and re-orient with `get_board_tree`.
 - Write refused with `scope_violation` → relay the message; writes are fenced to the token's

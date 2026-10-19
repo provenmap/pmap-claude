@@ -30,6 +30,6 @@ and [`${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md`](../knowledge/boar
 ## Failure branches
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- 401 → `Your ProvenMap MCP access token was rejected — run /login to reconnect`
 - `create_insight` absent → read-only token: the review still runs; emit the insights as
   markdown and note recording needs `read_write`.

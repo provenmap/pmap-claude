@@ -245,7 +245,6 @@ duplicating them.
   "name": "ComponentName",
   "type": "archetype",
   "description": "Brief one-line description of this component (max 500 chars)",
-  "path": "/relative/path",
   "coveredFiles": ["src/api/**"],
   "parentSlug": "parent-node-slug",
   "detailedDescription": "## ComponentName\n\nBrief summary of what this component does.\n\n### Responsibilities\n- Key responsibility 1\n- Key responsibility 2\n\n### Technology\n- **Framework:** FastAPI\n- **Language:** Python\n- **Path:** `/src/api`",
@@ -257,7 +256,9 @@ duplicating them.
 ```
 
 **Required fields:** `slug`, `name`, `type`, `description`, `detailedDescription` — plus `coveredFiles` on every non-container node (the plan claim — see "Plan units and claims")
-**Optional fields:** `path`, `parentSlug`, `layerBoardSlug`, `tags` (see `references/analyze-workflow.md` → Tags), `metadata`
+**Optional fields:** `parentSlug`, `layerBoardSlug`, `tags` (see `references/analyze-workflow.md` → Tags), `metadata`
+
+**Never write `path`:** `--finalize` stamps it on every node from its `coveredFiles` (a container: its children's), and `/sync` links it to the repository.
 
 ### Edge Format
 

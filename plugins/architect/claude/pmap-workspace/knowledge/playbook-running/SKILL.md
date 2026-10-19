@@ -134,7 +134,7 @@ tools available before starting rather than failing three steps in.
 ## Failure branches
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- 401 → `Your ProvenMap MCP access token was rejected — run /login to reconnect`
 - 402 on a step's tool → the org's plan does not include it. Relay the message; if the step is
   optional, `report_playbook_step` `skip` so its dependants open, and carry on. A required step
   stops the run there.

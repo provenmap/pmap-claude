@@ -40,7 +40,7 @@ boards. Read
 ## Failure branches
 
 - Script exit 1 with no grant / tools missing → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- Script exit 2 on a rejected token / MCP 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- Script exit 2 on a rejected token / MCP 401 → `Your ProvenMap MCP access token was rejected — run /login to reconnect`
 - `create_insight` / `create_context_board` absent → read-only token: the plan and the menu
   still work; recording needs a `read_write` token.
 - `notAvailable` on a context-board push → `This ProvenMap server doesn't expose context boards yet — ask your admin to upgrade`; the insights still land.

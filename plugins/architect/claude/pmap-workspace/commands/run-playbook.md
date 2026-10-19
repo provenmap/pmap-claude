@@ -41,7 +41,7 @@ mark, a sign-off the named person gave you. Runs are per person: work yours (`mi
 ## Failure branches
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- 401 → `Your ProvenMap MCP access token was rejected — run /login to reconnect`
 - 402 on a step's tool → relay it; `report_playbook_step` `skip` if the step is optional, then
   carry on. A required step stops the run there.
 - "belongs to …" on a report → the run is a teammate's; start your own.

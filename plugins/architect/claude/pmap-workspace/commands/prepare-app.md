@@ -52,6 +52,6 @@ print the fresh bar verbatim — that is the session's receipt.
 ## Failure branches
 
 - Script exit 1 / tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- 401 / token rejected → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- 401 / token rejected → `Your ProvenMap MCP access token was rejected — run /login to reconnect`
 - Write tools absent (read-only token) → run Steps 1–2, present the spec-set and skills
   proposals as markdown, and name the `read_write` requirement for landing them.

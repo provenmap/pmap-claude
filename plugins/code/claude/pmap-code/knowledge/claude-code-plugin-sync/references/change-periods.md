@@ -37,7 +37,9 @@ the date each landed, and computes only the periods the server does not have: a 
 already recorded from git is skipped, the open period (today falls in it) is rewritten on every
 run, and a period the server converted from an older record is replaced by git truth. So a run
 picks up where the last one left off, and a binding with nothing recorded yet gets the whole
-backfill window. The same holds whether `/changes` or `/analyze --scheduled` ran it, and so does
+backfill window. A branch whose newest commit landed before the window opened is quiet: the run
+also reads its last stretch of work, as long as the backfill and ending with that commit, and
+skips the empty periods between. The same holds whether `/changes` or `/analyze --scheduled` ran it, and so does
 everything below: both runs write the same periods with the same prose. Branch on `changes` in
 its JSON:
 
@@ -45,7 +47,8 @@ its JSON:
   window is recorded), `older_server` (this ProvenMap server predates change periods),
   `not_a_git_repo`, or `failed` (`detail` says what). Say the `detail` in one line and close.
 - **`changes: "written"`** — the draft is at `draftPath` (`.provenmap/changes/draft.json`) with
-  `periods` records in it. `fill` lists every sentence left for you, **newest period first**;
+  `periods` records in it. Print `display` verbatim when present: it says the branch was quiet
+  and which stretch was read, or that a shallow clone cut periods short and how to fetch the rest. `fill` lists every sentence left for you, **newest period first**;
   when it is empty, skip to step 3.
 
 ## 2. Write the prose
@@ -159,7 +162,9 @@ already recorded are skipped on the retry.
 
 A period is this plugin's account of git: it sees the bound branch, from the clone it ran in. A
 rebase moves commits between periods; a squash merge hides the co-authors the squash dropped. A
-shallow clone that does not reach a period's start marks it `truncated`. Services are mapped with
+shallow clone that does not reach a period's start marks it `truncated`. A quiet branch's
+stretch is recorded, but ProvenMap's diary opens on the recent window: older periods are reached
+by widening it. Services are mapped with
 today's analysis; a path no node owns is counted as unmapped. Agent recognition is a fixed list of
 commit identities. Prose exists for the periods the budget reached; older periods show facts
 without sentences. A thread is a grouping by scope or node, not by intent: two pieces of work

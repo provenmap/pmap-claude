@@ -314,7 +314,6 @@ Carrying the plan's child units:
       "name": "ComponentName",
       "type": "server-archetype-name",
       "description": "Brief one-line description (max 500 chars)",
-      "path": "/relative/path",
       "coveredFiles": ["src/api/**"],
       "parentSlug": "parent-slug",
       "layerBoardSlug": "my-project-auth-domain",

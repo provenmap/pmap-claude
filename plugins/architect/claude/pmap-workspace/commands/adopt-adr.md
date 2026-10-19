@@ -39,7 +39,7 @@ landing uses [`${CLAUDE_PLUGIN_ROOT}/knowledge/work-items-authoring/SKILL.md`](.
 ## Failure branches
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- 401 → `Your ProvenMap MCP access token was rejected — run /login to reconnect`
 - No affected board is code-bound → emit the normalized record + assessment as markdown, name
   the binding prerequisite; nothing is staged.
 - Write tools absent → read-only token: normalize + assess + report; `read_write` named.

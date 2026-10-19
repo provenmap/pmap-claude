@@ -46,6 +46,6 @@ error vocabulary and formatting norms.
 ## Failure branches
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- 401 → `Your ProvenMap MCP access token was rejected — run /login to reconnect`
 - Write tools absent → read-only token: render the catalogue and the gap analysis as markdown;
   name the `read_write` requirement — nothing is submitted.

@@ -60,7 +60,7 @@ Step 2 vs the applied plan (nodes sized, tokens applied, composition set). To ab
 ## Failure branches
 
 - CLI exit 1 → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- CLI exit 2 / MCP 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- CLI exit 2 / MCP 401 → `Your ProvenMap MCP access token was rejected — run /login to reconnect`
 - An apply_* call rejects the payload → relay the tool error verbatim, drop that section, continue
   with the rest; name what was skipped in the final report.
 - Board not found → likely outside the token's board restriction; re-orient with `get_board_tree`.

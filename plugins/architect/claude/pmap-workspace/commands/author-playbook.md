@@ -34,7 +34,7 @@ rules and step catalogue live in
 ## Failure branches
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- 401 → `Your ProvenMap MCP access token was rejected — run /login to reconnect`
 - 402 `playbook.author` → the org's plan does not include playbook authoring; relay it, keep
   the drafts file.
 - Slug already exists → pick another slug; editing an existing playbook is the composer's job.

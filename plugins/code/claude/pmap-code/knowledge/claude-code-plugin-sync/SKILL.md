@@ -73,7 +73,8 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-changes.js --check
 | `--check` | - | One context call: how many closed periods are not recorded yet (`missing`, `display`) |
 
 **Output:** JSON with `changes`. `written`: `draftPath` (`.provenmap/changes/draft.json`),
-`periods`, and `fill` — the numbered sentences left for the agent, newest period first. `none`:
+`periods`, `fill` — the numbered sentences left for the agent, newest period first — and, when the
+branch was quiet through the window or a shallow clone cut periods short, `display`. `none`:
 `reason` (`nothing_missing`, `older_server`, `not_a_git_repo`, `failed`) and `detail`. With `--fill`:
 `filled` (`written`, `unknown`, `left`) or `unfilled` (`detail`). With `--send`: `sent` (per-period
 `outcomes`, `display`, and `.provenmap/changes/state.json` written) or `unsent` (the draft is kept).

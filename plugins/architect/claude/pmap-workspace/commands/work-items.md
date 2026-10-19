@@ -50,7 +50,7 @@ Authoring runs the **impact → attach → describe** loop from
 ## Failure branches
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- 401 → `Your ProvenMap MCP access token was rejected — run /login to reconnect`
 - Board not code-bound (400 "…code-bound board") → never surfaces raw: route per the taxonomy
   and name the binding prerequisite.
 - Write tools absent → read-only token: name the `read_write` need; continue with reads.

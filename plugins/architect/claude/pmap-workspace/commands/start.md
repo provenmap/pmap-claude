@@ -44,4 +44,4 @@ Classify against architect-core's **workflow routing table**:
 ## Failure branches
 
 - `--next` reports not configured → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- 401 from any MCP call → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- 401 from any MCP call → `Your ProvenMap MCP access token was rejected — run /login to reconnect`

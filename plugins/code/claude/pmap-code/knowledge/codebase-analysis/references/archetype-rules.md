@@ -249,7 +249,6 @@ At L0/L1, database entity, model, and repository files must NOT become individua
   "name": "Database Layer",
   "type": "<appropriate server archetype name for database>",
   "description": "Data access layer containing entities: User, Order, Product, Payment",
-  "path": "/src/entities",
   "parentSlug": "<parent framework or workspace slug>",
   "detailedDescription": "## Database Layer\n\nData access layer using Drizzle ORM.\n\n### Entities\n- User, Order, Product, Payment\n\n### Repositories\n- UserRepository, OrderRepository",
   "metadata": {

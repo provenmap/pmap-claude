@@ -239,7 +239,7 @@ MCP results are raw JSON — you format them. Keep output stable across sessions
 ## Canonical error vocabulary — copy, don't paraphrase
 
 - No token configured: `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- MCP 401: `Your ProvenMap architect token was rejected — run /login to reconnect`
+- MCP 401: `Your ProvenMap MCP access token was rejected — run /login to reconnect`
 - Every stop names the next command (`/login`, `/configure`, `/status`, `/board`). No dead ends.
 - Every completion closes with an Outcome written from the `--brief`: Done · Left · Next; a
   hand-off line (`↪`) points to another session — never offer it as something to run here.

@@ -74,6 +74,6 @@ Then run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --render-scaffold
 ## Failure branches
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
-- 401 → `Your ProvenMap architect token was rejected — run /login to reconnect`
+- 401 → `Your ProvenMap MCP access token was rejected — run /login to reconnect`
 - Write tools absent → read-only token: fork + interview, plan as markdown, name the
   `read_write` need.
