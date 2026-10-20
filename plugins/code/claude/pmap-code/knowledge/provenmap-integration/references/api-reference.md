@@ -81,13 +81,14 @@ Content-Type: application/json
 
 **SourceReference Object:**
 
-| Field        | Type   | Required | Description                   |
-| ------------ | ------ | -------- | ----------------------------- |
-| `sourceSlug` | string | Yes      | Source catalog slug           |
-| `sourceId`   | string | Yes      | Source catalog ID             |
-| `lineStart`  | number | No       | Starting line number          |
-| `lineEnd`    | number | No       | Ending line number            |
-| `excerpt`    | string | No       | Brief excerpt (max 500 chars) |
+Send only the location. The server attributes every reference to the source bound to the board, so `sourceSlug` and `sourceId` are never sent; a value sent for either is dropped.
+
+| Field       | Type   | Required | Description                                    |
+| ----------- | ------ | -------- | ---------------------------------------------- |
+| `path`      | string | No       | Repo-relative file or folder path (max 1024)   |
+| `lineStart` | number | No       | Starting line number                           |
+| `lineEnd`   | number | No       | Ending line number                             |
+| `excerpt`   | string | No       | Brief excerpt (max 500 chars)                  |
 
 **Response (200 OK):**
 

@@ -27,7 +27,7 @@
     "./commands/work-items.md"
   ],
   "displayName": "ProvenMap Workspace",
-  "version": "1.4.310",
+  "version": "1.4.311",
   "metadata": {
     "releasedAt": "2026-10-20"
   },

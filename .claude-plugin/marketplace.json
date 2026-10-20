@@ -7,13 +7,13 @@
   },
   "metadata": {
     "description": "ProvenMap plugins for codebase and knowledge architecture analysis, visualization, and sync to ProvenMap Portal.",
-    "version": "1.4.310"
+    "version": "1.4.311"
   },
   "plugins": [
     {
       "name": "pmap-code",
       "displayName": "ProvenMap Code",
-      "version": "1.4.310",
+      "version": "1.4.311",
       "metadata": {
         "releasedAt": "2026-10-20"
       },
@@ -45,7 +45,7 @@
     {
       "name": "pmap-connect",
       "displayName": "ProvenMap Connect (retired)",
-      "version": "1.4.310",
+      "version": "1.4.311",
       "metadata": {
         "releasedAt": "2026-10-20"
       },
@@ -76,7 +76,7 @@
     {
       "name": "pmap-workspace",
       "displayName": "ProvenMap Workspace",
-      "version": "1.4.310",
+      "version": "1.4.311",
       "metadata": {
         "releasedAt": "2026-10-20"
       },
@@ -110,7 +110,7 @@
     {
       "name": "pmap-architect",
       "displayName": "ProvenMap Architect (renamed)",
-      "version": "1.4.310",
+      "version": "1.4.311",
       "metadata": {
         "releasedAt": "2026-10-20"
       },

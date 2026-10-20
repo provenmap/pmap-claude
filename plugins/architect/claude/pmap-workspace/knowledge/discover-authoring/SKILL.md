@@ -28,7 +28,7 @@ differs: the bound board's tree for code and connect, the whole workspace for th
 | Answers | "Why does everything run through `x`?" | "What is the blast radius of `x`?" |
 | Anchored on | one element, with an edge-grounded trail | one subject, with its neighbourhood drawn |
 | Lives | under the trail's entry board, in the Insights Bar | in the hub's Context boards card, outside the tree |
-| Filed as | the `architecture-highlights` skill, one batch per run | a `contextmap` board with provenance on every element |
+| Filed as | the `architecture-highlights` skill, one batch per run | a `contextmap` board, each element linked to the one it was drawn from |
 | Script owns | the trail, polarity, priority, measurement | the nodes, edges, containment, styles |
 | Agent owns | name, evidence prose, advice, up to two point findings | name, question, description, the per-node notes |
 
