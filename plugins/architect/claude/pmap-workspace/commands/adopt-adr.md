@@ -2,7 +2,7 @@
 category: author
 description: "Author · WRITE-CAPABLE: Adopt an architecture decision — normalize it, measure the estate against it, land the decision record plus per-app remediation work items"
 argument-hint: "[decision material or file]"
-allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-workspace_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__provenmap__*
 ---
 
 Turn a decision into governance: normalized record → a durable `ADR:` decision board (where the
@@ -18,7 +18,7 @@ landing uses [`${CLAUDE_PLUGIN_ROOT}/knowledge/work-items-authoring/SKILL.md`](.
    (boards + counts) and the architect decides — one combined commit later, or pause first
    (architect-core).
 2. **Intake** — normalize the material to Context / Decision / Consequences / Alternatives
-   (adr-adoption §1); running record in the drafts file.
+   (adr-adoption §1).
 3. **Blast radius** — affected apps from the landscape; per app, sweep the governed element
    classes (the aspect-family table in adr-adoption §2; default depth: apps + one layer down).
    Classify compliant / violating / unclear.

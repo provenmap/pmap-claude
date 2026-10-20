@@ -21,7 +21,8 @@ recommendation. Re-shaping a settled decision reads as a form.
 - Route the outcome: the **chosen** approach seeds the candidate sweep and the directive
   skeleton; the **rejected** alternatives and their one-line whys are narrative material —
   exactly the "can we defend this decision?" record the narrative exists to keep.
-- Record chosen + rejected in the drafts file, so a resumed interview never re-shapes.
+- Carry chosen + rejected through to the landed work item's narrative; never re-shape later in the
+  same conversation.
 
 ## Why & boundaries
 

@@ -2,7 +2,7 @@
 category: review
 description: "Review · WRITE-CAPABLE: Run a structured architecture review — frame, sweep, defend the insights, record the batch"
 argument-hint: "[board-slug] [template-or-dimension]"
-allowed-tools: Read, AskUserQuestion, mcp__plugin_pmap-workspace_provenmap__*
+allowed-tools: Read, AskUserQuestion, mcp__provenmap__*
 ---
 
 The analyst's periodic review: frame against an org template or an ad-hoc dimension, sweep the

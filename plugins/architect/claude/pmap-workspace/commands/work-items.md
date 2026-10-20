@@ -2,7 +2,7 @@
 category: author
 description: "Author · WRITE-CAPABLE: List, author, and manage board work items; drafts land for in-platform review"
 argument-hint: "[board-slug] [work-item-slug]"
-allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-workspace_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__provenmap__*
 ---
 
 Authoring runs the **impact → attach → describe** loop from

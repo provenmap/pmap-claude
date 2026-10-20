@@ -2,7 +2,7 @@
 category: author
 description: "Author · WRITE-CAPABLE: Take a new app from placed to build-ready — grill the spec into sequenced work items, choose its skills"
 argument-hint: "[board]"
-allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-workspace_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__provenmap__*
 ---
 
 Build prep for an app the architect marked `new_app` — resumable any time; everything

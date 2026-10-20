@@ -2,7 +2,7 @@
 category: start
 description: "Start here · Reads your real state and tells you what to run next — or routes any open-ended ask to the right workflow"
 argument-hint: "[what you want to do — optional]"
-allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-workspace_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__provenmap__*
 next-steps: none
 ---
 

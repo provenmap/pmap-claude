@@ -36,12 +36,24 @@ description: How to model an org's digital estate on the ProvenMap root landscap
 
 Before any estate question, ask how the architect wants to convey the estate
 (AskUserQuestion, multi-select — mixing is normal): **describe in conversation** · **scan
-repo folders** (they name the paths) · **share documents** (read in-session). Record the
-choice — and any scan inventory — in the drafts file (architect-core): a resumed interview
-neither re-asks the gate nor re-scans. Found mode skips the gate (nothing exists to scan);
+repo folders** (they name the paths) · **share documents** (read in-session). Ask it once
+per conversation and scan once. Found mode skips the gate (nothing exists to scan);
 a real repo named mid-interview may still get the scan offer (per-answer fork, below).
 
-The scan is shallow by design — identity facts only, depth 1, never recursive — with one
+Each source carries a one-line expectation, said when it is chosen:
+
+- **Scan:** before running it, say what it reads: names, repo identity (a README's first
+  heading, the manifest name, the git remote) and the dependencies each repo's manifests declare.
+  It reads no code itself; it names the few files worth reading next (`readFirst`), which you
+  then open. Dependencies show the services each system uses; those files show the runtime and
+  the people; how the systems connect comes from the architect, or is offered as a suggestion.
+  An AppHost shows both (below).
+- **Documents:** before reading any, ask once whether they are current. On an answer of
+  outdated or unsure, treat what they say as candidates to confirm, the same as scan output,
+  and say which document each one came from.
+
+The scan is shallow by design — identity facts and declared dependencies, depth 1 (a
+monorepo's `apps/` · `packages/` · `services/` manifests included), never code — with one
 bounded exception: it looks for .NET Aspire AppHost projects (below).
 
 ```bash
@@ -49,11 +61,40 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --scan-repos --paths <p1,p2
 ```
 
 Each candidate carries `{path, dirName, isGitRepo, gitRemote, manifestKind, manifestName,
-readmeTitle, monorepoHint}`; the result carries `skipped[]` and `truncated` (the 200-entry
+readmeTitle, monorepoHint, dependencies, integrationHints, readFirst}`; the result carries `skipped[]` and `truncated` (the 200-entry
 cap is always reported — relay it, never hide it), plus `appHosts[]` and `walkTruncated[]`.
 Deep analysis stays the code plugin's job after binding. Your job on the output is judgment:
 dedupe, propose system names, kinds, and repo scopes, and feed the confirmation table — scan
 output never bypasses the interview.
+
+**The services each system uses come from its dependencies.** `integrationHints` are the ones
+the code plugin's tables recognise (a database driver, a cache, an SDK); `dependencies` holds
+the rest — judge them too (an email SDK such as `resend`, a cloud SDK, an observability agent),
+and skip plumbing (`lru-cache` is not a cache server). Each service becomes ONE node named for
+the service, not the library (Postgres, not `pg`; one Postgres even when two repos use it),
+`kind: "SaaS"` for a third party or `"no-repo"` for infrastructure the org runs, with
+`source: "scan"` and `evidence: "<repo>: <dependency>"`; the connection from each repo that
+declares it carries the same evidence. A repo node itself is `source: "scan"`,
+`evidence: "<repo>"`. `--render-plan` refuses evidence the scan did not read.
+
+**Use your judgment — a rich landscape is the point.** A block of prose questions is easy to
+wave past ("go"), and a landscape built from the answers alone is thin. **Before drafting,
+open every candidate's `readFirst`** — `runtime` files (infra-as-code stacks, compose files)
+name what the org runs (containers, functions, the managed database, the identity pool);
+`people` files and folders (roles, permissions, an admin or public area) name the actors; a CLI
+or IDE plugin's users are developers. What a system runs on is its own node — the container
+service, the functions platform, the managed database — joined by a "runs on" connection, so the
+landscape shows the runtime, not only the code. Read further where it pays: one system's client for
+another shows how they connect. Everything the
+architect, the scan, an AppHost or a document does not already establish — the actors, the
+infrastructure, a service no dependency declares, how the systems connect — goes into the plan
+as `source: "suggested"` with a one-line `why` naming what you read ("CDK stack in infra
+declares an ECS service"). Leave nothing out to keep the list short: suggestions are drawn
+`?`, *Draw it* draws them with the rest in one click, and *Let me pick* offers each as a tick
+box — a suggested system or actor carries its connections in its one box. Ask in conversation
+only what nothing can sensibly suggest. To the architect they are always **suggestions** —
+never call them guesses, in the plan, a question or a commit summary; keep the word "guess" out
+of what you say altogether ("nothing was guessed" reads as the opposite of what it means).
 
 ## An Aspire AppHost: the landscape is already written
 
@@ -69,7 +110,9 @@ Each AppHost carries its `resources[]`, `references[]`, `unresolved[]` and a `pr
   node per resource (slug = resource name), projects on app archetypes named after their
   csproj, databases inside their server container, one edge per `WithReference` or YARP
   route. `WaitFor` rides its edge as a start-order note; a wait-only pair is never an edge.
-  Write it to a file and pre-flight it with `--validate diagram` like any payload.
+  It becomes the plan file (the plan sketch, below): add each node's `kind`, keep the scan's
+  slugs, and mark its edges `source: "apphost"` — `--render-plan` refuses an `apphost` edge the
+  last scan did not read from the AppHost.
 - **Archetypes are proposals.** Check each against `get_archetypes`; a missing one falls back
   to `data_store` (stores, brokers) or `infrastructure_component` (anything else), and a
   project keeps SOME app archetype — the architect may pick a better one (`backend-app`, …).
@@ -170,7 +213,11 @@ guess — an invented owner is worse than an empty cell. Contract, tiers and mer
 Root board only. Order per the diagram contract (board-reading): containers first → nodes (ONE
 `create_nodes` call) → edges (ONE `create_edges` call — an edge wherever two systems actually
 connect: sync calls, async messages, data flows, dependencies). **L0 budget: 10–30 nodes** —
-shared platforms worth showing, not every server. Pre-flight the payload before any write:
+shared platforms worth showing, not every server. Every write to root — `/setup`, `/new-app`'s
+placement, a `/board` edit adding systems or connections — goes through the plan file and
+`--render-plan` (the plan sketch, below); on Claude Code the guard refuses a root
+`create_nodes` / `create_edges` outside the plan the architect approved. Other boards
+pre-flight the payload before any write:
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --validate diagram --file <payload.json> [--known-slugs <existing,slugs>]
@@ -279,24 +326,64 @@ shows; a root with only the one-liner gives that card a single line to say.
 
 **Map mode — the org interview:** what the org does (one line); the systems that exist today,
 each with an explicit **kind** (the table above — nothing defaults to repo-backed, and the
-unclassified are batched into ONE follow-up question); the infra worth showing at L0; actors and
-user types; the real zones worth grouping.
+unclassified are batched into ONE follow-up question); the services and infra they use (the
+scan's dependencies, else suggested); how they connect; the **actors** — the people and user
+types who use them (required on a new landscape: what the architect does not name, suggest
+from the systems and what their code shows — a web app's users, a developer tool's developers,
+an admin console's admins, a role the code names); the real zones worth grouping.
 
 **Found mode — the product-line interview:** what is being built and for whom (one line); the
 intended systems and what each owns; actors and user types; the external SaaS it will lean on;
 the real zones. Stop when the intended systems have names, and never invent beyond what the
 architect has decided (the founding-landscape divergence below).
 
-**The plan sketch.** Present the scaffold plan as a fenced ASCII sketch of the landscape first —
-containers as boxes, the systems inside them with their kind chips, arrows for the main edges,
-with the L0 budget keeping it readable — then the confirmation table (system, kind, archetype,
-container, repo/scope). In found mode the table's kind column reads `planned`. One go-ahead
-covers the whole batch (the confirmation posture above).
+**The plan sketch is the script's.** Write the plan as ONE file, `plan.json`, in a temporary
+folder of this run (`mktemp -d`; never inside a repo or the workspace folder): the root diagram
+payload
+(`workBoardSlug`, `nodes`, `edges`, zones as `primitiveType: "container"`) plus plan-only keys
+the wire never carries:
 
-**Resuming, and closing the window.** The scaffold drafts file (architect-core) records the
-chosen mode: a *continue*-mode run on a sparse, still-unbound root extends what exists rather
-than restarting, and re-asks the fork only when there is no drafts file. Once the root is
-populated or anything is bound, `/setup`'s window has closed — after the first repo
+- every system node: `kind` (`repo` · `new-app` · `no-repo` · `SaaS` · `planned`, or `actor` for
+  people and user types; found mode's systems are all `planned`) and, when it has one, `repo`
+  (repo / scope);
+- every system, actor and connection: `source` — `architect` (the architect said so),
+  `scan` (with `evidence`: `<repo>` or `<repo>: <dependency>`), `apphost`, `document` (with
+  `why`: which document) or `suggested` (with `why`: the one-line reason). A new landscape
+  needs at least one actor.
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --render-plan --file <plan.json> [--known-slugs <existing,slugs>]
+```
+
+It runs the diagram gates plus its own (no kind, no source, scan evidence the scan never read,
+a suggestion with no reason, a new landscape with no actors), exit 3 with the errors and
+nothing to show; fix the plan and re-run. On exit 0: print `display` **verbatim** as message
+text (each zone a tree, every element with its source, the table, the suggestions with their
+reasons), then ask `goAhead.questions` in ONE AskUserQuestion call, exactly as given
+(architect-core: a question shows nothing but itself). One go-ahead covers the batch (the
+confirmation posture above):
+
+- **Draw it** → `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --plan-approve --file <plan> --answers '<the answers object as JSON>'`
+  writes everything shown, the suggestions included, to its `wire`; create from that.
+- **Let me pick** → ask each of `pick.rounds` in order, one AskUserQuestion call per round, as
+  given (tick boxes for the suggested people, systems and connections); then `--plan-approve`
+  with every call's answers merged into one object writes the confirmed elements plus the
+  ticked suggestions to its `wire`.
+- **Change it first** → edit the plan file, re-render, ask again.
+
+Never compose the sketch, the table or the questions yourself, and never create from anything
+but the `wire` --plan-approve wrote. **Only the architect's reply answers the go-ahead** — not
+the command's argument, not an earlier "go", not your reading of the brief. With no question
+tool, print the questions as text and stop; their reply is the answer. On Claude Code the guard
+holds the draw to the dialog's answers, and the dialog must show the sketch ("Draw it"'s
+preview, as given).
+
+**Resuming, and closing the window.** The root board is the record (architect-core: the
+workspace is the state). A root with a description and narrative but few or no systems is an
+interview that closed without its landscape: continue from the narrative — the systems, actors
+and services it names are banked, and the fork is re-asked only if the narrative leaves it
+open. Systems drawn but no app boards → Step 4; app boards but nothing bound → Step 5. Once the
+root is populated or anything is bound, `/setup`'s window has closed — after the first repo
 binds, systems are added one at a time through `/new-app`.
 
 **The spine banner.** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --spine setup
@@ -311,13 +398,14 @@ object of the name/value facts captured so far. Print the result verbatim in pla
 
 1. **Purpose** — one sentence.
 2. **Placement** — where it sits on the landscape: read the root board's nodes and edges, then
-   propose its neighbours for the architect to confirm.
+   propose its neighbours for the architect to confirm. The placement is a plan file like
+   `/setup`'s (the plan sketch above: the new node with its `kind`, each edge with its
+   `source`), rendered with `--render-plan --known-slugs <root slugs>` and drawn only after its
+   go-ahead.
 3. **Archetype** — an **app archetype** matching its repo scope if it will have a repo (the
    bindability lever above), else a system archetype.
 4. **What it owns** — data, endpoints, events. This is the L1 skeleton.
 5. **What it replaces or splits** — the existing nodes that need re-wiring.
-
-Keep the running plan in a drafts file (architect-core) so the pass is resumable.
 
 **The L1 sketch — a deliberate divergence.** The wizard's "never draw inside an app board"
 guards scaffold handoffs, where developer pushes supply the truth. `/new-app` is different: the

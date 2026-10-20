@@ -166,19 +166,23 @@ print the canonical not-configured message — relay it):
 - `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --next` — the `/start` answer, live: the
   ranked next-step ladder under a one-line state header. Print its `display` verbatim.
 - `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command <name> [--facts '<flat json>']` —
-  the brief every command closes on, offline (cached root-level map, snapshots, drafts): JSON state,
+  the brief every command closes on, offline (cached root-level map, snapshots): JSON state,
   gates, candidates, hand-offs — never printed; you write the Outcome from it
   (`${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`). A hand-off is another session's work (developers in
   their repo, the web app) — never a rung to run here.
 
-## Drafts-in-flight — resumable interviews
+## Stateless — the workspace is the state
 
-Interview workflows (`/author-work-item`, `/adopt-adr`, `/setup`, `/new-app`,
-`/author-playbook`) keep their running artifact as a working file under `~/.provenmap/architect/drafts/` (e.g.
-`work-item-<board>-<slug>.md`, `scaffold-<workspace>.json`) so the interview survives context loss
-and resumes across sessions. This is interview state, not session state — orthogonal to the
-working copy. Update the file as the draft evolves; delete it once the artifact is written or
-abandoned. `/status` surfaces what's in flight; `/start` offers to resume.
+The plugin keeps nothing of its own between runs. Every command starts by reading the connected
+workspace as it is now — the boards, the bindings, `get_write_session` — and continues from
+there: a `/setup` on a root that already has its description but no systems picks up at the
+plan; a `/new-app` whose node is already placed picks up at the sketch. Interview answers live
+in this conversation only (the session itself is the record while it lasts); what the
+interview establishes reaches the workspace as soon as it is written there, and nothing is
+written anywhere else — never a draft, a running record or a resume file. The scripts' plan
+modes keep their own run files (what the scan read, the plan as rendered) out of sight; they are
+never listed or offered. A new session is never offered a resume: it reads the workspace and
+says where things stand.
 
 ## Readable source types
 
@@ -214,6 +218,11 @@ MCP results are raw JSON — you format them. Keep output stable across sessions
 - Lead with the direct answer, then supporting structure. No JSON dumps — summarize, citing
   slugs.
 - **Step banners:** multi-step commands mark each phase change with `**Step N/M — <name>**`.
+- **A question shows nothing but itself.** The architect sees an AskUserQuestion's question and
+  option labels only, and a script's output only as a collapsed tool result. Print what they are
+  approving (a banner, sketch, table or list) as message text first. The question then points at it
+  ("the landscape above") and names its scope in counts. Never open a question with "Here's…",
+  and label options with the action ("Draw it"), not a verdict ("Looks right").
 - **Glyphs — one vocabulary, the scripts' own, nothing else.** An emoji's colour is the only
   colour on screen, so colour means status and nothing decorative ships:
   - **Headline** — one per response, on the line that states the result: ✅ done · ❌ failed or

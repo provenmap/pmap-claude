@@ -47,7 +47,7 @@ applicability scope (which apps, which element classes — this becomes the work
 exceptions & grandfathering (violations the architect explicitly accepts); migration stance
 (fix-now vs comply-on-next-touch); supersedes check (`list_boards` for an existing `ADR:`
 decision board, and `list_work_items` per affected app — does open work already cover this
-ground?). Keep the running normalized record in the drafts file so the interview is resumable.
+ground?).
 
 ## 4 — Mint the decision's durable home
 

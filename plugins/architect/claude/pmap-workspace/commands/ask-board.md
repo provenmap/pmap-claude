@@ -2,7 +2,7 @@
 category: explore
 description: "Explore · Ask the architecture a question — get a slug-grounded answer, or a drawn context board when the answer is a subgraph"
 argument-hint: "[board-slug] <question>"
-allowed-tools: Read, AskUserQuestion, mcp__plugin_pmap-workspace_provenmap__*
+allowed-tools: Read, AskUserQuestion, mcp__provenmap__*
 ---
 
 Answer one architecture question by reading only what the question needs — no full orientation.

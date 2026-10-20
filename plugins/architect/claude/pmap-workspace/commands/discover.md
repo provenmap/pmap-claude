@@ -2,7 +2,7 @@
 category: explore
 description: "Explore · WRITE-CAPABLE: Discover the insights and context boards worth showing across the workspace — ranked by the graph, read closely, picked by you or chosen for you, authored in parallel, recorded and drawn on the platform"
 argument-hint: "[count] [--auto] [--lens reliability,onboarding,ownership] [--board <slug>] [focus]"
-allowed-tools: Read, Glob, Grep, Write, Bash(node:*), AskUserQuestion, Task, mcp__plugin_pmap-workspace_provenmap__*
+allowed-tools: Read, Glob, Grep, Write, Bash(node:*), AskUserQuestion, Task, mcp__provenmap__*
 ---
 
 The whole workspace, read once over MCP and scored by a script; the strongest rows read closely

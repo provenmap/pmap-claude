@@ -2,7 +2,7 @@
 category: review
 description: "Review · Review insight batches and promote reviewed insights into draft work items"
 argument-hint: "[board-slug] [insight-id]"
-allowed-tools: Read, AskUserQuestion, mcp__plugin_pmap-workspace_provenmap__*
+allowed-tools: Read, AskUserQuestion, mcp__provenmap__*
 ---
 
 Review a board's stored insights — batch by batch — decide what deserves delivery,

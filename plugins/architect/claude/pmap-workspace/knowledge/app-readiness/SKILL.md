@@ -48,7 +48,7 @@ What this workflow adds is only the **decomposition heuristic**:
   slice that touches nothing on the board is a sign the sketch is missing a piece — extend the
   sketch first (working copy), then anchor.
 
-Material to seed the grill: the `/new-app` drafts file when running inline; otherwise pull the
+Material to seed the grill: the `/new-app` grill's answers when running inline; otherwise pull the
 board (`get_workboard_details`) and any bound documents (`list_source_bindings` →
 `draftedFromSourceSlug` provenance) and grill the gaps per the authoring interview.
 

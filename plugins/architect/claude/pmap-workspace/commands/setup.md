@@ -1,7 +1,7 @@
 ---
 category: author
 description: "Author · WRITE-CAPABLE: Bootstrap an empty workspace — map what exists, or found a new product line: system landscape, app boards, binding handoff"
-allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-workspace_provenmap__*
+allowed-tools: Read, Write, AskUserQuestion, Bash(node:*), mcp__provenmap__*
 ---
 
 Read `${CLAUDE_PLUGIN_ROOT}/knowledge/<skill>/SKILL.md`: landscape-modeling (doctrine, agendas,
@@ -16,11 +16,11 @@ Print each step banner **verbatim**:
 ### Step 1 — detect the state
 
 `get_board_tree` + `get_workboard_details` + `list_source_bindings` on `root`, then
-`get_write_session` — architect-core's non-empty-session gate: the architect decides, combine or
-pause. Route:
+`get_write_session` — architect-core's non-empty-session gate. Route on what is there:
 
 - **Empty root** → full interview, from the fork.
-- **Sparse, unbound root** → _continue_: extend, don't restart, on the drafts file's mode.
+- **Described, few or no systems, unbound** → _continue_ from the root's narrative: extend,
+  don't restart; re-ask the fork only if the narrative leaves it open.
 - **Populated or bound** → window closed: `/board` or `/new-app`; say why.
 
 ### Step 2 — fork, source gate, interview
@@ -32,20 +32,20 @@ describe in conversation / scan repo folders / share documents; a scan runs
 `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --scan-repos --paths <p1,p2,...>`.
 `appHosts[]` → landscape-modeling's AppHost section drives Steps 2–5.
 
-Then work landscape-modeling's agenda: its one-line opener → the root's `description`, its
-answers → the root's `mdContent` narrative (one `apply_diagram_info` call).
+Then work landscape-modeling's agenda; it closes on one `apply_diagram_info` call.
 
 ### Step 3 — draw the landscape
 
-`get_archetypes` first. Present landscape-modeling's plan for **one** go-ahead
-(AskUserQuestion), then batch: `--validate diagram` → containers → ONE `create_nodes` → ONE
-`create_edges`. Archetypes follow the kind (map) or are system-only (found).
+`get_archetypes` first. Write landscape-modeling's plan file, then
+`node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --render-plan --file <plan.json>`: exit 3 → fix,
+re-run. Print `display` **verbatim**, ask `goAhead` as given (on *Let me pick*, then `pick.rounds`), then from
+`--plan-approve`'s wire: ONE `create_nodes` → ONE `create_edges`. Archetypes follow the kind (map) or
+are system-only (found).
 
 ### Step 3.5 — style the landscape
 
 Run board-styling's pipeline on the new board: `--style-signals --board <slug>` → plan →
-`--validate styles` → `apply_*`. Composition and size do the work; tokens are the exception —
-say how many elements carry none. Two failed rounds → skip, say so, continue; /style-board
+`--validate styles` → `apply_*`; say how many elements carry no token. Two failed rounds → skip, say so, continue; /style-board
 recovers later.
 
 ### Step 4 — generate app boards
@@ -65,7 +65,7 @@ Architect-core's closing move: `preview_write_session_commit` → title/summary 
 - **Found:** no binding offers; the checklist carries the graduation path.
 
 Then run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --render-scaffold --file
-<scaffold.json>` and print its output **verbatim**; delete the drafts file.
+<scaffold.json>` and print its output **verbatim**.
 
 ### Step 6 — close
 

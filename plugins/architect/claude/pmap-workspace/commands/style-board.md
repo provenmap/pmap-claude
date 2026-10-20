@@ -2,7 +2,7 @@
 category: author
 description: "Author · WRITE-CAPABLE: Beautify a board — deterministic signals, a styling plan you approve, validated and applied as journaled writes"
 argument-hint: "[board-slug]"
-allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-workspace_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__provenmap__*
 ---
 
 Style one board end-to-end: signals → plan → validate → apply. Methodology and doctrine live in

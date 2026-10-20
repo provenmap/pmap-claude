@@ -40,9 +40,9 @@ that already exists; changing an existing playbook stays in the composer.
 
 ## The authoring interview
 
-Keep the draft in `~/.provenmap/architect/drafts/playbook-<slug>.json` (the definition as it
-stands, plus `"phase"`) and update it after every answer, so the interview survives context
-loss. Delete it once the draft is saved or abandoned.
+The definition as it stands lives in this conversation until `draft_playbook` lands it
+(architect-core: the workspace is the state); restate it in full at the read-back, never in
+pieces across turns.
 
 ### 1. The job
 
@@ -168,8 +168,8 @@ person does · what proves it done · depends on), then the end proof. AskUserQu
   again. Never resend an unchanged definition. Two failed rounds → show the issues and ask.
 - A schema error (a missing or mistyped field) → fix the field the error names and resend.
 - A plan denial (402, `playbook.author`) → stop: the org's plan does not include playbook
-  authoring. Relay the denial's message, keep the drafts file, and name the fix: a plan that
-  includes it, changed by an org admin.
+  authoring. Relay the denial's message, print the definition so it is not lost, and name the
+  fix: a plan that includes it, changed by an org admin.
 - Saved → print `↗ Open in the composer: <composerUrl>` (skip the line when it is null) and
   say plainly: the playbook is saved **disabled**. Nobody can start it until someone previews
   it in the composer and enables it.

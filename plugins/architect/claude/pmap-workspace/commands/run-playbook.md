@@ -2,7 +2,7 @@
 category: operate
 description: "Operate · WRITE-CAPABLE: Run a playbook — pull its compiled skill, work its steps, let the server prove each one"
 argument-hint: "[playbook slug or the job you want done] [--board <slug>] [--epic <slug>]"
-allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-workspace_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__provenmap__*
 ---
 
 Do a playbook, rather than author one. The run loop, which steps belong to a person, and the

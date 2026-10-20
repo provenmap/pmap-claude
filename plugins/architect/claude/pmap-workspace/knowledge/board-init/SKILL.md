@@ -32,8 +32,7 @@ Ask only what's left:
 - Actors/user types it serves.
 
 Then the entry-style choice (AskUserQuestion, a genuine decision point): **architecture-first**
-or **pages-first**. Keep the running plan as a drafts file (architect-core) so the interview
-survives interruption.
+or **pages-first**.
 
 ## Architecture-first
 

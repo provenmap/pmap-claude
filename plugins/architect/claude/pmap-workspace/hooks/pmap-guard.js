@@ -8,6 +8,13 @@
 //   2. Script-owned state is written only by the scripts. No Edit, Write or shell
 //      write touches the element and evidence stores, the board manifest or the
 //      tree plan, whose hashes and records the scripts own.
+//   3. The workspace (root) board is drawn only from a plan the architect approved.
+//      A create_nodes / create_edges on root goes through only after a
+//      `pmap-architect.js --render-plan` succeeded and the architect answered its
+//      go-ahead (the AskUserQuestion offering "Draw it", its preview showing the
+//      rendered sketch): "Draw it" approves everything that plan shows; "Let me
+//      pick" approves what it confirmed plus the suggestions they tick in the pick
+//      rounds that follow. A new render, failed or not, revokes the approval.
 //
 // Claude Code only: Codex and Cursor have no mods, so there the prose is the rule.
 // A user-scope plugin's mod runs in every session, ProvenMap repo or not, so each
@@ -104,6 +111,108 @@ function shellWriteTarget(command) {
   return null;
 }
 
+// The go-ahead's answers — the labels landscape-plan.ts renders (a test pins them).
+const DRAW_ALL = "Draw it";
+const PICK = "Let me pick";
+const ROOT_DRAW = /^mcp__.*provenmap.*__(create_nodes|create_edges)$/i;
+
+function parseJson(text) {
+  if (typeof text !== "string") return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    const m = text.match(/\{[\s\S]*\}/);
+    try {
+      return m ? JSON.parse(m[0]) : null;
+    } catch {
+      return null;
+    }
+  }
+}
+
+const edgeKey = (e) => `${e?.sourceSlug ?? ""}>${e?.targetSlug ?? ""}`;
+
+/**
+ * Rule 3's memory for one session: the last plan --render-plan rendered and what
+ * the architect's answers approved — the confirmed elements, the suggestions kept
+ * (all on "Draw it", the ticked ones on "Let me pick"), and the connections whose
+ * suggested ends were all kept.
+ * `observe` reads each finished call; `check` is the deny text for a root draw,
+ * or null. Exported for the plugin repo's tests.
+ */
+export function planGate() {
+  let rendered = null;
+  let approved = null;
+  const approve = (keptLabels) => {
+    const kept = rendered.suggestions.filter((s) => keptLabels.has(s.label));
+    const dropped = new Set(rendered.suggestions.filter((s) => s.node && !keptLabels.has(s.label)).map((s) => s.node));
+    const clear = (pair) => pair.split(">").every((slug) => !dropped.has(slug));
+    return {
+      nodes: new Set([...rendered.nodes, ...kept.filter((s) => s.node).map((s) => s.node)]),
+      edges: new Set([
+        ...rendered.edges,
+        ...rendered.conditional.filter(clear),
+        ...kept.filter((s) => s.edge && clear(s.edge)).map((s) => s.edge),
+      ]),
+    };
+  };
+  // After "Let me pick": each pick question's ticked labels, by question (a re-ask replaces its answer).
+  let picks = null;
+  return {
+    observe(tool, input, outcome) {
+      if ((tool === "Bash" || tool === "PowerShell") && /--render-plan\b/.test(String(input?.command ?? ""))) {
+        rendered = null;
+        approved = null;
+        picks = null;
+        const out = outcome && !outcome.deny ? parseJson(outcome.text) : null;
+        if (out?.success && Array.isArray(out.goAhead?.questions) && out.approval)
+          rendered = {
+            preview: out.goAhead.questions[0]?.options?.[0]?.preview ?? "",
+            nodes: out.approval.nodes ?? [],
+            edges: out.approval.edges ?? [],
+            conditional: out.approval.conditional ?? [],
+            suggestions: out.approval.suggestions ?? [],
+          };
+        return;
+      }
+      if (tool !== "AskUserQuestion" || !rendered || !outcome || outcome.deny) return;
+      const questions = Array.isArray(input?.questions) ? input.questions : [];
+      const answers = outcome.result?.answers ?? {};
+      const labels = new Set(rendered.suggestions.map((s) => s.label));
+      // The go-ahead is the asked question offering "Draw it" (only the go-ahead does),
+      // matched by its options so a reworded question still counts.
+      const go = questions.find((q) => (q?.options ?? []).some((o) => o?.label === DRAW_ALL));
+      if (go && answers[go.question] !== undefined) {
+        // The dialog must have shown the plan: "Draw it" carries the render's sketch as its preview.
+        const shown = go.options.find((o) => o?.label === DRAW_ALL)?.preview ?? "";
+        const answer = shown.trim() === rendered.preview.trim() ? answers[go.question] : null;
+        picks = answer === PICK && labels.size > 0 ? new Map() : null;
+        approved = answer === DRAW_ALL ? approve(labels) : picks ? approve(new Set()) : null;
+        return;
+      }
+      // A pick round: the questions whose options are this render's suggestions.
+      if (!picks) return;
+      for (const q of questions.filter((q) => (q?.options ?? []).some((o) => labels.has(o?.label))))
+        if (answers[q.question] !== undefined)
+          picks.set(q.question, String(answers[q.question]).split(", ").filter((l) => labels.has(l)));
+      approved = approve(new Set([...picks.values()].flat()));
+    },
+    check(tool, input) {
+      if (!ROOT_DRAW.test(tool) || input?.workBoardSlug !== "root") return null;
+      if (!approved)
+        return "ProvenMap guard: the workspace board is drawn only from a plan the architect approved. Run pmap-architect.js --render-plan, print its display, ask its goAhead question with AskUserQuestion as given (and on \"Let me pick\" its pick rounds), then --plan-approve with the answers and draw the wire file it names.";
+      const nodes = /create_nodes$/i.test(tool);
+      const items = nodes
+        ? (Array.isArray(input.nodes) ? input.nodes : []).map((n) => n?.slug ?? "")
+        : (Array.isArray(input.edges) ? input.edges : []).map(edgeKey);
+      const outside = items.filter((k) => !(nodes ? approved.nodes : approved.edges).has(k));
+      return outside.length === 0
+        ? null
+        : `ProvenMap guard: ${outside.map((k) => `\`${k}\``).join(", ")} ${outside.length === 1 ? "is" : "are"} not in what the architect approved. Draw the wire file --plan-approve wrote, or add ${outside.length === 1 ? "it" : "them"} to the plan, re-render and ask again.`;
+    },
+  };
+}
+
 /**
  * The deny text for one tool call, or null to let it through. Exported for the
  * plugin repo's tests; the engine only calls `register`.
@@ -180,8 +289,13 @@ export async function recover($, e, next) {
 
 /** @type {import('claude-code').Register} */
 export const register = (on) => {
+  // One gate per load: a plugin reload starts it over, so an approval never outlives the code that gave it.
+  const gate = planGate();
   on("tool.call", async ($, e, next) => {
-    const deny = guard(e.tool, e);
-    return deny ? { deny } : redact(await next(e));
+    const deny = guard(e.tool, e) ?? gate.check(e.tool, e);
+    if (deny) return { deny };
+    const outcome = await next(e);
+    gate.observe(e.tool, e, outcome);
+    return redact(outcome);
   }).catch(recover);
 };

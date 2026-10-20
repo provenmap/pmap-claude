@@ -2,7 +2,7 @@
 category: author
 description: "Author · WRITE-CAPABLE: Author a playbook — interview the job, compose steps the platform can watch, draft it for the org"
 argument-hint: "[job or playbook to start from]"
-allowed-tools: Read, Write, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-workspace_provenmap__*
+allowed-tools: Read, Write, AskUserQuestion, Bash(node:*), mcp__provenmap__*
 ---
 
 Turn a job the org repeats into a playbook: named stages of steps, each pointing at a door the
@@ -14,8 +14,7 @@ rules and step catalogue live in
 ## Workflow
 
 1. **Scope** — `draft_playbook` missing from the tools → read-only token: say so, name
-   `/login` for a `read_write` token, stop before interviewing. A drafts file
-   `~/.provenmap/architect/drafts/playbook-*.json` → offer to resume it.
+   `/login` for a `read_write` token, stop before interviewing.
 2. **The job** — the command argument or one question: what someone has finished at the end.
    Derive name, summary, job line, slug, door, target kind; the architect confirms once.
 3. **Overlap and template** — `list_playbooks`; a playbook already doing this job → start it,
@@ -27,7 +26,7 @@ rules and step catalogue live in
 6. **Read-back** — the assembled playbook rendered once; Draft it / Revise.
 7. **Land** — `draft_playbook`; issues come back unsaved → fix and resend; saved → print the
    `composerUrl` and say it is saved **disabled** until previewed and enabled in the composer.
-   No working copy, no commit. Delete the drafts file.
+   No working copy, no commit.
 
 **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --brief --command author-playbook --facts '{"playbook":"<slug>"}'` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
@@ -35,6 +34,6 @@ rules and step catalogue live in
 
 - Tools missing / connection errors → `ProvenMap not configured — run /login (browser) or /configure (manual) first`
 - 401 → `Your ProvenMap MCP access token was rejected — run /login to reconnect`
-- 402 `playbook.author` → the org's plan does not include playbook authoring; relay it, keep
-  the drafts file.
+- 402 `playbook.author` → the org's plan does not include playbook authoring; relay it, and
+  print the definition so it is not lost.
 - Slug already exists → pick another slug; editing an existing playbook is the composer's job.

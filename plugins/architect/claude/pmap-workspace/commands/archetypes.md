@@ -2,7 +2,7 @@
 category: author
 description: "Author · WRITE-CAPABLE: Review the archetype catalogue for a board kind, scan shared documents for gaps, and submit proposals for admin review"
 argument-hint: "[board-slug] [code|knowledge] [gap material or paths]"
-allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__plugin_pmap-workspace_provenmap__*
+allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__provenmap__*
 ---
 
 Catalogue gap analysis: hold shared material up against the org's live archetype catalogue, name

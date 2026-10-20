@@ -1,7 +1,7 @@
 ---
 category: explore
 description: "Explore · The command center, attention-first — what needs the architect, then the portfolio"
-allowed-tools: Read, Bash(node:*), mcp__plugin_pmap-workspace_provenmap__*
+allowed-tools: Read, Bash(node:*), mcp__provenmap__*
 ---
 
 The morning sweep: lead with **what needs the architect**, ranked, before any inventory. Read
