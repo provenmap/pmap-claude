@@ -19,6 +19,17 @@ Extract the **declared** endpoints and shape them into an `ApiSurfacePayload`:
 1. **Read definitions, never call.** No requests, no server boot. Parse the OpenAPI doc, the route decorators, the router definitions.
 2. **`slug` is the stable identity.** One kebab-case slug per endpoint that survives re-extracts, e.g. `POST /orders` → `create-order`, `GET /users/:id` → `get-user-by-id`. The server reconciles by it; never re-slug.
 3. **Leave human-tier fields empty.** Do **not** fill `owners`, `deprecated`, or `textual` — the human owns those and the server strips them on ingest (D4). Emit defaults.
+4. **Cite where you read it, and never guess a field.** Every endpoint carries `declaredIn: { file, line }` — the route decorator, the `paths` entry, the router line. A parameter's `required` is `true` or `false` only when the source says so (a path parameter is always required); when you cannot cite it, leave it `null`. The comparison reads an uncited field as unread, never as a change, and a guessed one as a false change. Responses you did not read stay `[]`: an empty list says "not read", a made-up `200` says "the contract has no body".
+
+## The charter — what a comparison expects first
+
+`/aspects` runs `pmap-aspects.js --charter` before this skill. When `charter` is not null, an open
+comparison expects this board's branch to serve the contracts it lists (`keys`, each with a `kind`
+and a `label` such as `GET /orders/{id}` or `orders`). Find each listed contract of this kind in
+the repo **first** and extract it under the same path, table or channel name, so the comparison
+can match it; then extract everything else the repo serves. A listed contract you cannot find
+stays absent — the comparison reads it as removed or missing, which is the truth. Never add a row to satisfy
+the list.
 
 ## Sources
 
@@ -42,6 +53,13 @@ Extract the **declared** endpoints and shape them into an `ApiSurfacePayload`:
 - `params[]`: `{ name, in: 'path'|'query'|'header', type, required }`.
 - `requestBody` / `responses[]`: content types + status codes where declared (opaque schemas are fine).
 - `idempotent`, `apiVersion`, `versioningScheme` (`uri`|`header`|`query`|`media-type`|`none`).
+
+## Domain — which part of the business it belongs to
+
+`domain` is a short label for the business domain this endpoint belongs to (`billing`, `work-board`). ProvenMap groups the route grid by it, and a domain's tables, endpoints and channels line up under one name across the three aspects.
+
+- **Leave it `null` unless the code names the domain outright** — an OpenAPI `tags` entry the spec uses for domains, a router mounted under a domain prefix the code names (`app.use("/billing", billingRouter)`). `pmap-aspects.js` fills every `null` from the folder the endpoint is declared in: the first folder under the shared root of all the payload's `declaredIn` files that is not a container like `features/` or `schemas/` (`src/features/billing/invoices.controller.ts` → `billing`). A endpoint at that root, or a payload declared in one file, stays without a domain; never guess one.
+- **One spelling per domain across aspects.** When this repo's other aspects already name a domain (the folder rule gives `schemas/workboard` → `workboard` but `features/work-board` → `work-board`), set `domain` to the spelling they use, so the views group them together. Any casing or separators fold to kebab-case on the way in.
 
 ## Owner + references — linking to the spine
 

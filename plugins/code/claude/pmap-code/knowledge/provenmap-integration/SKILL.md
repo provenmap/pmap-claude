@@ -205,7 +205,7 @@ Credentials live in ONE place — `.provenmap/credentials.json`, never the chat.
   (`bindingToken` + `apiSecret` + `boardSlug`), since a different board is a different
   binding with its own secret. The `--rebind` flag is what unlocks the board picker —
   without it, a bound project's login is authentication-only:
-  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain code --plugin-version 1.4.311` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
+  1. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --start --rebind --host claude --domain code --plugin-version 1.4.315` and print the JSON `display` field verbatim in your reply — the Bash output panel is collapsed for the user (the browser opens best-effort).
   2. After they sign in, pick the new board, and confirm, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-login.js --poll --host claude --domain code` (give the Bash call ~250s; re-run on `status: "pending"`). Print `display` verbatim.
   3. On `status: "complete"`, the config now points at the newly selected board — the `display` panel already shows it.
   4. **Local analysis belongs to the board it was built for.** It stays on disk untouched, and when
@@ -257,7 +257,11 @@ and the lock file so the whole team and every agent session share them.
 ## Branch-Mismatch Prompt
 
 When a command's preflight check (`pmap-preflight.js`) exits 11, print its `display`
-field verbatim, then ask via **AskUserQuestion**:
+field verbatim. If `git.status` is `tracked`, the branch belongs to an open comparison: nothing
+runs from it, and re-binding onto it would compare the code with itself. The `display` already
+names the comparison and the way out (switch to the pinned branch; `/aspects` there offers to push
+this branch's contracts through a worktree), so stop there and ask nothing. Otherwise ask via
+**AskUserQuestion**:
 
 - Header: `Branch`
 - Question: `"This project is bound to a different branch. How do you want to proceed?"`

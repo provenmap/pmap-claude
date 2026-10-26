@@ -35,6 +35,12 @@ To orient on a board, read in this order (each call is cheap; batch where possib
    whether a work item was behind it, person-and-agent pairs), paged with `nextAfter`;
    `get_change_period` reads one in full. Quote their sentences, never rank or count people,
    and say "not recorded" where a work item was not recorded.
+6. **Comparisons** (root only, `workBoardSlug: 'root'`) — `list_app_comparisons` names each
+   rewrite: the apps before, the apps after, the rules it is compared by.
+   `get_app_comparison_parity` reads one contract by contract: kept, moved, changed (with what
+   differs), gone and new, flagged rows and who outside the migration depends on them, and the
+   work item made from a row. Say "kept on the signature only" where `shapeCompared` is false,
+   and never call a kept row parity: kept is the shape, not the behaviour.
 
 Summarize: purpose, the domains/containers, layer structure, and anything in flight — slug-first,
 then invite direction.

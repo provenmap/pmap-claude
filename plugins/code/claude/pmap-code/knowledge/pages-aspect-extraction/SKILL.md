@@ -22,6 +22,17 @@ Extract the **declared** route tree and shape it into a `UiPagesPayload`:
 
 1. **Read route definitions, never render.** No dev server, no build, no browser. Parse route files, layout files, and their imports statically.
 2. **Leave human-tier fields empty.** Do **not** fill `owners` or `textual` — those are the human's to annotate; the server strips them from ingest anyway (D4).
+3. **Cite where you read it.** Every page carries `declaredIn: { file, line }` — the route file (`page.tsx`, the route module) and the line its export starts at. `dataDependencies` and `navTargets` list only what the file and its imports declare; an uncertain one is left out rather than guessed.
+
+## The charter — what a comparison expects first
+
+`/aspects` runs `pmap-aspects.js --charter` before this skill. When `charter` is not null, an open
+comparison expects this board's branch to serve the contracts it lists (`keys`, each with a `kind`
+and a `label` such as `GET /orders/{id}` or `orders`). Find each listed contract of this kind in
+the repo **first** and extract it under the same path, table or channel name, so the comparison
+can match it; then extract everything else the repo serves. A listed contract you cannot find
+stays absent — the comparison reads it as removed or missing, which is the truth. Never add a row to satisfy
+the list.
 
 ## Sources, by framework
 

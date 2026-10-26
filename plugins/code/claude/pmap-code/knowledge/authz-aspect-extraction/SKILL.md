@@ -129,6 +129,10 @@ distinct grant/deny rule.
   produce one cheaply. `null` is always fine — this field is render-only, never load-bearing.
 - Leave `textual` `null`.
 
+## Where you read it
+
+The registry is one row and carries no `declaredIn`; cite the policy source in each `policies[]` entry's own fields as the skill above describes. A policy you did not read is left out, never paraphrased.
+
 ## Linking to the spine — deliberately narrow
 
 Read `.provenmap/boards/<board-slug>.json` for the node slugs the spine already has. Unlike every

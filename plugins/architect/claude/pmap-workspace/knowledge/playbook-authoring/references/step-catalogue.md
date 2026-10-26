@@ -52,6 +52,7 @@ included — a publish anywhere under it counts.
 | `{kind:"tag.coverage", tag, minPercent}`      | milestone | control `context-tags` (e.g. `owner:team`, 60)                    |
 | `{kind:"chat.asked", any:true}`               | milestone | control `chat-toggle`                                             |
 | `{kind:"hub.visited"}`                        | milestone | control `attention-queue`                                         |
+| `{kind:"appComparison.declared"}`              | milestone | control `new-comparison` on an epic playbook (a migration names the run's epic) |
 | `{kind:"workItem.claimed", stepRef?, all?}`   | outcome   | code `/work-items` (a developer claims the run's work item)       |
 | `{kind:"workItem.confirmed", stepRef?, all?}` | outcome   | code `/sync` after delivery (a push verifies the run's work item) |
 
@@ -92,3 +93,4 @@ Valid for `control.affordanceId` and `affordance` segments. Any other id is refu
 | `skills-library`      | Library                      |
 | `publish`             | Publish                      |
 | `context-tags`        | Context tags                 |
+| `new-comparison`       | New comparison                |

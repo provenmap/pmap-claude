@@ -32,6 +32,17 @@ rules on the root are proven against real calls, not only drawn edges.
 4. **`slug` is the stable identity** — one kebab-case slug per client that survives re-extracts, e.g.
    `catalog-client`, `basket-grpc-client`.
 5. **Leave `textual` empty** (`null`) — it is the architect's.
+6. **Cite where you read it.** Every client carries `declaredIn: { file, line }` — the client class, the typed-client registration, the base-address constant. `calls` lists only the calls you can point at; an uncertain one is left out rather than guessed.
+
+## The charter — what a comparison expects first
+
+`/aspects` runs `pmap-aspects.js --charter` before this skill. When `charter` is not null, an open
+comparison expects this board's branch to serve the contracts it lists (`keys`, each with a `kind`
+and a `label` such as `GET /orders/{id}` or `orders`). Find each listed contract of this kind in
+the repo **first** and extract it under the same path, table or channel name, so the comparison
+can match it; then extract everything else the repo serves. A listed contract you cannot find
+stays absent — the comparison reads it as removed or missing, which is the truth. Never add a row to satisfy
+the list.
 
 ## Sources
 

@@ -6,9 +6,9 @@
     "./commands/update.md"
   ],
   "displayName": "ProvenMap Connect (retired)",
-  "version": "1.4.311",
+  "version": "1.4.315",
   "metadata": {
-    "releasedAt": "2026-10-20"
+    "releasedAt": "2026-10-26"
   },
   "description": "Retired — grounding moved into ProvenMap Code. Install pmap-code and run /ground in this repo; its .provenmap/ state is picked up as is.",
   "author": {

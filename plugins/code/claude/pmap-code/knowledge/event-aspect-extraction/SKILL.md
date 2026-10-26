@@ -35,6 +35,17 @@ the ones that must resolve against the spine — never the channel's own `slug`.
    `deprecated` (event types), or `deliveryGuaranteeOverride` (subscriptions — that's an architect's
    explicit override of the channel default, not something to infer). The server strips these from
    ingest anyway (D4); guessing only creates noise.
+3. **Cite where you read it, and never guess a payload.** Every channel carries `declaredIn: { file, line }` — the topic constant, the queue definition, the producer's declaration. An event type's `payloadSchema` is the schema you read or `null`; never sketch one. The comparison reads a null payload as unread, never as a change.
+
+## The charter — what a comparison expects first
+
+`/aspects` runs `pmap-aspects.js --charter` before this skill. When `charter` is not null, an open
+comparison expects this board's branch to serve the contracts it lists (`keys`, each with a `kind`
+and a `label` such as `GET /orders/{id}` or `orders`). Find each listed contract of this kind in
+the repo **first** and extract it under the same path, table or channel name, so the comparison
+can match it; then extract everything else the repo serves. A listed contract you cannot find
+stays absent — the comparison reads it as removed or missing, which is the truth. Never add a row to satisfy
+the list.
 
 ## Sources, by broker
 
@@ -131,6 +142,13 @@ per distinct consumer binding.
 - `filterExpression` — a raw filter/selector string (SNS filter policy, EventBridge pattern, RabbitMQ
   binding key), if one gates this subscription.
 - Leave `deliveryGuaranteeOverride` `null` (human-tier — see golden rules above).
+
+## Domain — which part of the business it belongs to
+
+`domain` is a short label for the business domain this channel belongs to (`billing`, `work-board`). ProvenMap groups the event lanes by it, and a domain's tables, endpoints and channels line up under one name across the three aspects.
+
+- **Leave it `null` unless the code names the domain outright** — an AsyncAPI `tags` entry used for domains, a topic namespace the code treats as one (`billing.invoice.paid` → `billing`). `pmap-aspects.js` fills every `null` from the folder the channel is declared in: the first folder under the shared root of all the payload's `declaredIn` files that is not a container like `features/` or `schemas/` (`src/features/billing/billing.events.ts` → `billing`). A channel at that root, or a payload declared in one file, stays without a domain; never guess one.
+- **One spelling per domain across aspects.** When this repo's other aspects already name a domain (the folder rule gives `schemas/workboard` → `workboard` but `features/work-board` → `work-board`), set `domain` to the spelling they use, so the views group them together. Any casing or separators fold to kebab-case on the way in.
 
 ## Owner + producers/consumers — linking to the spine
 
