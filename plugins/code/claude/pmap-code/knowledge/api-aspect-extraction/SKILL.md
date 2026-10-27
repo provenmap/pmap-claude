@@ -52,14 +52,15 @@ the list.
 - `pagination` (discriminated by `style`): `none` | `offset` | `cursor` | `page`. **Never omit** — `none` is a real answer.
 - `params[]`: `{ name, in: 'path'|'query'|'header', type, required }`.
 - `requestBody` / `responses[]`: content types + status codes where declared (opaque schemas are fine).
-- `idempotent`, `apiVersion`, `versioningScheme` (`uri`|`header`|`query`|`media-type`|`none`).
+- `idempotent`: `true` only when the code enforces it for this route, by reading an idempotency key or request-id (`Idempotency-Key`, `x-requestid`) that the handler dedupes on, or by a framework attribute that says so; `false` otherwise. Never infer it from the HTTP method or from what the handler happens to do: two extractions of unchanged code must read it the same, or a comparison reports a change nobody made.
+- `apiVersion`, `versioningScheme` (`uri`|`header`|`query`|`media-type`|`none`).
 
 ## Domain — which part of the business it belongs to
 
-`domain` is a short label for the business domain this endpoint belongs to (`billing`, `work-board`). ProvenMap groups the route grid by it, and a domain's tables, endpoints and channels line up under one name across the three aspects.
+A endpoint's domain is a context tag named `domain:<name>` in its `tags` (`domain:billing`). ProvenMap groups the route grid by it, and a domain's tables, endpoints and channels line up under one tag across the three aspects.
 
-- **Leave it `null` unless the code names the domain outright** — an OpenAPI `tags` entry the spec uses for domains, a router mounted under a domain prefix the code names (`app.use("/billing", billingRouter)`). ProvenMap reads every other endpoint's domain from the board: the box its `references` name most, that box's `domain` attribute (a `domain_group` or `bounded_context` box without one reads as its own name), else the box containing it, up to the board's parent. An admin sets or changes a box's `domain` in ProvenMap and the endpoint follows, so accurate `references` are what make that reading right. A endpoint no box names stays without a domain; never guess one, and never derive one from a folder.
-- **One spelling per domain across aspects.** When the code names a domain the board also names (`billing` on a box, `@@schema("billing")` in Prisma), use the board's spelling, so the views group them together. Any casing or separators fold to kebab-case on the way in.
+- **Leave `tags` empty unless the code names the domain outright** — an OpenAPI `tags` entry the spec uses for domains, a router mounted under a domain prefix the code names (`app.use("/billing", billingRouter)`). Then send exactly one: `"tags": ["domain:billing"]`. ProvenMap gives every other endpoint the domain tag of the node owning most of the files its `references` cite (`usedBy`, which `pmap-aspects.js` records from the local boards; nothing to author), or of the node above it: its container, then the node that drills into its board. `/analyze` tags nodes with their domain and an admin can retag one in ProvenMap; the endpoint follows on the next `/aspects`, so accurate `references` are what make that reading right. A endpoint nothing above names stays without a domain; never guess one, and never derive one from a folder.
+- **Use the board's spelling.** When the code names a domain the board already tags (`domain:billing` on a node, `@@schema("billing")` in Prisma), send the board's tag so the views group them together. The org's domain tags are the `domain:` names `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-context-tags.js` prints.
 
 ## Owner + references — linking to the spine
 

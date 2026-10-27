@@ -171,4 +171,4 @@ node <cli> --report --domain code   # Code
 
 Print `display` verbatim. Then one closing sentence: how many landed, where to look (the
 Insights Bar for the highlights batch, the hub's Context boards card for the boards), and that a
-re-run replaces this run.
+re-run replaces this run: a board it draws again keeps its address, so a shared link still opens.

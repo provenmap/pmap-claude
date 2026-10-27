@@ -148,6 +148,48 @@ That report is a signal about the catalogue, not a defect in the analysis: a fie
 same value across many nodes is a gap worth taking to `/analyze-archetypes`, which is how the
 archetype vocabulary gets extended.
 
+## Step 3.7: Domain tags — one look across the tree
+
+A domain is the context tag `domain:<name>` on the node that IS a business area of the product.
+Everything below inherits it — the nodes inside it, the boards it drills into, and the tables,
+endpoints and channels they use, which the aspects screen groups by it. `/analyze` tags as it goes;
+this step looks once across the whole tree, for every board not yet stamped
+`metadata.domainsTaggedAt`, so each domain is spelled once and sits at one level.
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-context-tags.js --no-cache
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --domains
+```
+
+The first call refreshes the org's tags, so the outline offers only domain names the org has today
+(a failure there is not a stop: the outline then uses the last cached list).
+
+**`boardsToTag` empty → skip to Step 3.8.** Otherwise read the file named by `outlineFile`:
+`domains` lists the domain tags already in use, `boards` every board's containers, drill-down
+nodes and top-level nodes that own files (their members, what they drill into, their current
+`domain`), with `toTag` on the boards
+still to look at. Write `.provenmap/domains/plan.json` as
+`{ "<board-slug>": { "<node-slug>": "domain:<name>" | null } }`:
+
+- Tag the node that IS a business area — the feature group or feature module a product person
+  would name (Billing, Identity and Access, Checkout) — at one level across the tree. A standalone
+  feature node beside the groups (a sign-in provider, an email-validation feature) is an area too. When a
+  features board's groups are the areas, their sub-groups and child boards inherit and get no tag
+  of their own.
+- Reuse a name from `domains` for the same area; coin `domain:<kebab-name>` only for a new one.
+  A technical layer (data access, shared support, error handling) is plumbing and gets no domain.
+- Leave a node out of the plan to keep its current tag; `null` clears one that is wrong or sits at
+  the wrong level. Decide the `toTag` boards; touch a stamped board only to keep one spelling.
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --domains-apply .provenmap/domains/plan.json
+```
+
+- **exit 0** — tags written and every board still to tag stamped; they ride the push in Step 4.
+  Note `nodesTagged` for Step 6.
+- **exit 3** — the plan names an unknown board or node, a tag that is not `domain:<name>`, or a
+  board would fail its gates. Nothing was written: fix the plan per `error` and run it again.
+
 ## Step 3.8: Integrity gate — validate every target board before the first push
 
 Run the tree-wide integrity check so a board tree pushes wholly or not at all:
@@ -271,6 +313,9 @@ For each synced board, report:
 - **View link**: if `boardUrls[<board-slug>]` (from Step 3.5) is a non-null URL, print it as a
   clickable link, e.g. `↗ View board: <url>`. If it's `null` or absent, skip the link silently
   (don't surface an error — the server may be older or the link not yet resolvable).
+
+**Domain tags** (only when Step 3.7 applied a plan): one line — `Domains: <nodesTagged> node(s)
+tagged across <boards> board(s); rerun /aspects so tables, endpoints and channels group by them.`
 
 **Plan progress** (the last CLI output may carry a `coverageReport` field — absent means the domain
 doesn't track it; skip silently):

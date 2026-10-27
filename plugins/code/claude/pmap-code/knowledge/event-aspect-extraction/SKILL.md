@@ -145,10 +145,10 @@ per distinct consumer binding.
 
 ## Domain — which part of the business it belongs to
 
-`domain` is a short label for the business domain this channel belongs to (`billing`, `work-board`). ProvenMap groups the event lanes by it, and a domain's tables, endpoints and channels line up under one name across the three aspects.
+A channel's domain is a context tag named `domain:<name>` in its `tags` (`domain:billing`). ProvenMap groups the event lanes by it, and a domain's tables, endpoints and channels line up under one tag across the three aspects.
 
-- **Leave it `null` unless the code names the domain outright** — an AsyncAPI `tags` entry used for domains, a topic namespace the code treats as one (`billing.invoice.paid` → `billing`). ProvenMap reads every other channel's domain from the board: the box its `references` name most, that box's `domain` attribute (a `domain_group` or `bounded_context` box without one reads as its own name), else the box containing it, up to the board's parent. An admin sets or changes a box's `domain` in ProvenMap and the channel follows, so accurate `references` are what make that reading right. A channel no box names stays without a domain; never guess one, and never derive one from a folder.
-- **One spelling per domain across aspects.** When the code names a domain the board also names (`billing` on a box, `@@schema("billing")` in Prisma), use the board's spelling, so the views group them together. Any casing or separators fold to kebab-case on the way in.
+- **Leave `tags` empty unless the code names the domain outright** — an AsyncAPI `tags` entry used for domains, a topic namespace the code treats as one (`billing.invoice.paid` → `domain:billing`). Then send exactly one: `"tags": ["domain:billing"]`. ProvenMap gives every other channel the domain tag of the node its `producers`, `consumers` and subscriptions name most, or of the node above it: its container, then the node that drills into its board. `/analyze` tags nodes with their domain and an admin can retag one in ProvenMap; the channel follows on the next `/aspects`, so accurate producers, consumers and subscriptions are what make that reading right. A channel nothing above names stays without a domain; never guess one, and never derive one from a folder.
+- **Use the board's spelling.** When the code names a domain the board already tags (`domain:billing` on a node, `@@schema("billing")` in Prisma), send the board's tag so the views group them together. The org's domain tags are the `domain:` names `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-context-tags.js` prints.
 
 ## Owner + producers/consumers — linking to the spine
 

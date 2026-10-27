@@ -26,8 +26,9 @@ touches manual rows or human-owned columns). Use **`--mode merge`** to add witho
 
 ## Flags
 
-- `--dry-run` — validate the payload and cross-check its slugs against the synced spine
-  **without pushing**. Useful to sanity-check `unknownSlugs` before pushing for real.
+- `--dry-run` — validate the payload, cross-check its slugs against the synced spine and build
+  the rows exactly as a push would (reused rows, `usedByResolved`) **without pushing**. Useful
+  to sanity-check `unknownSlugs` before pushing for real.
 - `--no-verify` — skip the post-ingest server read-back verification (see `verify` below).
 - `--summary "<sentence>"` — optional: one plain sentence, at most 200 characters, on what this
   run changes, naming the tables, endpoints or channels, with no counts. Written from what this
@@ -97,6 +98,34 @@ The spine check and slug cross-check read the **board's** synced spine from the 
 the board: a file the branch moved reads as `unlinked` there, and the comparison's parity shows
 the contract as moved or changed — that is the point, not a defect.
 
+## Comparison boards — after every push
+
+Each open comparison this app is a set of has two boards, one per side with the contracts that differ, drawn
+from the comparison's table and shown above it. A push moves the table, so after the board and
+every chosen branch have been pushed (never on `--dry-run`, never when nothing landed), redraw the
+boards whose table moved:
+
+1. `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-aspects.js --boards` → `comparisonBoards.comparisons[]`, each
+   `{ slug, name, stale }`. `notAvailable: true` → the server predates comparison boards: one
+   line, then go on to the report. None `stale` → say nothing.
+2. Per stale comparison: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-aspects.js --boards-brief <slug>` →
+   `comparisonBoards.briefPath`, `payloadPath`. `unchanged: true` → skip it (another app's run
+   drew it already).
+3. Dispatch `comparison-board-author` agents (the Task tool) in waves of at most 4, **one agent
+   per comparison**, in a single message per wave. Each prompt says exactly: the comparison slug,
+   the brief path, the payload path, "read the brief and the drawing rules, write the payload,
+   reply with one line". When the host cannot launch agents, draw them yourself, one at a time,
+   by `${CLAUDE_PLUGIN_ROOT}/knowledge/claude-code-plugin-sync/references/comparison-boards.md` — say so
+   in one line first.
+4. Per written payload: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-aspects.js --boards-push <slug>
+   --payload <payloadPath>`. Exit 3 with `validationErrors[]` → fix the listed problems in the
+   payload yourself and retry ONCE; still failing → name the comparison and the first problem,
+   go on. Exit 4 → relay `error`, go on. A missing payload (the agent replied `not written`) is
+   skipped with its reason.
+5. Report each drawn pair in one line: "Drew the boards of “<name>”: <before.viewUrl> ·
+   <after.viewUrl>" (the board slug when a `viewUrl` is null). They keep their addresses across
+   redraws, so a link shared earlier still opens.
+
 ## Exit codes
 
 0 success · 1 config error (a **branch mismatch** lands here — relay the `error` verbatim, it
@@ -107,8 +136,8 @@ shape coverage (`coverage` carries `pushed` and `previous` as `{ rows, withShape
 
 ## Reporting the result
 
-`pmap-aspects.js` prints an `AspectUpsertResult` (or, with `--dry-run`, just the validated payload's
-slug cross-check). Summarise it for the user:
+`pmap-aspects.js` prints an `AspectUpsertResult` (or, with `--dry-run`, the validated payload's
+slug cross-check, `reused` and `usedByResolved`). Summarise it for the user:
 
 - `landedIn` — say it first when `kind` is `comparison`: "Landed in the comparison “<name>” from
   `<branch>`; the board is unchanged." On the board, say nothing. A `--repo --branch` push whose
@@ -118,6 +147,13 @@ slug cross-check). Summarise it for the user:
   aspect's own last push; one line with the count and the commit when non-empty: "7 rows kept
   from the push at `1c8d853`: their files are unchanged".
 - `skippedManual` — manual rows the ingest left untouched (expected, not an error).
+- `domains` (tables, endpoints, channels) — `{ tagged, untagged, untaggedRows }`: the server stamps
+  each row with the domain tag of the node it is used by, or of the first node above it with one.
+  When `untagged` is non-zero, say "<untagged> of <tagged + untagged> rows have no domain", then
+  group `untaggedRows` by `node`: for each node, name its rows and say that a `domain:<name>` tag
+  on that node, or on the group it sits in, gives them one (add it in ProvenMap, then /aspects
+  again). Rows with `node: null` cite no file any node owns: say so, never guess a node. Absent
+  `domains` means the server predates domain tags; say nothing.
 - **`unlinked`** — rows whose owning slug matched no node. **`unresolvedRefs`** — references whose
   `nodeSlug` matched no node.
 
@@ -129,8 +165,9 @@ they are just waiting for their node.
 ### `verify` — the post-ingest server read-back
 
 `verify.ok === false` (exit 3) means the server's aspect snapshot does not match what was pushed.
-Report `familyMissing` / `snapshotMismatch` / each `missingKeys` entry / `countMismatch`
-verbatim, then say:
+Report `familyMissing` / `snapshotMismatch` / each `missingKeys` entry / `countMismatch` /
+each `droppedUsedBy` slug (the server did not keep the node the row was placed on, so it cannot
+stamp the row's domain) verbatim, then say:
 
 > Post-ingest verification failed — re-run `/aspects` for this aspect; if the drift persists, ask
 > your admin to check the server's aspect ingest.

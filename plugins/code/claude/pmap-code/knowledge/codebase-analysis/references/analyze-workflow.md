@@ -816,13 +816,17 @@ does not contain them, and an absent field is how the architect sees what still 
 tiers, the evidence bar and the closed-vocabulary rule are
 `${CLAUDE_PLUGIN_ROOT}/knowledge/archetype-attributes/SKILL.md`.
 
-**Tags.** Give each node a `tags` array naming the functional area(s) of this repo's product
-it belongs to, in the repo's own words: for Akka, `REST`, `Cluster`, `Remoting`,
-`Persistence`; for a store, `payments`, `product`, `checkout`. First read the org's existing
-tags (`node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-context-tags.js`) and reuse an existing name whenever
-it means the same thing; never coin a synonym for an existing tag. Shared plumbing that serves
-every area equally gets none. The array is the complete set each push: a tag you omit is
-retracted from what this plugin pushed before, and tags an architect added are kept.
+**Tags.** Give each node that IS a business area of this repo's product one domain tag,
+`domain:<name>`, in the repo's own words: for a store `domain:checkout`, `domain:payments`; for
+Akka `domain:cluster`, `domain:persistence`. Tag at the business-area level — the feature group
+or feature module that is the area, not every node inside it: nodes below inherit it through
+their container and drill-down, and so do the tables, endpoints and channels they use. First read
+the org's tags (`node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-context-tags.js`) and reuse an existing
+`domain:` name whenever it means the same area; never coin a synonym. One domain tag per node at
+most; shared plumbing that serves every area gets none. Send no other tags: any other label is
+the org's to create, and a push that names one is withheld. The array is the complete set each
+push: a tag you omit is retracted from what this plugin pushed before, and tags an architect
+added are kept.
 
 **Incremental:** Only read and analyze the changed/added files from Step 1.5. Keep existing
 nodes from unchanged files as-is. For deleted files, mark their nodes for removal.

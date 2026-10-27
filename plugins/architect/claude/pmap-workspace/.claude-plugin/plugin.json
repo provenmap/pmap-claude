@@ -27,9 +27,9 @@
     "./commands/work-items.md"
   ],
   "displayName": "ProvenMap Workspace",
-  "version": "1.4.316",
+  "version": "1.4.319",
   "metadata": {
-    "releasedAt": "2026-10-26"
+    "releasedAt": "2026-10-27"
   },
   "description": "Work across your whole ProvenMap workspace — explore the board graph, review insights, and author work items from Claude Cowork, Claude Code, or Codex. Connects to the ProvenMap MCP server; writes gather in your working copy, and committing generates a reviewable plan (one work item per governed app).",
   "author": {
