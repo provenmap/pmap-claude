@@ -225,16 +225,32 @@ the recipes). It is `--auto` narrowed: every `--auto` stop applies, it refreshes
 that are already built — never builds a new one, never accepts a proposal — and it ends by
 syncing what the portal has not seen and recording the change periods git has since the last run. The script owns the loop, exactly as in `--auto`. It runs
 in the repo where `/analyze` ran, and every run — refreshed, up to date or stopped — is recorded
-on the platform and shown on the board's binding. A Step -2 or Step -1 stop — a
-preflight exit 1, 2 or 11, the archetype gate's exit 10, or a precondition exit 1 or 2 — prints
-the CLI's `error` (or `reason`) line, never prompts, and goes straight to step 4 with that line
-as `reasonText` in `--facts`. The Outcome call works out a preflight cause itself (not
-connected, off the bound branch, an analysis built for another board) and takes `reasonText`
-only for a stop it cannot see, such as the gate; omit the key on a run that got past both steps.
+on the platform and shown on the board's binding.
+
+**Where the code is read.** Step -2's preflight takes `--scheduled analyze`: it opens the run,
+fetches the binding's pinned branch from origin and checks its tip out detached into a scratch
+folder, `.provenmap/worktrees/@pinned` (its JSON `worktree.dir`; the `display` names it). The
+checkout's own branch, index and working tree are not consulted and never move — a run never
+stops because someone is on a feature branch or has edits in flight. From then until the
+Outcome every script of the run reads code and git from that folder by itself and keeps every
+`.provenmap/` file in the checkout; **read every file under `worktree.dir`** (every path a
+script prints is relative to it) and never under the checkout. Never run `git pull`,
+`git fetch` or `git switch`: the script did the fetch, and the checkout is not the run's. A
+preflight exit 2 whose `status` is `fetch_failed` (origin could not be fetched without a
+prompt) stops the run before any code is read; the Outcome records it as `pull_failed`.
+
+A Step -2 or Step -1 stop — a preflight exit 1 or 2, the archetype gate's exit 10, or a
+precondition exit 1 or 2 — prints the CLI's `error` (or `reason`) line, never prompts, and
+goes straight to step 4 with that line as `reasonText` in `--facts`. The Outcome call works
+out a preflight cause itself (not connected, the fetch that failed, an analysis built for
+another board) and takes `reasonText` only for a stop it cannot see, such as the gate; omit
+the key on a run that got past both steps.
 
 1. **Start** (after the Step -2/-1 gates, replacing Step -0.5):
    `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-prepass.js --auto-plan --scheduled --reset`. Print its
-   `display` verbatim. It runs `git pull --ff-only` itself first, so never run git around it.
+   `display` verbatim. It reads the open run preflight left (exit 1 without one: run Step -2's
+   preflight with `--scheduled analyze` first) and ranks the stale boards by the commits behind
+   them in the scratch folder.
 2. **Branch on `mode`:**
    - `"round"` — refresh `sequential[]` **strictly in the listed order** (parents before
      children: a child's boundary ports resolve against its parent's nodes). For each entry
@@ -247,8 +263,8 @@ only for a stop it cannot see, such as the gate; omit the key on a run that got 
      first, capped by `analysis.plan.maxScheduledRefreshes`); act on nothing else. Then run
      `--auto-plan --scheduled` again (no `--reset`), print `display` verbatim, return to 2.
    - `"done"` or `"stalled"` — the analysis is over. On `stalled`, relay `stallReason`: it
-     names the cause (no analysed board in this checkout, uncommitted changes, a pull that
-     could not fast-forward, the refresh cap, or a round that built nothing). Go to 3.
+     names the cause (no analysed board in this checkout, the refresh cap, or a round that
+     built nothing). Go to 3.
 3. **Sync:** an empty `unsynced[]` means there is nothing to push — go to 4. A run where no
    claimed file changed ends here, having read no code and pushed nothing. Otherwise read
    `${CLAUDE_PLUGIN_ROOT}/knowledge/claude-code-plugin-sync/references/sync-workflow.md` and run its
@@ -265,8 +281,9 @@ only for a stop it cannot see, such as the gate; omit the key on a run that got 
 4. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command analyze --facts '{"mode":"scheduled"}'` (a Step -2/-1 stop adds `"reasonText":"<the CLI line>"`)
    → Done · Left · Next per the outcome skill. The call also records the run: its JSON carries
    `scheduledRun` (`outcome`, `reason`, `reasonText`, counts, and whether the platform has the
-   record yet). Call it once: to read more of its output, keep the JSON from that call — a
-   repeat reports the same run with `alreadyRecorded: true` and sends nothing. Name what the run left for a person: boards past the cap, a stopped run's
+   record yet), and it removes the scratch folder — nothing of the run stays on disk. Call it
+   once: to read more of its output, keep the JSON from that call — a repeat reports the same
+   run with `alreadyRecorded: true` and sends nothing. Name what the run left for a person: boards past the cap, a stopped run's
    reason and the one-line fix, proposals, unbuilt boards (`/analyze --auto` builds them).
 
 
@@ -966,11 +983,23 @@ pending.
   the involved files shows the real relation, change the edge's `type` (`reads_from`,
   `writes_to`, `sync_call`, `async_message`, `data_flow`, …) and put your reasoning in `detailedDescription` — nothing
   else. Ownership is per field: the script owns `weight`, `class`, `provenance` and the
-  fact `description`; you own `type` and `detailedDescription`. The next `--apply`
-  refreshes the facts in place and keeps your type — no twin, nothing to delete. Never draw
+  fact `description`; you own `type`, `label` and `detailedDescription`. The next `--apply`
+  refreshes the facts in place and keeps your type and label — no twin, nothing to delete. Never draw
   two edges between one pair — a second relation goes in `detailedDescription`. The semantic edge types —
   server edge archetype names only, each drawn with its own arrowhead — are the
   codebase-analysis `SKILL.md` → "Import/Dependency Analysis".
+
+- **Label every edge you drew or read.** `label` is the words the line carries on the board,
+  and it is yours like `type`: a short verb phrase from the source's side saying what the
+  source does with the target — `"compiles against"`, `"authenticates via"`, `"loads orders
+  from"`, `"publishes billing events to"`. Lowercase, one line, at most 5 words (A-EDGE-LABEL:
+  a blank or multi-line label blocks the board; a long one warns); the explanation stays in
+  `detailedDescription`. Write one on every model-only edge and on each rollup edge whose
+  files or imported symbols you read. Leave it off only where it would merely restate what
+  the script derives anyway — the import kind (`"imports"`, `"uses types from"`,
+  `"lazy-loads"`) or the type (`sync_call` → `"calls"`). Keep an existing `label` unless the
+  relation itself changed; `--apply` keeps it, and a label an architect typed in the app is
+  never replaced.
 
 - **Semantic edges (read the relevant files):** the skeleton does not detect these — derive
   them by reading the files of the nodes involved. The worklist is the nodes the rollup left
@@ -1004,7 +1033,7 @@ Scope all edges to this board's nodes only.
 
 **Incremental (edge ownership — per field, the script obeys the same rule):** an edge with
 `metadata.provenance` is **rollup-backed** — the script owns its weight, class, provenance
-and fact `description`; you own its `type` and `detailedDescription`. An edge without
+and fact `description`; you own its `type`, `label` and `detailedDescription`. An edge without
 provenance is **model-only** and is preserved byte-for-byte. On an incremental pass just
 re-run `--rollup <board-slug> --apply`: it refreshes every rollup-backed edge in place from
 the current skeleton, removes rollup-backed `uses` pairs that no longer resolve, and keeps a

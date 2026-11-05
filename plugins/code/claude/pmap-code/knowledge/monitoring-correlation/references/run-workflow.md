@@ -97,11 +97,14 @@ The unattended run a host schedule fires (`${CLAUDE_PLUGIN_ROOT}/knowledge/prove
 Nobody answers a prompt, and every run is recorded on the platform and shown on the board's
 binding.
 
-1. **Open the run first**, before the command's step 0:
-   `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --scheduled-run begin --command monitor`. Its JSON
-   carries the run's `runId`, which every push the run makes then carries. A failure here never
-   stops the run.
-2. **A prompt becomes a stop.** The connect-now offer, the branch-mismatch prompt, the
+1. **The command's step 0 preflight takes `--scheduled monitor`.** It opens the run (its JSON
+   `scheduledRun.runId`, which every push the run makes then carries) and checks the binding's
+   pinned branch out detached into a scratch folder, `.provenmap/worktrees/@pinned`, which the
+   pushes name as their branch and commit. The checkout's own branch is not consulted and never
+   moves, so a run never stops because someone is on a feature branch; the signals, the
+   board context and every `.provenmap/` file are read as on any run. Never run `git fetch`,
+   `git pull` or `git switch`. A preflight exit 2 whose `status` is `fetch_failed` stops the run.
+2. **A prompt becomes a stop.** The connect-now offer, the
    `--propose-work-items` choice (unattended runs pass it) and the mapping prompt of Step 3 are not
    asked: each unmet gate stops the run — relay the CLI's `error` verbatim — and goes to step 3.
 3. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command monitor --facts '{"mode":"scheduled","outcome":"<outcome>","reasonText":"<error>"}'`.

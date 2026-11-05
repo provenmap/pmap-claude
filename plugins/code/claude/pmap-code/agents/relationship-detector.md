@@ -192,6 +192,7 @@ Edge `type` is a server edge archetype name â€” an unknown name fails the sync â
       "sourceSlug": "source-node-slug",
       "targetSlug": "target-node-slug",
       "type": "relationship-type",
+      "label": "short verb phrase from the source's side, e.g. authenticates via",
       "description": "Brief description of how source depends on target",
       "metadata": {
         "language": "python",
@@ -209,6 +210,7 @@ Edge `type` is a server edge archetype name â€” an unknown name fails the sync â
 - Identify internal vs external API calls
 - Include source location metadata for traceability
 - Handle cross-language service relationships
+- Give each edge a `label`: lowercase, at most 5 words, saying what the source does with the target (`"authenticates via"`, `"loads orders from"`); the explanation stays in `description`
 
 **Board-Scoped Relationship Detection:**
 

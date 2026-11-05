@@ -45,16 +45,22 @@ swept element: compliant / violating / unclear.
 Bounded rounds (2–4 questions each): decision crispness (the one sentence); drivers (why now);
 applicability scope (which apps, which element classes — this becomes the work item wording);
 exceptions & grandfathering (violations the architect explicitly accepts); migration stance
-(fix-now vs comply-on-next-touch); supersedes check (`list_boards` for an existing `ADR:`
-decision board, and `list_work_items` per affected app — does open work already cover this
-ground?).
+(fix-now vs comply-on-next-touch); supersedes check (`get_board_tree` for an existing `ADR:`
+decision board, `get_decision` on it for its ADR-n and status, and `list_work_items` per
+affected app — does open work already cover this ground?).
 
 ## 4 — Mint the decision's durable home
 
-`create_decision_board {name: "ADR: <title>"}` (durable `adr` type, standalone) and draw/write
-the normalized record there — the workspace-level decision log. This is the record's home: it
-is where "what did we decide, and why" is answered six months on. There is no delete tool for
-it — durable records retire in the platform.
+`create_decision_board {name: "ADR: <title>", supersedes?: <slug of the ADR board it replaces>}`
+(durable `adr` type, standalone) and draw/write the normalized record there — the workspace-level
+decision log. The board is born with its decision record, `ADR-n`, as a draft; the reply names
+the number. This is the record's home: it is where "what did we decide, and why" is answered
+six months on. There is no delete tool for it — durable records retire in the platform.
+
+When the record is written, `propose_decision {boardSlug}` puts it forward. No tool accepts,
+rejects or deprecates: the owner settles it in the platform, and accepting a decision that
+names what it supersedes retires the old one. Every remediation work item below carries
+`decisionBoardSlug` so the work points back at the rule it serves.
 
 ## 5 — Record the assessment
 
@@ -80,7 +86,8 @@ The writes join the working copy automatically. Two paths, both producing draft 
   wrong behaviour), description = the normalized record (identical across apps) plus that app's
   applicability, directive = that app's **enforceable consequences**, element-grounded by slug.
   Use this where compliance requires work the sweep cannot see as an insight. Pre-flight each
-  payload with `--validate work-item`.
+  payload with `--validate work-item`. Set `decisionBoardSlug` to the decision board from §4
+  (and `update_work_item` the promoted ones the same way).
 
 A single-app ADR degenerates to one work item. Affected but **unbound** boards: name them, skip
 them, narrate the binding gate (work items need a code-bound board).

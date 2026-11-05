@@ -7,7 +7,7 @@ allowed-tools: Read, Glob, Grep, Edit, Write, Bash(node:*), AskUserQuestion
 
 Print every `display` verbatim; branch only on exit codes and named fields.
 
-**`--scheduled`** (unattended, no prompts): first `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --scheduled-run begin --command monitor`; any stop goes to the Outcome (*Scheduled* in `run-workflow.md`).
+**`--scheduled`** (unattended, no prompts): Step 0 adds `--scheduled monitor` (the script opens the run and the checkout it reads); any stop goes to the Outcome (*Scheduled* in `run-workflow.md`).
 
 **With the argument `setup`, do only this and stop:** follow `${CLAUDE_PLUGIN_ROOT}/knowledge/monitoring-correlation/references/scheduling.md` exactly — the **user** picks sources and cadence and confirms any recurring run; you write `.provenmap/monitoring/config.json`, print each source's connect one-liner, then close (below) adding `--facts '{"mode":"setup"}'`.
 

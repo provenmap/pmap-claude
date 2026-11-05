@@ -75,6 +75,7 @@ Content-Type: application/json
 | `targetSlug`          | string            | Yes      | Target node slug                       |
 | `archetypeName`       | string            | No       | Archetype (typically "Relationship")   |
 | `relation`            | string            | No       | Relationship type (e.g., "depends-on") |
+| `name`                | string            | No       | Label on the line (e.g., "calls"); falls back to `relation` |
 | `detailedDescription` | string            | No       | Markdown description                   |
 | `tags`                | string[]          | No       | Categorization tags                    |
 | `sourceReferences`    | SourceReference[] | No       | Links to source code                   |

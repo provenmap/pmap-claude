@@ -8,30 +8,30 @@ allowed-tools: Read, Glob, Grep, Write, Bash(node:*, git:*), AskUserQuestion, Ta
 
 Every `display` verbatim; branch only on exit codes and named fields.
 
-**Dispatch:** `--clean` full re-plan+re-analysis; `--drill <parent>/<node>` child board (`--clean`: only it); `--deeper <folder>` its own board; `--board <slug>` refresh stale/incomplete; `--all` all layers; `--auto` unattended (`--auto-plan` loop; prompts stop); `--scheduled` refresh-only `--auto` + sync + `/changes` (*Scheduled*; a -2/-1 stop → Outcome `--facts '{"mode":"scheduled","reasonText":"<error>"}'`); no flag: incremental (else full).
+**Dispatch:** `--clean` full replan + reanalysis; `--drill <parent>/<node>` child board (`--clean`: only it); `--deeper <folder>` own board; `--board <slug>` refresh stale/incomplete; `--all` all layers; `--auto` unattended (`--auto-plan` loop; prompts stop); `--scheduled` refresh-only `--auto` + sync + `/changes` (*Scheduled*; a -2/-1 stop → Outcome `--facts '{"mode":"scheduled","reasonText":"<error>"}'`); no flag: incremental (else full).
 
-**-2 Preflight** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js` (whole-tree `--clean`: `--no-repair`): 0 → go; 1 → connect-now offer (--auto: stop, `error` verbatim); 2 → `error`, stop, name `/status`; 11 → branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md` (--auto: stop).
+**-2 Preflight** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js` (whole-tree `--clean`: `--no-repair`; `--scheduled`: `--scheduled analyze`): 0 → go; 1 → connect-now offer (--auto: stop, `error` verbatim); 2 → `error`, stop, name `/status`; 11 → branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md` (--auto: stop).
 
-**-1 Archetype gate** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-precondition.js`: `gate_off`/`ok` → go; `pending` → warn with `reason`; exit 10 (strict only) → AskUserQuestion per the reference (--auto: stop); 1/2 → `error`, stop.
+**-1 Archetype gate** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-precondition.js`: `gate_off`/`ok` → go; `pending` → warn (`reason`); exit 10 (strict) → AskUserQuestion per the reference (--auto: stop); 1/2 → `error`, stop.
 
 **Read `${CLAUDE_PLUGIN_ROOT}/knowledge/codebase-analysis/references/analyze-workflow.md` NOW and follow it exactly; improvise nothing.**
 
-**Step map (ordered; at Steps -2, 0, 4.5, 8, 9 first, alone: `pmap-prepass.js --spine analyze --step <n> --with-coverage`, exit 3: report drift, go on):**
+**Step map (ordered; at Steps -2, 0, 4.5, 8, 9 first, alone: `pmap-prepass.js --spine analyze --step <n> --with-coverage`, exit 3: note drift, go on):**
 
 - -0.5 `pmap-prepass.js --coverage` (exit 2: stop)
 - 0 `pmap-archetypes.js` catalogue + `--role-map`
-- 0.5 server boards `pmap-boards.js` (fail: warn, go on)
+- 0.5 server boards `pmap-boards.js` (fail: warn)
 - 1 manifest + board slug (none: connect-now)
 - 1.5 worklist: plan + `--claim-check --changed-since auto`; empty: up to date, stop
-- 2–4 config + stacks from the digest (script-owned)
+- 2–4 config + stacks from the digest
 - 4.5 `--scope-unit` read + `--detail`; slice inlined clusters only
 - 4.6 `--group-plan --layer <n>` (no marks); evidence flip → ask first
 - 5 carry child units + own files; `planUnitId`; `tags` (org tags first); write board JSON
-- 5.5 `--claim-check`; exit 3 → fix double claim, rerun
+- 5.5 `--claim-check`; exit 3: fix double claim, rerun
 - 6 `--rollup <slug> --apply` (exit 3: fix, reread) + semantic edges, one per pair; 5+ isolated: relationship-detector agents
 - 7 propose depth → `metadata.proposedDrillDowns`
 - 8 write board
-- 8.3 gate `--board-report <slug>`; exit 3: stop board, fix; settle each advisory
+- 8.3 gate `--board-report <slug>`; exit 3: fix the board; settle each advisory
 - 8.4 styling `--style-signals` → plan → `--validate-styles` (≤2 rounds; never blocks)
 - 8.45 `--fields` (fail: go on) → `--finalize <slug>`
 - 8.5 `--coverage`

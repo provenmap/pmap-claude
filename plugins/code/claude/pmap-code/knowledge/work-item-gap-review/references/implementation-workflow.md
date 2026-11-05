@@ -68,6 +68,13 @@ the bar the directive has to clear, and a directive that misses its own type's b
 - **`task`** — bounded work with no behaviour claim. It must say what done looks like.
 - **`decision`** — a choice to make and record; usually not yours to implement — ask before writing code.
 
+**A work item that names a decision** (`decision: ADR-n · <title> (<status>)` on its meta line) carries
+it out. When the status is `accepted`, the decision is a rule: plan within it, name it in the plan
+where it shapes a step ("no call to the Ordering API: ADR-4"), and treat a design that would cross it
+as a gap to raise, not a choice to make. Read its board (`get_decision`, or the board itself) when
+the title alone does not settle a step. Any other status is not yet a rule: say so, and ask before
+planning against it.
+
 Produce the gap table the skill specifies and classify the result:
 
 - **`clean`** or **`minor`** (anchors resolve, the directive is locatable, suggestions apply — nits only) → say so briefly and continue to Step 4.7.

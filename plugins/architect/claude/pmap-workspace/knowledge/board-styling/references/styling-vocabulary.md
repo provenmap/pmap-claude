@@ -55,7 +55,7 @@ channel** — one token per category, and categories layer:
 | State — lifecycle (`inactive`, `experimental`, `planned`, `legacy`) | dash, fill pattern, fade | every colour |
 | State — health (`active`, `healthy`, `degraded`, `failing`) | stroke colour (+ dash on `degraded`) | fill |
 | Severity | stroke colour; `error` alone also tints the fill and lifts | everything else |
-| Emphasis | ink rim + lift (`emphasis`), fade (`subtle`); `neutral` paints nothing | hue |
+| Emphasis | heavier rim in its own colour + lift (`emphasis`), fade (`subtle`); `neutral` paints nothing | hue |
 | Flow (edges) | dash, width; `bidirectional` repeats the edge's own arrowhead at the start | the edge's colour and arrowhead |
 
 No token touches text colour, corners, shape or icon. Where two categories name the same field

@@ -24,8 +24,9 @@ landing uses [`${CLAUDE_PLUGIN_ROOT}/knowledge/work-items-authoring/SKILL.md`](.
    Classify compliant / violating / unclear.
 4. **Grill** — crispness, drivers, applicability, exceptions, migration stance, supersedes
    check (adr-adoption §3).
-5. **Record** — `create_decision_board {name: "ADR: <title>"}` and write the normalized record
-   there (adr-adoption §4). This is the standing rule's home; it never "completes".
+5. **Record** — `create_decision_board {name: "ADR: <title>", supersedes?}` and write the
+   normalized record there, then `propose_decision` (adr-adoption §4). This is the standing
+   rule's home; it never "completes" — the owner accepts it in the platform.
 6. **Land, federated** — `create_insight` per swept app where violations were found, then
    remediation drafts: `promote_insights` on reviewed violations, plus `create_work_item`
    per affected code-bound app board where compliance needs work no insight covers

@@ -5,12 +5,15 @@ surface by what the user has, most capable first. Creating the schedule is the *
 offer, don't assume — and never place secret **values** in the chat or in any schedule definition
 you author (name the env vars instead).
 
-Three commands are worth scheduling today, each with `--scheduled` so the run is recorded: `/analyze --scheduled` (keep the boards following
-the code — refresh the boards whose claimed files changed, sync them, then record the change
-periods git has since the last run; a run where nothing changed reads no code and pushes nothing), `/monitor --scheduled` (correlate the latest signals with the
-board) and `/ground --scheduled` (re-check the evidence links against the documents — a run whose pull reports
-nothing drifted, missing or unlinked closes on the Outcome without proposing anything, so a daily
-cadence is cheap).
+Four commands are worth scheduling today, each with `--scheduled` so the run is recorded and reads
+the pinned branch's latest through its own scratch checkout, whatever the checkout is on:
+`/analyze --scheduled` (keep the boards following the code — refresh the boards whose
+claimed files changed, sync them, then record the change periods git has since the last run; a run
+where nothing changed reads no code and pushes nothing), `/monitor --scheduled` (correlate the
+latest signals with the board), `/ground --scheduled` (re-check the evidence links against the
+documents — a run whose pull reports nothing drifted, missing or unlinked closes on the Outcome
+without proposing anything, so a daily cadence is cheap) and `/aspects --scheduled` (re-extract
+the named kinds onto the board and into every open comparison's tracked branches).
 
 ## 1. Local schedule in a desktop app — preferred
 
@@ -26,17 +29,20 @@ permission mode, and the repo's real `.provenmap/` state. Requires the machine o
   `/monitor`, the monitoring MCP tools). The user confirms in-app.
 - `/analyze --scheduled` runs in the repo where `/analyze` ran — its `.provenmap/`
   holds the plan and each board's commit anchor, and there is one `.provenmap/` per board. The
-  schedule's worktree option stays off: a worktree is a separate checkout without the gitignored
-  `.provenmap/`, so the run stops there. Before it reads any code it checks, in order: ProvenMap is connected; the
-  checkout is on the bound branch; no tracked file has uncommitted changes; the fast-forward
-  (`git pull --ff-only`, never prompting) succeeds, so the branch needs an upstream it can reach
-  without a credential prompt and no local unpushed commits; and a local analysis exists. The first
-  check that fails stops the run by name. The task prompt: "Run
-  /pmap-code:analyze --scheduled." The run does its own pull, so the prompt needs no
-  git step. Every scheduled run of `/analyze`, `/monitor` and `/ground` — one that refreshed,
-  one that found nothing, one that stopped — is recorded on the platform and shown on the board's
-  binding; `/status` lists the recent runs and names why the last one stopped. The `/monitor` and
-  `/ground` task prompts pass `--scheduled` the same way ("Run /pmap-code:monitor --scheduled.").
+  schedule's worktree option stays off: the run makes its own. Each run fetches the binding's
+  pinned branch from origin and reads its tip through a scratch checkout under `.provenmap/`
+  (`worktrees/@pinned`, removed when the run ends), so the branch the checkout is on, edits in
+  flight and unpushed commits never stop it and are never read. Before it reads any code it
+  checks, in order: ProvenMap is connected; origin serves the pinned branch without a prompt (a
+  repo with no origin reads its local branch); and a local analysis exists. The first check that
+  fails stops the run by name. The task prompt: "Run /pmap-code:analyze --scheduled."
+  The run does its own fetch, so the prompt needs no git step. Every scheduled run of
+  `/analyze`, `/monitor`, `/ground` and `/aspects` — one that refreshed, one that found
+  nothing, one that stopped — is recorded on the platform and shown on the board's binding;
+  `/status` lists the recent runs and names why the last one stopped. The `/monitor`, `/ground`
+  and `/aspects` task prompts pass `--scheduled` the same way
+  ("Run /pmap-code:monitor --scheduled."; `/aspects` also names its kinds:
+  "Run /pmap-code:aspects --db --api --scheduled.").
   Permission mode "Allow" for `Skill(pmap-code:analyze)`, `Bash(node:*)` and
   `Bash(git:*)`; where the host instead asks during the first run, approve each one as
   **always** — an approval kept for one run only stalls every later run on the same prompt.

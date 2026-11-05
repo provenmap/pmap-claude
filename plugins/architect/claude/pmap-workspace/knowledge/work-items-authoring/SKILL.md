@@ -72,14 +72,18 @@ open`) or rejects it.
 | `list_epics`           | the workspace's epics — the groups work items are filed under                                                                          |
 | `create_epic`          | a new epic (name + why); holds no work itself                                                                                          |
 | `set_work_item_epic`   | file a work item under an epic, or take it out (any status)                                                                            |
+| `get_decision`         | an ADR board's decision record: ADR-n, status, owner, what it supersedes; only an accepted decision binds the work that follows it      |
+| `propose_decision`     | put a draft decision forward as proposed; a person accepts or rejects it in the platform, no tool does                                 |
 
 Address work items by slug (`list_work_items` → `get_work_item`), or by number as `#42`.
 
 ## Authoring a good work item
 
-`create_work_item` takes `{ workBoardSlug, name, type?, epicSlug?, directive (10–4000 chars),
-description?, narrative?, draftedFromSourceSlug?, dependsOnSlugs?, anchors[]{elementType,
-aspectKind?, slug, boardSlug?, note?}, priority?, effort? }`.
+`create_work_item` takes `{ workBoardSlug, name, type?, epicSlug?, decisionBoardSlug?, directive
+(10–4000 chars), description?, narrative?, draftedFromSourceSlug?, dependsOnSlugs?,
+anchors[]{elementType, aspectKind?, slug, boardSlug?, note?}, priority?, effort? }`.
+`decisionBoardSlug` names the ADR board whose decision the work item records (a `decision`)
+or carries out (any type); `update_work_item` sets or clears it at any status (`''` clears).
 
 **Type — one question, early.** Every work item is one of `feature` (something the system does
 not do yet), `fix` (something behaves wrongly), `refactor` (behaviour stays, shape changes),

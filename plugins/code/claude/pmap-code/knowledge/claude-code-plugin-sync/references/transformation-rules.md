@@ -16,7 +16,8 @@ No hard-coded archetype mapping is used. The analysis agent is responsible for a
 The `edge.type` field already contains the server archetype name. The transformer passes it through directly:
 
 - `archetypeName` = `edge.type` (pass-through)
-- `relation` = `edge.type`
+- `relation` = `edge.type` — the edge's identity (the server slug is `<source>--<relation>--<target>`), so it never changes for display
+- `name` = the label the line carries on the board, first of: the edge's own `label` (the analyzer's verb phrase, e.g. "compiles against"); for a generic import relation (`uses`, `dependency`, `depends_on`) crossed by ONE import kind, that kind's verb ("imports", "uses types from", "lazy-loads"); the archetype's verb (`sync_call` → "calls", `reads_from` → "reads from"; an unmapped archetype reads as its own name in words). The server replaces only a label the code wrote (none yet, still its relation, or the label this source pushed last); a label an architect typed in the app survives every push
 
 ## Slug Generation
 

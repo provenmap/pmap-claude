@@ -7,7 +7,7 @@ allowed-tools: Read, Glob, Grep, Write, Bash(node:*), AskUserQuestion
 
 Works from a cold start. Print every `display` verbatim; branch only on exit codes and named fields. `--board <slug>` adds `--board-slug <slug>` to both `pmap-ground.js` calls; else the CLI uses the configured `boardSlug`.
 
-**`--scheduled`** (unattended, no prompts): first `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --scheduled-run begin --command ground`; any stop goes to the Outcome (*Scheduled* in `${CLAUDE_PLUGIN_ROOT}/knowledge/grounding/SKILL.md`).
+**`--scheduled`** (unattended, no prompts): Step 0 adds `--scheduled ground` (the script opens the run and the checkout it reads); any stop goes to the Outcome (*Scheduled* in `${CLAUDE_PLUGIN_ROOT}/knowledge/grounding/SKILL.md`).
 
 **0 Preflight** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js`; the gate is the script's, not yours. 0 → go (`repairs.boardsRecovered` non-empty = state just restored from the server, per its `display`); 1 (not connected / credentials rejected) → **connect-now offer**; 2 (binding unverified) → print `error`, stop, name `/status`; 11 branch mismatch → AskUserQuestion per the branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md`.
 

@@ -53,6 +53,35 @@ touches manual rows or human-owned columns). Use **`--mode merge`** to add witho
   them: the branch pin is the safety line, and the script can only land rows in a set the server
   already keeps.
 
+## Scheduled (`--scheduled`)
+
+The unattended run a host schedule fires (`${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/references/recurring-runs.md`).
+Nobody answers a prompt, and every run is recorded on the platform and shown on the board's
+binding.
+
+1. **Step 0's preflight takes `--scheduled aspects`.** It opens the run, fetches the binding's
+   pinned branch from origin and checks its tip out detached into a scratch folder,
+   `.provenmap/worktrees/@pinned` (its JSON `worktree.dir`; the `display` names it). The checkout's
+   own branch, index and working tree are not consulted and never move. **The board side's
+   extraction reads only under `worktree.dir`** — `declaredIn.file` paths are relative to it —
+   and the push needs no `--repo`: the script reads the same folder by itself and names the
+   pinned branch and that folder's HEAD. The spine check, the payload and every `.provenmap/`
+   file stay in the checkout. Never run `git fetch`, `git pull` or `git switch`. A preflight exit
+   2 whose `status` is `fetch_failed` stops the run before any code is read.
+2. **Comparisons are `all`,** unasked: each tracked branch is read through its own worktree
+   beside the scratch folder, as below.
+3. **A prompt becomes a stop.** The connect-now offer, the branch-mismatch prompt, the kind
+   question (pass `--aspect`, `--db` or `--api` in the task prompt) and the shape-coverage
+   question (exit 5 stops; never `--force` unasked) are not asked: an unmet gate, and any exit that
+   stops the command, ends the run — relay the CLI's `error` verbatim — and goes to step 4.
+4. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command aspects --facts '{"aspect":"<kinds>","mode":"scheduled","outcome":"<outcome>","reasonText":"<error>"}'`.
+   `outcome` is `refreshed` when any push's `inserted`, `updated` or `deleted` is above zero,
+   `up_to_date` when every push landed with all three at zero, and `stopped` on any exit that
+   ends the run early. `reasonText` is the stopping CLI's `error` line verbatim, and only for
+   `stopped` (omit the key otherwise). Status checks both against the run's allowed values,
+   records the run and removes the scratch folder; the brief's `scheduledRun` says what was
+   recorded. Name a stopped run's reason in the Outcome, with the one-line fix.
+
 ## Comparisons — tracked branches, read without switching
 
 The binding identity names the branches open comparisons track for this board (preflight prints

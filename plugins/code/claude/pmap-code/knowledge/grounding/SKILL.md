@@ -80,12 +80,18 @@ The unattended drift check a host schedule fires (`recurring-runs.md` in the pro
 skill). Nobody answers a prompt, and every run is recorded on the platform and shown on the board's
 binding.
 
-1. **Open the run first**, before Step 0:
-   `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --scheduled-run begin --command ground`. Its JSON
-   carries the run's `runId`, which the run's pushes then carry. A failure here never stops the run.
-2. **A prompt becomes a stop.** The connect-now offer and the branch-mismatch prompt are not asked:
-   an unmet gate, and any exit that stops the command, ends the run — relay the CLI's `error`
-   verbatim — and goes to step 3.
+1. **Step 0's preflight takes `--scheduled ground`.** It opens the run (its JSON `scheduledRun.runId`,
+   which the run's pushes then carry), fetches the binding's pinned branch from origin and checks
+   its tip out detached into a scratch folder, `.provenmap/worktrees/@pinned` (its JSON
+   `worktree.dir`). The checkout's own branch and working tree are not consulted and never move;
+   `--pull` inventories the documents under that folder by itself, and every `.provenmap/` file —
+   the evidence store, the links file — stays in the checkout. **Read documents only under
+   `worktree.dir`** (every `path` the inventory prints is relative to it). Never run `git fetch`,
+   `git pull` or `git switch`. A preflight exit 2 whose `status` is `fetch_failed` stops the run
+   before anything is read.
+2. **A prompt becomes a stop.** The connect-now offer is not asked (the branch-mismatch prompt
+   cannot arise): an unmet gate, and any exit that stops the command, ends the run — relay the
+   CLI's `error` verbatim — and goes to step 3.
 3. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command ground --facts '{"mode":"scheduled","outcome":"<outcome>","reasonText":"<error>"}'`.
    `outcome` is `up_to_date` when nothing drifted, went missing or sat unlinked (the quiet run),
    `refreshed` when the run re-linked and pushed evidence, `stopped` on any stop. `reasonText` is the
