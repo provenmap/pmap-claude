@@ -13,7 +13,7 @@ allowed-tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 **1 Assemble the spec pack** — `boardSlug` from `.provenmap/config.json`, then `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-build.js --board-slug <boardSlug>`. Exit 1 (not configured), or exit 3 with `errorType: "auth_invalid"` → **connect-now offer**; other exit 3 → stop, report `error` verbatim; exit 0 → print `display`. Pack notes: relay the note on `skills.available: false`, report the sections in `warnings[]`; neither blocks the build.
 
-**1.5 Skills freshness** — if the pack (`packPath`) has `skills.available` and (`skills.upstreamChanged` or `skills.compiledCount` is 0), sync first — a stale spec builds the wrong app: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-skills.js --sync --board-slug <boardSlug>`; report it (name protected `localEdits[]`), then re-run `pmap-build.js` once.
+**1.5 Skills freshness** — if the pack (`packPath`) has `skills.available` and (`skills.upstreamChanged` or `skills.compiledCount` is 0), sync first — a stale spec builds the wrong app: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-skills.js --sync --host claude --board-slug <boardSlug>`; report it (name protected `localEdits[]`), then re-run `pmap-build.js` once.
 
 **2 Branch on `nextAction`** — `none` → nothing to build from: "Compile skills for this app on the ProvenMap portal (or author a board design / work items), then re-run `/build`", stop · `map` → source but no spec: map it first — `/analyze` then `/sync`, stop · `workItems` → spec built, only work item work remains: point at `/work-items`, stop · `build` → continue.
 

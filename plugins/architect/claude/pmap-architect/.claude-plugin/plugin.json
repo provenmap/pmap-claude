@@ -6,9 +6,9 @@
     "./commands/update.md"
   ],
   "displayName": "ProvenMap Architect (renamed)",
-  "version": "1.4.325",
+  "version": "1.4.326",
   "metadata": {
-    "releasedAt": "2026-11-05"
+    "releasedAt": "2026-11-06"
   },
   "description": "Renamed — this plugin is ProvenMap Workspace (pmap-workspace) now. Install pmap-workspace; your login carries over.",
   "author": {

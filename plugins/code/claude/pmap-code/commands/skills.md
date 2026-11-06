@@ -32,13 +32,13 @@ Read `boardSlug` from `.provenmap/config.json`.
 For a sync (default):
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-skills.js --sync --board-slug <boardSlug>
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-skills.js --sync --host claude --board-slug <boardSlug>
 ```
 
 For status only:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-skills.js --status --board-slug <boardSlug>
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-skills.js --status --host claude --board-slug <boardSlug>
 ```
 
 Exit codes:
@@ -49,7 +49,7 @@ Exit codes:
 
 ### Step 2: Report the result
 
-If `withheld.count > 0`: "`<count>` external skill(s) need a newer plugin — run `/update`". Print `note` verbatim. `--sync`: relay `written`/`updated`/`deleted`/`unchanged`, `orphansKept[]`, `foreign[]`, and `preservedOnFailure[]`; remind to **commit**. If `externalSkills > 0`: "N external skill(s) fetched from GitHub and verified". If `thirdPartyScripts`: list scripts and hooks as a warning. If `externalFailed`: list each `sourceSlug`+`reason`; say re-run retries, while a tree-hash mismatch requires curator re-pin. `--status`: relay `inSync`, `upstreamChanged`, `locallyModified[]`, `missing[]`, and `externalSkills`.
+If `withheld.count > 0`: "`<count>` external skill(s) need a newer plugin — run `/update`". `note` verbatim. `--sync`: relay `written`/`updated`/`deleted`/`unchanged`, `orphansKept[]`, `foreign[]`, and `preservedOnFailure[]`; remind to **commit**. If `externalSkills > 0`: "N external skill(s) fetched from GitHub and verified". `thirdPartyScripts`: list them as a warning. If `externalFailed`: list each `sourceSlug`+`reason`; say re-run retries, while a tree-hash mismatch requires curator re-pin. `--status`: relay `inSync`, `upstreamChanged`, `locallyModified[]`, `missing[]`, and `externalSkills`.
 
 CLI owns writing; never edit a skill file yourself.
 

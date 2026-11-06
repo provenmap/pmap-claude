@@ -54,6 +54,7 @@ anchor→file map with architect notes, and downloaded attachments. Then:
 - For `board_diff` payloads, the JSON `workItem.payload.suggestions[]` rows are the machine-readable spec (add/remove/modify nodes, edges, or aspects to make true in the codebase); a suggestion's `rationale` may end with "— Architect: …", a per-change note that is part of the spec.
 - **Aspect anchors** (`elementType: "aspect"`, e.g. a database table or an API endpoint) resolve to no local files yet — the anchor `slug` IS the aspect's identity (a table name or `METHOD /path`), so locate it in the codebase by that identity. A `remove` aspect suggestion means deleting that table/endpoint; the architect's board shows it as staged until your push confirms it.
 - Unresolved anchors (`resolved: false`) → locate the code by the element's slug/name; if there's no local board data at all, suggest running `/analyze` (or `/ground` for a document repo) first.
+- **Decisions in force** (`decisions in force: ADR-n · <title>; …` under the meta line) are the accepted decisions already governing the elements this work touches. Read them now, before the gap review: each is a rule the plan works within; `get_decision` reads one in full.
 
 ## Step 4.5 — Gap review (mandatory before any edit)
 
@@ -73,7 +74,8 @@ it out. When the status is `accepted`, the decision is a rule: plan within it, n
 where it shapes a step ("no call to the Ordering API: ADR-4"), and treat a design that would cross it
 as a gap to raise, not a choice to make. Read its board (`get_decision`, or the board itself) when
 the title alone does not settle a step. Any other status is not yet a rule: say so, and ask before
-planning against it.
+planning against it. The same holds for every decision in force: a step that would cross one is a
+gap to raise, and the plan names the ADR it keeps.
 
 Produce the gap table the skill specifies and classify the result:
 
