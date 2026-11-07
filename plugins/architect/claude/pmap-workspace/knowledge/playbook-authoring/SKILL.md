@@ -149,7 +149,7 @@ the read-back, where the user can change them. Set a chat-starter's `expected` d
 `answer` is for questions only: in the browser its proof is the chat thread, and an agent
 answers it in its own session and marks it once the person is satisfied (list the read tools it
 answers from). Anything with a manual path is not a chat step: a plan becomes a `work-item` step
-that stops at `drafted`, a drawing a `context-board` step. `contextBoard`, `decisionBoard` and
+that stops at `drafted`, a drawing a `context-board` step. `contextBoard`, `decision` and
 `workItemDraft` remain for steps that are chat's by nature. `scope` is the conversation scope
 the browser opens with.
 

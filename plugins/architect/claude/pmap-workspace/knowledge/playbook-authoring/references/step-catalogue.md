@@ -22,8 +22,8 @@ steps and 1–12 stages.
 
 `expected` on a chat-starter: `answer` (a question answered: a chat thread in the browser, a mark
 after the agent answers it from the plugin) · `contextBoard` (chat drew a
-context board) · `workItemDraft` (chat drafted a work item) · `decisionBoard` (chat created a
-decision board). A `publish` step with `{kind:"step"}` must name a `context-board` step or a
+context board) · `workItemDraft` (chat drafted a work item) · `decision` (chat wrote an
+ADR: a work item of type decision). A `publish` step with `{kind:"step"}` must name a `context-board` step or a
 chat-starter expecting `contextBoard`; any other step draws no board to publish.
 
 Do not author `code` steps: they are registered in the web app for the setup guide only.
@@ -46,7 +46,7 @@ included — a publish anywhere under it counts.
 | `{kind:"app.synced", withinDays?}`            | milestone | code `/sync`; `withinDays: 7` for "kept current"                  |
 | `{kind:"aspect.adopted", aspectKind?}`        | milestone | code `/aspects`; `aspectKind` one of `database.schema`, `api.surface`, `ui.pages`, `event.catalog`, `authz.registry` (unset = any) |
 | `{kind:"insight.ran", any:true, skill?}`      | milestone | code `/discover`; control `insights-rail`                         |
-| `{kind:"decisionBoard.exists", any:true}`     | milestone | architect `/adopt-adr`                                            |
+| `{kind:"decision.exists", any:true}`          | milestone | architect `/adr` or `/adopt-adr`                                  |
 | `{kind:"skills.compiled"}`                    | milestone | control `skills-library`                                          |
 | `{kind:"board.published"}`                    | milestone | control `publish`                                                 |
 | `{kind:"tag.coverage", tag, minPercent}`      | milestone | control `context-tags` (e.g. `owner:team`, 60)                    |

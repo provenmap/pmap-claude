@@ -1,19 +1,20 @@
 ---
 name: adr-adoption
-description: How to adopt an architecture decision (ADR) into ProvenMap and measure the estate against it — the /adopt-adr arc. Use when the org has made a decision, standard, or policy that boards should be governed by and checked against. Key capabilities: ADR normalization, blast-radius sweep per aspect family, the decision grill, the durable decision board, compliance insight batches, federated per-app remediation work items.
+description: How to adopt an architecture decision (ADR) into ProvenMap and measure the estate against it — the /adopt-adr arc. Use when the org has made a decision, standard, or policy that boards should be governed by and checked against. Key capabilities: ADR normalization, blast-radius sweep per aspect family, the decision grill, the Decision work item (the ADR), compliance insight batches, federated per-app remediation work items.
 ---
 
 # ADR Adoption
 
-An adopted decision becomes three things: a **decision board** (the durable record — where the
-ADR lives and is found), a **compliance insight batch** per affected app (the _is_ — where the
+An adopted decision becomes three things: a **Decision work item** (the ADR itself — the rule,
+its context and where it applies, with its own lifecycle and `ADR-n`), a **compliance insight batch** per affected app (the _is_ — where the
 estate violates it today), and **remediation work items** (the _ought_, as work that can actually
 be delivered and confirmed). Work items are per-board and cross-board anchors are inert, so a
 cross-cutting ADR **federates**: per-app work items landed together in the working copy and
 committed as one decision.
 
-The split matters: the decision board holds the _standing_ rule, which never "completes"; the
-work items hold the _bounded_ work each app owes to comply, which does. Do not try to express a
+The split matters: the ADR holds the _standing_ rule, which never "completes" (it is accepted,
+and later deprecated or superseded, never pulled as a task); the remediation work items hold the
+_bounded_ work each app owes to comply, which does. Do not try to express a
 standing rule as a work item that can never reach Implemented.
 
 ## 1 — Intake: normalize the decision
@@ -45,22 +46,32 @@ swept element: compliant / violating / unclear.
 Bounded rounds (2–4 questions each): decision crispness (the one sentence); drivers (why now);
 applicability scope (which apps, which element classes — this becomes the work item wording);
 exceptions & grandfathering (violations the architect explicitly accepts); migration stance
-(fix-now vs comply-on-next-touch); supersedes check (`get_board_tree` for an existing `ADR:`
-decision board, `get_decision` on it for its ADR-n and status, and `list_work_items` per
-affected app — does open work already cover this ground?).
+(fix-now vs comply-on-next-touch); supersedes check (`list_work_items {statuses: ["decision"]}` on
+the root and the affected apps for an existing ADR on this ground, `get_decision` on it for its
+ADR-n and status, and `list_work_items` per affected app — does open work already cover this
+ground?).
 
-## 4 — Mint the decision's durable home
+## 4 — Write the ADR
 
-`create_decision_board {name: "ADR: <title>", supersedes?: <slug of the ADR board it replaces>}`
-(durable `adr` type, standalone) and draw/write the normalized record there — the workspace-level
-decision log. The board is born with its decision record, `ADR-n`, as a draft; the reply names
-the number. This is the record's home: it is where "what did we decide, and why" is answered
-six months on. There is no delete tool for it — durable records retire in the platform.
+`create_work_item {type: "decision", …}` writes the ADR, born as a draft with its `ADR-n` (the
+reply names it):
 
-When the record is written, `propose_decision {boardSlug}` puts it forward. No tool accepts,
-rejects or deprecates: the owner settles it in the platform, and accepting a decision that
-names what it supersedes retires the old one. Every remediation work item below carries
-`decisionBoardSlug` so the work points back at the rule it serves.
+- `workBoardSlug` — where the decision lives: the root for a landscape decision, the app board
+  for one app's. An ADR may live on any board; it needs no repository binding.
+- `name` — the decision in one active-voice sentence (§1), without an `ADR:` prefix: the number
+  travels beside it.
+- `description` — what it is, in a line; `narrative` — Context, the alternatives weighed,
+  Consequences; `directive` — what code must honour, as the implementer will read it.
+- `anchors` — the elements it governs, each with a note on why: the compile matches a
+  repository's work to the decision by them, so an unanchored ADR reaches no code.
+- `supersedes` — `"ADR-n"` of the decision it replaces, when there is one.
+
+When the record is written, `propose_decision {decision: "ADR-n"}` puts it forward. No tool
+accepts, rejects or deprecates: the owner settles it in the platform, and once accepted its words
+are frozen (a change is a superseding ADR). Accepting a decision that names what it supersedes
+retires the old one. Each repository then pulls the accepted ADRs that govern it with the code
+plugin's `/decisions`. Every remediation work item below carries `decision: "ADR-n"` so the
+work points back at the rule it serves.
 
 ## 5 — Record the assessment
 
@@ -86,7 +97,7 @@ The writes join the working copy automatically. Two paths, both producing draft 
   wrong behaviour), description = the normalized record (identical across apps) plus that app's
   applicability, directive = that app's **enforceable consequences**, element-grounded by slug.
   Use this where compliance requires work the sweep cannot see as an insight. Pre-flight each
-  payload with `--validate work-item`. Set `decisionBoardSlug` to the decision board from §4
+  payload with `--validate work-item`. Set `decision` to the `ADR-n` from §4
   (and `update_work_item` the promoted ones the same way).
 
 A single-app ADR degenerates to one work item. Affected but **unbound** boards: name them, skip

@@ -19,6 +19,15 @@ Before claiming, check the chosen work item's summary fields:
 - **`stale: true`** → do NOT implement. Tell the user: "This work item is stale — the board changed since the architect authored it, so the proposed change may no longer apply. Re-check with the architect (they can re-lock it), then pull again." Stop unless the user explicitly insists after that warning.
 - **`status: in_progress`** and `assignedTo` names someone who isn't this user → warn that another developer may already be implementing it, and confirm with the user before proceeding.
 
+Then check the decisions in force, so no work starts against a stale rule (read-only, writes nothing):
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-decisions.js --check --host claude --board-slug <boardSlug>
+```
+
+- **`fresh: false`** → AskUserQuestion "Compile the decisions in force first?" naming `toCompile` and `toRemove`: **Compile now** → the same command with `--compile` instead of `--check`; print each of `lines` verbatim and remind the user to commit them; **Go on** → continue, and say the agent may work against the ADRs listed as stale.
+- `fresh: true`, `featureAvailable: false`, or any non-zero exit → continue; the check never blocks the work.
+
 ## Step 3 — Claim it (single-winner)
 
 A browser pick (`--select-poll` returning `selectStatus: "complete"`) is already claimed under the
@@ -54,7 +63,7 @@ anchor→file map with architect notes, and downloaded attachments. Then:
 - For `board_diff` payloads, the JSON `workItem.payload.suggestions[]` rows are the machine-readable spec (add/remove/modify nodes, edges, or aspects to make true in the codebase); a suggestion's `rationale` may end with "— Architect: …", a per-change note that is part of the spec.
 - **Aspect anchors** (`elementType: "aspect"`, e.g. a database table or an API endpoint) resolve to no local files yet — the anchor `slug` IS the aspect's identity (a table name or `METHOD /path`), so locate it in the codebase by that identity. A `remove` aspect suggestion means deleting that table/endpoint; the architect's board shows it as staged until your push confirms it.
 - Unresolved anchors (`resolved: false`) → locate the code by the element's slug/name; if there's no local board data at all, suggest running `/analyze` (or `/ground` for a document repo) first.
-- **Decisions in force** (`decisions in force: ADR-n · <title>; …` under the meta line) are the accepted decisions already governing the elements this work touches. Read them now, before the gap review: each is a rule the plan works within; `get_decision` reads one in full.
+- **Decisions in force** (`decisions in force: ADR-n · <title>; …` under the meta line) are the accepted decisions already governing the elements this work touches. Read them now, before the gap review: each is a rule the plan works within; its compiled skill (`/decisions`) holds it in full.
 
 ## Step 4.5 — Gap review (mandatory before any edit)
 
@@ -72,7 +81,7 @@ the bar the directive has to clear, and a directive that misses its own type's b
 **A work item that names a decision** (`decision: ADR-n · <title> (<status>)` on its meta line) carries
 it out. When the status is `accepted`, the decision is a rule: plan within it, name it in the plan
 where it shapes a step ("no call to the Ordering API: ADR-4"), and treat a design that would cross it
-as a gap to raise, not a choice to make. Read its board (`get_decision`, or the board itself) when
+as a gap to raise, not a choice to make. Read its compiled skill (`/decisions`) when
 the title alone does not settle a step. Any other status is not yet a rule: say so, and ask before
 planning against it. The same holds for every decision in force: a step that would cross one is a
 gap to raise, and the plan names the ADR it keeps.

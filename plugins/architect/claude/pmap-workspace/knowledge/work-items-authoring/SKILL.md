@@ -72,22 +72,25 @@ open`) or rejects it.
 | `list_epics`           | the workspace's epics — the groups work items are filed under                                                                          |
 | `create_epic`          | a new epic (name + why); holds no work itself                                                                                          |
 | `set_work_item_epic`   | file a work item under an epic, or take it out (any status)                                                                            |
-| `get_decision`         | an ADR board's decision record: ADR-n, status, owner, what it supersedes; only an accepted decision binds the work that follows it      |
+| `get_decision`         | an ADR's record by `ADR-n` or `#n`: status, owner, what it supersedes; only an accepted decision binds the work that follows it         |
 | `propose_decision`     | put a draft decision forward as proposed; a person accepts or rejects it in the platform, no tool does                                 |
 
 Address work items by slug (`list_work_items` → `get_work_item`), or by number as `#42`.
 
 ## Authoring a good work item
 
-`create_work_item` takes `{ workBoardSlug, name, type?, epicSlug?, decisionBoardSlug?, directive
+`create_work_item` takes `{ workBoardSlug, name, type?, epicSlug?, decision?, supersedes?, directive
 (10–4000 chars), description?, narrative?, draftedFromSourceSlug?, dependsOnSlugs?,
 anchors[]{elementType, aspectKind?, slug, boardSlug?, note?}, priority?, effort? }`.
-`decisionBoardSlug` names the ADR board whose decision the work item records (a `decision`)
-or carries out (any type); `update_work_item` sets or clears it at any status (`''` clears).
+`decision` names the decision the work item carries out, as `ADR-7` or its work item `#42`;
+`update_work_item` sets or clears it at any status (`''` clears). An ADR itself is a work item of
+type `decision` (`/adr` writes one): it carries out nothing, may name what it `supersedes`, may
+live on any board, and is never handed off.
 
 **Type — one question, early.** Every work item is one of `feature` (something the system does
 not do yet), `fix` (something behaves wrongly), `refactor` (behaviour stays, shape changes),
-`task` (bounded work with no behaviour claim) or `decision` (a choice to make and record).
+`task` (bounded work with no behaviour claim) or `decision` (an ADR: the decision itself, with its
+own lifecycle; author it with `/adr`).
 Ask once, in the surround pull, when the material does not make it obvious; default `task`.
 The type sets the bar the directive has to clear — a fix names what is observed and expected,
 a refactor names what must keep working — and the implementer's gap review reads the same bar.

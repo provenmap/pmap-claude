@@ -5,8 +5,8 @@ argument-hint: "[decision material or file]"
 allowed-tools: Read, AskUserQuestion, Bash(node:*), mcp__provenmap__*
 ---
 
-Turn a decision into governance: normalized record → a durable `ADR:` decision board (where the
-rule lives) → a compliance insight batch per app (the _is_) → per-app remediation work items (the work owed).
+Turn a decision written elsewhere into governance: normalized record → a Decision work item (the
+ADR: the rule, anchored where it applies) → a compliance insight batch per app (the _is_) → per-app remediation work items (the work owed).
 The whole arc lives in [`${CLAUDE_PLUGIN_ROOT}/knowledge/adr-adoption/SKILL.md`](../knowledge/adr-adoption/SKILL.md)
 — read it plus [`${CLAUDE_PLUGIN_ROOT}/knowledge/architect-core/SKILL.md`](../knowledge/architect-core/SKILL.md);
 sweeps use [`${CLAUDE_PLUGIN_ROOT}/knowledge/board-reading/SKILL.md`](../knowledge/board-reading/SKILL.md),
@@ -24,9 +24,10 @@ landing uses [`${CLAUDE_PLUGIN_ROOT}/knowledge/work-items-authoring/SKILL.md`](.
    Classify compliant / violating / unclear.
 4. **Grill** — crispness, drivers, applicability, exceptions, migration stance, supersedes
    check (adr-adoption §3).
-5. **Record** — `create_decision_board {name: "ADR: <title>", supersedes?}` and write the
-   normalized record there, then `propose_decision` (adr-adoption §4). This is the standing
-   rule's home; it never "completes" — the owner accepts it in the platform.
+5. **Record** — `create_work_item {type: "decision", supersedes?}` with the normalized record,
+   anchored to what it governs, then `propose_decision` (adr-adoption §4). The ADR is the
+   standing rule; it never "completes" — the owner accepts it in the platform. To write a new
+   decision from scratch, `/adr` is the door.
 6. **Land, federated** — `create_insight` per swept app where violations were found, then
    remediation drafts: `promote_insights` on reviewed violations, plus `create_work_item`
    per affected code-bound app board where compliance needs work no insight covers

@@ -62,9 +62,24 @@ Reached on the pack's `nextAction: "build"`. Follow these steps in order, exactl
 
 ### Step 3 — Plan from the spec (approval gate)
 
+First, the decisions in force — no build starts against a stale rule. Check (read-only):
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-decisions.js --check --host claude --board-slug <boardSlug>
+```
+
+`fresh: false` → compile them, as Step 1.5 syncs the skills, and print each of `lines` verbatim:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-decisions.js --compile --host claude --board-slug <boardSlug>
+```
+
+`featureAvailable: false` or a non-zero exit → go on; the check never blocks the build.
+
 Read, in this order:
 
 1. The compiled skills under the pack's `skills.skillsDir` — the specs and conventions to honor (app-tier overrides win; never edit these files — they're lock-managed by `/skills`).
+   The `adr-<n>-…` skills among them are the accepted decisions (`/decisions`): rules the plan works within, never edited here.
 2. The pack's `design.unbuilt[]` — designed elements with no source mapping (components to create; board edges give their dependencies).
 3. `.provenmap/build/aspects.json`, when the pack reported `aspectsPath` — full DB tables and API endpoints to materialize as migrations and contracts.
 4. The pack's `workItems.open[]` — architect work items; note which plan units they cover.
