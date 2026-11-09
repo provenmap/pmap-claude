@@ -19,7 +19,7 @@ Print every `display` verbatim; branch only on exit codes and named JSON fields.
 
 **Read `${CLAUDE_PLUGIN_ROOT}/knowledge/claude-code-plugin-sync/references/aspects-workflow.md` NOW and follow it exactly; improvise nothing.**
 
-1. **Kinds** — the `--aspect` value (or `--db`/`--api`); none → `AskUserQuestion`, `multiSelect: true`, which of the six.
+1. **Kinds** — the `--aspect` value (or `--db`/`--api`); none → `AskUserQuestion`, `multiSelect: true`, which of the six (`--scheduled`: all six).
 2. **Comparisons** — preflight's `binding.comparisonBranches` non-empty and no `--comparisons` flag → `AskUserQuestion` per the reference; `--comparisons all|none` answers it unasked. Never push a tracked branch unasked.
 3. **The board**, per kind: `pmap-aspects.js --charter` (non-null `charter` = find those first, same names, never invent) → that kind's skill extracts into its payload — definitions only: **never run the app, a live database, broker, endpoint or policy** → `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-aspects.js --aspect <kind> --payload <payload-file> --mode <mode>` (+ `--dry-run` · `--no-verify` · `--force` as asked).
 4. **Each chosen branch**, after the board: `--worktree <branch>` prints the tree to read (the user's checkout never moves) → per kind `--charter --branch <branch>`, extract there, push with `--repo <dir> --branch <branch>` → `--worktree-remove <branch>`, also after a failure.

@@ -14,11 +14,10 @@
 3. For each chosen source, print the MCP connect one-liner and auth note from
    `vendor-recipes.md`. Never ask the user to paste a token into the chat — name the env var and
    where to set it.
-4. Scheduling — take the best surface this session actually has, per
-   `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/references/recurring-runs.md`: if it can create
-   schedules (a `/schedule`-style skill for cloud routines, or the desktop app's scheduled tasks),
-   offer to create a recurring "run `/monitor --scheduled`" at the chosen cadence now — **the user confirms**.
-   Otherwise print that surface's copy-paste setup block. For cloud/unattended runs, note that
-   credentials go in the run environment as `PMAP_BINDING_TOKEN` / `PMAP_API_SECRET`, and
-   correlation uses `--from-server` (§2).
+4. Scheduling — do not describe a surface here. The config file you just wrote puts
+   `/monitor --scheduled` into the task `/start` prints for this repo when nothing runs on a
+   schedule (one task per repo, every command it needs, the sentence to paste); a repo that
+   already has a task adds `Then run /pmap-code:monitor --scheduled.` to its instructions.
+   For a cloud routine, `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/references/recurring-runs.md`
+   §2 has the prompt and the environment it needs.
 5. Finish by naming the next command: "Run `/monitor` now for a first pass."

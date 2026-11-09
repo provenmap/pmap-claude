@@ -16,7 +16,8 @@ drawn, what it is called, how it is grouped and what carries the story.
 - `sets[]` — `id`, `side` (`before` | `after`), `mode`, `name` (the app, or the document's
   label), `branch`, `replaces` (on an after set: the before set ids it is meant to carry).
 - `rows[]` — one per contract: `key` (cite it verbatim), `kind`, `label`, `verdict` (`kept`,
-  `moved`, `changed`, `removed`, `missing`, `new`), `flagged`, `accepted`, `before[]` / `after[]`
+  `moved`, `changed`, `breaking`, `removed`, `missing`, `new`; `breaking` is a changed
+  interface an existing caller cannot survive), `flagged`, `accepted`, `before[]` / `after[]`
   (the set ids it sits in), `consumers[]` (systems outside the comparison that depend on it),
   `change` (what differs, in the table's own words: "lost header x-requestid", "added
   TrackingNumber"; null when nothing is named).
@@ -141,8 +142,9 @@ There is no `tokens`: what an element's verdict is belongs to the rows it cites.
 - A set node's `name`: the app, and its branch when it has one ("Ordering.API · release/next").
 - A contract node's `name`: the row's `label`, verbatim. Its `description`, one short line, on the
   side it is about:
-  - a `changed` row: on the after board, the `change`, capitalised ("Lost header
-    x-requestid · responses lost: 400"); on the before board, "Changes on <the after side>".
+  - a `changed` or `breaking` row: on the after board, the `change`, capitalised ("Lost header
+    x-requestid · lost response 400"); on the before board, "Changes on <the after side>", or
+    "Breaks on <the after side>" for a `breaking` row.
   - a `removed` or `missing` row: before, "Gone on <the after side>"; after, "Gone", and when a
     consumer depends on it ": <consumers> still call(s) it".
   - a `new` row: before, "Not served today"; after, "New".
@@ -151,8 +153,9 @@ There is no `tokens`: what an element's verdict is belongs to the rows it cites.
 - A kept fold's `description`: the first three labels by label ignoring case, and "and <n> more".
 - A capability's `name`: the capability ("Identity"). Its `description`, counted from its rows:
   on the side with one set, what it holds ("6 tables · 16 endpoints"); on the other side, inside a
-  set, its verdicts in the order kept, changed, moved, missing, leaving out a zero ("12 kept · 9
-  changed"), and the other set when a second one carries some of it ("also in Ordering.API"); left
+  set, its verdicts in the order kept, breaking, changed, moved, missing, leaving out a zero
+  ("12 kept · 2 breaking · 7 changed"), and the other set when a second one carries some of it
+  ("also in Ordering.API"); left
   outside every set, "No service carries it: <n> missing".
 - An edge's `type` is the line's label, from the caller's side: what it does through the
   contracts the edge cites ("places orders", "lists orders", "reads stock"), two or three words,

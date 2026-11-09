@@ -5,6 +5,13 @@ surface by what the user has, most capable first. Creating the schedule is the *
 offer, don't assume — and never place secret **values** in the chat or in any schedule definition
 you author (name the env vars instead).
 
+**Never compose the task's instructions yourself.** `/start` reads the repo's state — analysed
+boards, the aspect kinds on the board and the comparisons they feed, evidence links, the
+monitoring config — and, when nothing runs on a schedule here, prints the one instruction string
+the repo needs and this host's sentence to paste. `/status` lists the runs and names why the last
+one stopped. Point the user there for a desktop task; this reference is the background behind it
+and the cloud-routine path.
+
 Four commands are worth scheduling today, each with `--scheduled` so the run is recorded and reads
 the pinned branch's latest through its own scratch checkout, whatever the checkout is on:
 `/analyze --scheduled` (keep the boards following the code — refresh the boards whose
@@ -41,8 +48,8 @@ permission mode, and the repo's real `.provenmap/` state. Requires the machine o
   nothing, one that stopped — is recorded on the platform and shown on the board's binding;
   `/status` lists the recent runs and names why the last one stopped. The `/monitor`, `/ground`
   and `/aspects` task prompts pass `--scheduled` the same way
-  ("Run /pmap-code:monitor --scheduled."; `/aspects` also names its kinds:
-  "Run /pmap-code:aspects --db --api --scheduled.").
+  ("Run /pmap-code:monitor --scheduled."; a scheduled `/aspects` with no kind flag
+  extracts every kind, and `--db`, `--api` or `--aspect <kind>` narrows it).
   Permission mode "Allow" for `Skill(pmap-code:analyze)`, `Bash(node:*)` and
   `Bash(git:*)`; where the host instead asks during the first run, approve each one as
   **always** — an approval kept for one run only stalls every later run on the same prompt.

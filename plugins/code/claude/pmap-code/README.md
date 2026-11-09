@@ -98,7 +98,8 @@ Polyglot projects produce a unified board with cross-language relationships (HTT
 | `/analyze --clean` | Full re-analysis from scratch, ignoring existing board data |
 | `/analyze --drill <board>/<node>` | Drill into a node to produce a child layer board |
 | `/analyze --all` | Re-analyze every layer board in the manifest |
-| `/analyze --scheduled` | Unattended upkeep for a host schedule: refresh the boards whose files changed, then sync them (the `recurring-runs` reference in the `provenmap-integration` skill has the recipe) |
+| `/analyze --scheduled` | Unattended upkeep for a host schedule: refresh the boards whose files changed, then sync them (`/start` prints the task to create when nothing runs on a schedule; `/status` lists the runs) |
+| `/scheduled-runs` | Folded stub, one release: points at `/start` and `/status` |
 | `/sync [--board <slug>]` | Push analysis to portal (smart diff: only changed elements) |
 | `/sync --all` | Push every board in the manifest |
 | `/ground [--board <slug>]` | Ground the board in this repo's documents: mirror the authored board (or read the analysed, pushed one), propose and push node↔document evidence links, report drift |

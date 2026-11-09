@@ -68,11 +68,12 @@ binding.
    pinned branch and that folder's HEAD. The spine check, the payload and every `.provenmap/`
    file stay in the checkout. Never run `git fetch`, `git pull` or `git switch`. A preflight exit
    2 whose `status` is `fetch_failed` stops the run before any code is read.
-2. **Comparisons are `all`,** unasked: each tracked branch is read through its own worktree
-   beside the scratch folder, as below.
-3. **A prompt becomes a stop.** The connect-now offer, the branch-mismatch prompt, the kind
-   question (pass `--aspect`, `--db` or `--api` in the task prompt) and the shape-coverage
-   question (exit 5 stops; never `--force` unasked) are not asked: an unmet gate, and any exit that
+2. **Every kind, unasked:** with no `--aspect`, `--db` or `--api`, the run extracts all six kinds, in
+   registry order; a flag narrows it to the kinds named. A kind the repo has nothing for pushes
+   an empty set, which verifies as truthfully empty. **Comparisons are `all`,** unasked: each
+   tracked branch is read through its own worktree beside the scratch folder, as below.
+3. **A prompt becomes a stop.** The connect-now offer, the branch-mismatch prompt and the
+   shape-coverage question (exit 5 stops; never `--force` unasked) are not asked: an unmet gate, and any exit that
    stops the command, ends the run — relay the CLI's `error` verbatim — and goes to step 4.
 4. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command aspects --facts '{"aspect":"<kinds>","mode":"scheduled","outcome":"<outcome>","reasonText":"<error>"}'`.
    `outcome` is `refreshed` when any push's `inserted`, `updated` or `deleted` is above zero,
