@@ -98,7 +98,9 @@ ORM schemas without booting the app.
 published on the channel (a Kafka record type, an EventBridge `detail-type`, a CloudEvents `type`).
 `name` is channel-unique and is the join key `subscriptions[].eventTypeName` points at (see below).
 `payloadSchema` is whatever schema you can find verbatim (JSON Schema, Avro, protobuf descriptor) — opaque
-is fine, don't hand-write one. Leave `deprecated`/`textual` at their defaults (human-tier).
+is fine, don't hand-write one. Leave `deprecated` at its default and `textual` out entirely, on the
+channel and on each event type: it is human-tier, the push nulls it anyway, and a `runbookUrl` that
+is not an absolute URL is refused by the server.
 
 **Code-first messages.** When the message is a class or record in code (a C# `record … : IntegrationEvent`,
 a TS interface, a Java class, a Python dataclass) and no published schema exists, write its fields as
