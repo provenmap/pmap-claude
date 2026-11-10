@@ -16,7 +16,12 @@ Extract the **declared** route tree and shape it into a `UiPagesPayload`:
 
 ## Golden rule — read this first
 
-**A page's `slug` is not a fresh name you invent — it MUST be the slug `/analyze` already assigned that page's node on the synced spine.** Every other aspect (`database.schema`, `api.surface`) generates its own aspect-local slug for each row and links back to the spine through a separate `ownerSlug` field. `ui.pages` has no `ownerSlug` at all: the page's own `slug` **is** the link. Before extracting, read `.provenmap/boards/<board-slug>.json`, find the node the spine already created for each route (its `type` will be a page/route-shaped archetype), and reuse that exact `slug` — never re-slug it, never make one up. A route whose node isn't on the spine yet still adopts fine (it lands unresolved and auto-heals on the next `/analyze` + `/sync`), but don't guess a slug for it either — emit the best-guess kebab-case name only if you can't find a match, and expect it to show as unlinked until the spine catches up.
+**Every route is its own page, and every page names its node.** A page has two identities:
+
+- `slug` — the page's own, one per route: the route pattern in kebab case, dynamic segments kept as their names (`/account/address-book/[id]/edit` → `account-address-book-id-edit`). Stable across re-extracts, unique by construction, never two routes under one slug.
+- `ownerSlug` — the spine node the page belongs to: the slug `/analyze` already assigned that route's node in `.provenmap/boards/<board-slug>.json` (its `type` will be a page/route-shaped archetype). Reuse that exact slug, never re-slug it, never make one up. One node often covers several routes (an `address-book` node over the list, new and edit pages): each route is its own page, and all of them carry `ownerSlug: "address-book"`. A route whose node isn't on the spine yet still adopts fine with `ownerSlug: null` — it lands unlinked and heals on the next `/analyze` + `/sync` — but don't guess a slug for it.
+
+Why both: the server keeps one page per `slug` and links a page to its node through `ownerSlug`. Before 2026-11-10 the page's slug was the link, so three routes under one node could not all be stored and all be linked: a push came up a row short and failed its own verification, and the next board's push of the same slug was refused as a duplicate. A payload that still names one `slug` twice is pushed with the first page only and the rest named in the run's report.
 
 ## Other golden rules
 
@@ -50,7 +55,7 @@ Use `unknown` only when the repo's routing convention genuinely doesn't map to a
 
 ## Per-page fields
 
-- `slug` — see the golden rule above.
+- `slug`, `ownerSlug` — see the golden rule above.
 - `framework`, `routePattern` (the route as declared — keep `[id]` vs `:id` vs `$id` verbatim, don't normalise across frameworks), `runtime` (`server` | `client` | `edge` | `static` | `mixed` — read directives/config, don't assume).
 - `routeSegments[]` — one entry per path segment, `{ segment, kind }` where `kind` is `static` | `dynamic` | `catch-all` | `optional-catch-all` | `group` | `parallel` | `intercepting`. Derive straight from the file-system route convention; this is what the web UI's route tree renders, so segment order and kind must be exact.
 - `layoutChain[]` — the node slugs of every layout wrapping this page, outermost to innermost (e.g. root layout, then a nested segment layout). Omit ones you can't confidently resolve rather than guessing.
@@ -89,7 +94,7 @@ Walk the page component's JSX/template statically and build a tree of `{ compone
 
 ## Linking to the spine — every node-ref field, not just `slug`
 
-Read `.provenmap/boards/<board-slug>.json` for the node slugs the spine already has. Beyond the page's own `slug` (the golden rule above), these fields also name node slugs and follow the same rule — reuse existing ones, emit an unresolved name if the spine doesn't have it yet (auto-heals on the next sync), never fabricate a link that doesn't reflect real code:
+Read `.provenmap/boards/<board-slug>.json` for the node slugs the spine already has. Beyond `ownerSlug` (the golden rule above), these fields also name node slugs and follow the same rule — reuse existing ones, emit an unresolved name if the spine doesn't have it yet (auto-heals on the next sync), never fabricate a link that doesn't reflect real code:
 
 - `layoutChain[]`
 - `dataDependencies[].target`
