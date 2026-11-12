@@ -5,6 +5,10 @@ Each recipe: how to connect, which tools to call, and how the output maps onto t
 OAuth is fine) vs **unattended** (scheduled runs, token/IAM env credentials only). Never ask the
 user to paste a secret into the chat; name the variable and where it goes.
 
+Every recipe's **Map** line also sets `watch` on each signal to the `id` of the watch running it (the
+cloud cost recipe's `baseline` is the prior period's spend, which the cost stat shows as the change).
+A run from `--input` or with no `watches[]` omits `watch`, and no stat is built.
+
 ## Sentry
 
 - **Connect (interactive):** `claude mcp add --transport http sentry https://mcp.sentry.dev/mcp`,
@@ -14,7 +18,8 @@ user to paste a secret into the chat; name the variable and where it goes.
   environment (scopes: `org:read`, `project:read`, `event:read`). Cloud routines can instead use a
   Sentry connector pre-authorized on the claude.ai account.
 - **Pull:** search issues for the configured project(s) within the window, sorted by event count;
-  for the top issues fetch the latest event for stack frames.
+  for the top issues fetch the latest event for stack frames. Leave out info-level messages that
+  carry no exception (a startup or heartbeat log line is not a failure).
 - **Map:** `id` = `sentry:<issue shortId>` · `kind` = `error` · `severity` from issue level
   (fatal→critical, error→high, warning→medium, info→info) · `measurement` = `{ value: eventCount,
   unit: "events", trend }` (compare to prior window if available) · `locators` = in-app stack
@@ -42,14 +47,44 @@ user to paste a secret into the chat; name the variable and where it goes.
 
 - **Connect:** the official AWS MCP server (covers Cost Explorer + Cost Anomaly Detection APIs):
   `claude mcp add aws -- npx @aws/mcp-server` with IAM env credentials (read-only cost policies).
-- **Pull:** cost anomalies within the window, plus service-level cost deltas vs the prior period
-  for the configured threshold (default: flag ≥20% increase).
+- **Pull:** service-level cost deltas vs the prior period, and the cost anomalies within the
+  window. A service is a signal when its rise meets **both** the watch's `thresholdPercent`
+  (default 20) and its `minimumAmount` (default 10, in the bill's currency): a 100% rise on a
+  two-dollar line is not worth an insight. An anomaly on a service that is already a signal is
+  evidence for that signal, not a signal of its own; an anomaly on any other service is a
+  signal only when its impact meets `minimumAmount`.
 - **Map:** `id` = `aws:<anomaly id>` (or `aws:cost:<service>` for threshold deltas) · `kind` =
-  `cost` · `severity` by spend delta (≥$500/day critical, ≥$100 high, else medium) ·
+  `cost` · `severity` by spend delta (≥$500/day critical, ≥$100/day high, ≥$100 over the window
+  medium, else low) ·
   `measurement` = `{ value: spendDelta, unit: "USD", baseline: priorSpend, trend }` · `locators`
   = the anomaly's root-cause service/resource names as `resource` (e.g. a Lambda name, an RDS
   instance id) — cost signals often anchor only via the teach-once map or land board-level;
   that is expected, not a failure.
+
+**Without an MCP server**, the `aws` CLI reads the same data with the same IAM credentials
+(`ce:GetCostAndUsage`, `ce:GetAnomalies`): `aws ce get-anomalies --date-interval
+StartDate=<from>,EndDate=<to>` for the anomalies, and `aws ce get-cost-and-usage --time-period
+Start=<from>,End=<to> --granularity DAILY --metrics UnblendedCost --group-by
+Type=DIMENSION,Key=SERVICE` once for this window and once for the one before it. Group by
+`Type=TAG,Key=<tag>` instead when the watch's `scope` names a cost allocation tag. Cost Explorer
+bills each API request, so make these calls once per run, never per service.
+
+## GitHub issues
+
+- **Connect:** the `gh` CLI, signed in with `gh auth login` (interactive) or `GH_TOKEN` in the
+  run environment (unattended; read access to issues is enough). A GitHub MCP server or
+  connector works the same way where one is connected.
+- **Pull:** `gh issue list --repo <owner>/<repo> --state open --json
+  number,title,body,labels,url,createdAt,updatedAt,comments --limit 200`, kept to the issues
+  updated inside the window. `<owner>/<repo>` is the watch's `scope`; without one, `gh` reads
+  the checkout's own remote. Pull requests are not issues and are not read.
+- **Map:** `id` = `github:<owner>/<repo>#<number>` · `kind` = `issue` · `severity` from the
+  repo's own priority or severity labels when it has them; otherwise `medium` for an issue
+  labelled as a bug and `low` for the rest · `measurement` = `{ value: daysOpen, unit: "days" }`
+  · `locators` = repo-relative file paths quoted in the body or a pasted stack trace as
+  `code-path`, then each area or component label as `service` (the label's value, without its
+  `area:`-style prefix) · `evidence.url` = the issue URL, `evidence.sample` = the first lines of
+  the body.
 
 ## Datadog / Grafana
 

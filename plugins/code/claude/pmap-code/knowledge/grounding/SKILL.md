@@ -47,7 +47,7 @@ A link is justified when the document **states or specifies** what the node clai
 
 `--pull`'s `evidence.drifted` / `evidence.missing` name which tracked links need attention this run:
 
-- **Drifted** (the document's content hash no longer matches): re-read it at its current content. Still substantiates the claim? Refresh `anchor`/`excerpt` to match the current text. The claim moved elsewhere or was removed? Drop the link rather than leaving a stale citation.
+- **Drifted** (the document's content hash no longer matches): re-read it at its current content. Still substantiates the claim? Refresh `anchor`/`excerpt` to match the current text and set `"reverified": true` on the link: that is what tells the push you read the current document, and without it a link that keeps its anchor stays drifted on every run. The claim moved elsewhere or was removed? Drop the link rather than leaving a stale citation.
 - **Missing** (path no longer in the corpus): the document is gone — drop the link.
 - Everything else in `context.links` is still fresh — carry it forward unchanged.
 
@@ -67,8 +67,10 @@ The proposed set is written to `.provenmap/evidence-links.json` — never edit `
 { "links": [ { "nodeSlug": "billing-api", "path": "docs/billing.md", "anchor": "rate-limits", "excerpt": "…", "docUrl": null } ] }
 ```
 
-You supply `nodeSlug`/`path`/`anchor`/`excerpt`/`docUrl` only — the CLI fills in `contentHash`
-itself from a fresh read of the document at push time, so never compute or guess one.
+You supply `nodeSlug`/`path`/`anchor`/`excerpt`/`docUrl` only, plus `"reverified": true` on a
+drifted link you re-read and kept (never on a link you carried forward unread) — the CLI fills
+in `contentHash` itself from a fresh read of the document at push time, so never compute or
+guess one.
 
 When `--push` exits 3, the links file failed schema validation or an evidence path didn't resolve
 in the document corpus; `validationErrors[]` names the exact field/path. Fix

@@ -216,7 +216,8 @@ Boards **within one layer** have no such ordering constraint and each owns its o
 them concurrently: issue up to **3** of the 4b pushes at once, wait for that layer to finish, then
 move to the next layer. Keep the batch at 3 — this is one server's rate budget, not a local
 limit. If any board in a batch fails with a rate-limit or 5xx error, finish the layer serially before
-continuing.
+continuing. If a board's result carries `planLimit`, **stop**: push no other board, in this layer or
+the next. The plan refused the write and every later push is refused the same way.
 
 ### Push
 
@@ -260,6 +261,11 @@ The CLI outputs one JSON object to stdout. Branch on `success`:
 - **`success: true`** — summarise from `pushResult` (`nodesCreated` / `nodesUpdated` /
   `edgesCreated` / `edgesUpdated`, plus any `pushResult.errors[]`) and, in smart-sync mode, the
   `diff` counts (`newNodes` / `changedNodes` / `unchangedNodes`, same for edges).
+- **`planLimit` present (exit 4) — the organisation's plan refused the write.** Print the `error`
+  line as it stands (it carries the server's sentence: the resource, the limit, what to do). Say
+  which boards landed before it and which did not. Do not retry and do not push the remaining
+  boards. `planLimit.action` is `upgrade`, `contact_support` or `manage_billing`: name that one
+  move and nothing else.
 - **`success: false`** — report the `error` field. If `errorType` is `auth_invalid`, the credentials
   were rejected (revoked binding or rotated secret) — make the **connect-now offer** from the command
   rather than reporting a generic API error.

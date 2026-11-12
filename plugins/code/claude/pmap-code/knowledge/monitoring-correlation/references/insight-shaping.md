@@ -11,7 +11,8 @@ insight quality IS work item quality. Each one is an `InsightDraft`. The exact m
 | `advice.text` (kind: `"context"`) | directive ¶3 | Blast radius, related deploys, trend notes. Use `context` for `unmatched`/pure-observation insights — never both kinds. |
 | `trail` stops | work item **anchors** | The trail's entry stop (and nearby stops) are the primary anchors. Anchors are what `/work-items --show` resolves back to source files — keep the trail tight. |
 | `priority`, `advice.effort` | carried verbatim | **Set both on every actionable insight.** `effort` lives inside `advice` (kind: `"recommendation"`). |
-| `id` | — | Local to the skeleton: it groups a signal across runs on this machine and never reaches the wire. The platform mints the ids promotion uses. |
+| `key` | — | The signal's fingerprint: the row keeps its identity across runs. Carry it unchanged. |
+| `stats` | — | Only on the script-built insight tagged `stats`. Carry it unchanged; never edit that insight. |
 
 ## Per-insight checklist (skeleton → work-item-ready)
 
@@ -20,6 +21,7 @@ insight quality IS work item quality. Each one is an `InsightDraft`. The exact m
    if the match looks wrong, say so in `advice.text` (kind: `"context"`) and leave confidence at `likely`/`inferred` —
    or fix the mapping via the teach-once loop instead of shipping a mis-anchored insight.
 2. **Name = the work.** ≤100 chars, imperative, specific.
+   `insight` and `advice.text` are each at most 500 characters: the push refuses a longer one.
 3. **Insight = the evidence.** Counts, window, sample error, users affected. The measurement
    carries the primary number; the prose carries the story.
 4. **advice (recommendation) = the directive.** One concrete action ("Guard `session.customer` against
@@ -30,7 +32,7 @@ insight quality IS work item quality. Each one is an `InsightDraft`. The exact m
    one level when the trend is `increasing` across runs, when `usersAffected` is material, or for
    cost signals whose delta exceeds the configured threshold multiple times over.
 7. **Carry the skeleton through.** `tags` and `measurement` were derived by the correlator from
-   the signal — leave them exactly as found (as with `id` above). Rewriting them breaks the
+   the signal — leave them exactly as found (as with `key` above). Rewriting them breaks the
    cross-run grouping and the one primary number that goes on the wire.
 
 ## Trails and proposals — only when they earn their place

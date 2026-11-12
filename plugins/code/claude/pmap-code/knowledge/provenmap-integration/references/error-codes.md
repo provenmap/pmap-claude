@@ -64,7 +64,19 @@ All API errors return JSON:
 | Code | Message | Cause | Fix |
 |------|---------|-------|-----|
 | `RATE_LIMIT_EXCEEDED` | Too many requests | Hit rate limit | Wait for reset, implement backoff |
-| `QUOTA_EXCEEDED` | Monthly quota exceeded | Subscription limit | Upgrade plan or wait for reset |
+
+### Plan Limit Errors (HTTP 402)
+
+The organisation's plan refused the write. The body names the resource, the limit, the current
+count and one `action`. The CLI puts it on the result as `planLimit` and prints one line starting
+`Plan limit reached:`. Never retry, and push no further boards in the run.
+
+| Code | Cause | `action` |
+|------|-------|----------|
+| `PLAN_ALLOWANCE_REACHED` | A counted allowance is full (sources, work items; graph records on the Free plan) | `upgrade` |
+| `FAIR_USE_REVIEW_REQUIRED` | A paid plan's fair-use ceiling is reached | `contact_support` |
+| `FEATURE_NOT_INCLUDED` | The plan does not include the feature | `upgrade` |
+| `SUBSCRIPTION_INACTIVE` | The subscription could not be verified | `manage_billing` |
 
 ## Retry Strategy
 
