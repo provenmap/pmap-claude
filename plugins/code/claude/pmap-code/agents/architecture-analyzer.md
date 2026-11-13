@@ -200,6 +200,7 @@ When invoked by `/analyze`, a deterministic prepass has already written the skel
      | External integrations     | integrations/, clients/, sdk/                       |
 
    - The `type` field in output nodes must be set to a valid server archetype name, not an internal category name
+   - Each archetype declares fields. On a node's `attributes` map, write only the ones you read the evidence for in the files you just opened (`protocol`, `authType`, `apiFormat`, …), in the field's exact declared spelling. Leave the rest absent, and never write ownership or operational fields. The rules are `${CLAUDE_PLUGIN_ROOT}/knowledge/archetype-attributes/SKILL.md`.
    - **Component layer (L2/L3):** map these to specific role archetypes — API→`controller_component`, Services→`service_component`, data-access→`repository_component`, Queue/job→`handler_component`, plus `engine_component`, `adapter_component`, `facade_component`. Frontend code units map to provider-agnostic roles — UI→`ui_component`, routes→`page_component`, layouts→`layout_component`, hooks/composables→`hook_component`, client state→`store_component`. See `references/archetype-rules.md` → "Component-Layer Role Archetypes". At L0/L1, keep container-level archetypes.
    - Note: At L0/L1, data-access files are handled by the grouping rule above — do not create individual nodes for them. At L2/L3, emit one `repository_component` per data-access class.
 

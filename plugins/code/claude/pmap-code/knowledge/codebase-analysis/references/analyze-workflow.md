@@ -824,9 +824,11 @@ nesting hints never override these choices.
 **Archetype attributes (optional, and deliberately partial).** Each node's archetype declares a
 field contract — the properties it carries in the app. While you have the area open, write onto the
 node's `attributes` map ONLY the fields you can point at evidence for in what you just read:
-`domain`, `protocol`, `apiFormat`, `authType`, `authentication`, `authorization`, `method`, `path`,
-`schemas`, `collections`, `routes`, `exposedInterfaces`, `consumedInterfaces`, `responsibilities`,
-`integrationPattern`, `businessCapability`. `/sync` fills the manifest-derived fields itself and
+`protocol`, `apiFormat`, `authType`, `authentication`, `authorization`, `method`, `path`, `schemas`,
+`collections`, `routes`, `exposedInterfaces`, `consumedInterfaces`, `integrationPattern`,
+`interactionStyle`, `dataFormat`, `businessCapability`. Edges take them the same way: when you add
+or reclassify an edge whose archetype declares a field you read the evidence for (`protocol` on a
+`sync_call`), write it on that edge's `attributes`. `/sync` fills the manifest-derived fields itself and
 folds them in without touching yours. **Never** write `owner`, `sla`, `stage`, `status`,
 `cloudProvider`, `monitoring`, `deploymentEnvironment` or the other operational fields — a codebase
 does not contain them, and an absent field is how the architect sees what still needs a human. The
@@ -840,10 +842,16 @@ or feature module that is the area, not every node inside it: nodes below inheri
 their container and drill-down, and so do the tables, endpoints and channels they use. First read
 the org's tags (`node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-context-tags.js`) and reuse an existing
 `domain:` name whenever it means the same area; never coin a synonym. One domain tag per node at
-most; shared plumbing that serves every area gets none. Send no other tags: any other label is
-the org's to create, and a push that names one is withheld. The array is the complete set each
-push: a tag you omit is retracted from what this plugin pushed before, and tags an architect
-added are kept.
+most; shared plumbing that serves every area gets none.
+
+Beside the domain, give a node up to three of the org's existing tags that name a business
+concept the node's code deals with (`billing`, `providers`): any node it is true of, at any
+level, not only the area node. Take the name exactly as the script lists it. Never apply a tag
+that records a person's judgment (owner, status, risk, change, priority, compliance, SLA) or
+names a layer or technology, and never coin a name: a tag the org does not have is the org's to
+create, and a push that names one is withheld. When no listed tag fits, the node gets none. Edges
+get no tags. The array is the complete set each push: a tag you omit is retracted from what this
+plugin pushed before, and tags an architect added are kept.
 
 **Incremental:** Only read and analyze the changed/added files from Step 1.5. Keep existing
 nodes from unchanged files as-is. For deleted files, mark their nodes for removal.

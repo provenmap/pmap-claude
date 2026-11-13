@@ -30,8 +30,9 @@ The `edge.type` field already contains the server archetype name. The transforme
 A node's and an edge's `tags` travel as written, after one local check: names that differ
 only in case or punctuation fold into one (the org's existing spelling when the cached tag
 list has it, else the first written), and a name with no ASCII letter or digit, or over 50
-characters, is dropped with a warning (`tagWarnings`). The server creates any other new name once and reports what it
-withheld in `withheldTags`. Nothing is synthesised: the archetype travels as `archetypeName`,
+characters, is dropped with a warning (`tagWarnings`), as is a new name that is not a domain
+(`domain:<name>`) and every domain after an element's first. The server creates a new domain
+once, reuses the org's existing tags, and reports what it withheld in `withheldTags`. Nothing is synthesised: the archetype travels as `archetypeName`,
 and framework and language go in the detailed description.
 
 ## Source References

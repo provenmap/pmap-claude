@@ -54,7 +54,9 @@ Run every command from `{{pluginRoot}}/scripts/pmap-prepass.js` against `{{worki
    `metadata.analyzedBy: { "mode": "agent", "model": "{{model}}" }` — never
    `analyzedAtCommit` or the manifest: the orchestrator stamps both with `--finalize` when
    your board joins. Tag nodes per **Tags** in
-   `${CLAUDE_PLUGIN_ROOT}/knowledge/codebase-analysis/references/analyze-workflow.md`.
+   `${CLAUDE_PLUGIN_ROOT}/knowledge/codebase-analysis/references/analyze-workflow.md`, and write the
+   evidenced fields onto each node's `attributes` per **Archetype attributes** in the same file
+   (the tiers and the evidence bar are `${CLAUDE_PLUGIN_ROOT}/knowledge/archetype-attributes/SKILL.md`).
 5. `--claim-check .provenmap/boards/{{childBoardSlug}}.json --skeleton
    .provenmap/skeletons/{{childBoardSlug}}.json` — exit 3 (a file claimed twice) is the one
    hard defect; fix and re-run. An unclaimed file is debt: claim it, waive it with an exact
@@ -64,7 +66,8 @@ Run every command from `{{pluginRoot}}/scripts/pmap-prepass.js` against `{{worki
    `imports` edges; re-read the board JSON afterward (the script rewrote it). Add the semantic
    edges the rollup cannot see (`reads_from`/`writes_to`, `sync_call`, `async_message`, `data_flow`) by
    reading the files involved, and reclassify a rollup edge's `type` where your reading shows
-   the real relation.
+   the real relation. Where the edge's archetype declares a field you just read the evidence
+   for (`protocol` on a `sync_call`), write it on the edge's `attributes`.
 7. **No new marks — propose instead.** Never set `layerBoardSlug` on a node that is not one of
    the child units listed above. A cluster you would drill down further belongs in
    `metadata.proposedDrillDowns: [{ "nodeSlug": "...", "reason": "..." }]` — the tree plan,

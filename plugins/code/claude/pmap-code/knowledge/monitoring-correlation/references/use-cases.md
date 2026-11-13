@@ -119,7 +119,8 @@ id and the fix; relay it, edit the config and rerun.
 
 For a source or a question the catalogue does not hold. The user describes it in a sentence
 ("Stripe disputes by product", "slow queries from the RDS log"); you turn that into the six
-points and prove it before saving:
+points and prove it before saving. When you offer candidate watches instead of asking for a
+sentence, ask one question, multi-select, then run steps 1–4 for each pick in turn:
 
 1. **Find the source.** A connected MCP tool, `gh`, `aws`, or a file the user exports. None of
    them reaches it → stop and say which connection would; never ask for a token in the chat.

@@ -220,6 +220,7 @@ When detecting relationships for a specific board (layer), scope your analysis:
 - If a dependency target is not a node on this board (e.g. it's in a sibling domain or parent layer), **record it, don't drop it**: a board carries edges only between its own nodes, but the relationship is real. Append it to the board metadata's `deferredEdges[]` as `{ sourceSlug, targetHint, type, targetBoardSlug?, description? }` — `targetHint` is the target node slug, file path, or a short description. These stay local (they are never pushed) and the coverage dashboard counts them, so cross-board structure is visible instead of silently lost.
 - For drill-down boards (L1+), the parent node's scope defines which files to analyze for relationships
 - Edge `type` fields must use valid server archetype names
+- An edge's archetype declares fields too (`protocol` on a `sync_call`). Write one on the edge's `attributes` map only when the code you read shows it, in the field's exact declared spelling; otherwise leave it absent. The rules are `${CLAUDE_PLUGIN_ROOT}/knowledge/archetype-attributes/SKILL.md`.
 
 **Edge Cases:**
 - Circular imports: Record both directions, but flag cycles in the analysis summary

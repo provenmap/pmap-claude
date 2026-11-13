@@ -141,8 +141,7 @@ every later sync untouched.
 ### When the vocabulary cannot hold a value
 
 Many fields declare a closed option list, and it is often narrower than what a repository contains —
-`technologies` accepts five values, `primaryLanguage` six of the twelve languages the analyser
-recognises. A value outside the list is **dropped**, and the `display` names it grouped by field.
+`technologies` accepts a handful of values, while a repository can name dozens of frameworks. A value outside the list is **dropped**, and the `display` names it grouped by field.
 
 That report is a signal about the catalogue, not a defect in the analysis: a field rejecting the
 same value across many nodes is a gap worth taking to `/analyze-archetypes`, which is how the

@@ -24,18 +24,32 @@ you can do here is fill it anyway.
 **Tier A — the script fills it.** `pmap-prepass.js --finalize` resolves these from the manifest
 and the file tree when `/analyze` closes the board (`--attributes <board> --apply` is `/sync`'s
 fallback for a board closed without cached contracts). Do not author them by hand; the script is
-the authority and will overwrite a hand-written value with the manifest's:
+the authority: it replaces a hand-written value with the manifest's, and removes it where the repo
+evidences nothing (an external system owns no files, so it gets none of these but `provider`):
 
 `primaryLanguage` · `technologies` · `version` · `packageName` · `registry` · `moduleType` ·
-`codeLocation` · `dependencies` · `parentModule` · `parentContainer` · `childModules` · `provider`
+`codeLocation` · `provider`
+
+The package's own facts (`technologies`, `version`, `packageName`, `registry`) go only on the node
+that IS the package, never on each component inside it.
+
+Containment and dependencies are not attributes: the board already draws them as parents and
+edges, so there is no field to restate them in.
 
 **Tier B — you fill it, from evidence you actually read.** These describe what the code *means*,
 which no deterministic pass can decide. Write them onto the node's `attributes` map as you author
 the board, in the same pass where you already have the area open:
 
-`domain` · `protocol` · `apiFormat` · `authType` · `authentication` · `authorization` · `method` ·
-`path` · `schemas` · `collections` · `routes` · `exposedInterfaces` · `consumedInterfaces` ·
-`responsibilities` · `integrationPattern` · `interactionStyle` · `dataFormat` · `businessCapability`
+`protocol` · `apiFormat` · `authType` · `authentication` · `authorization` · `method` · `path` ·
+`schemas` · `collections` · `routes` · `exposedInterfaces` · `consumedInterfaces` ·
+`integrationPattern` · `interactionStyle` · `dataFormat` · `businessCapability`
+
+A business area is a `domain:<name>` tag, never an attribute.
+
+**Edges carry them too.** An edge's archetype declares its own fields (`sync_call` declares
+`protocol`, for one). No script can fill these, since an edge owns no files, so what you write is
+all an edge will ever carry. Write them on the edge's `attributes` map when you add or reclassify
+the edge, under the same evidence bar.
 
 **Tier C — leave it absent.** Operational and organisational facts. A repository does not contain
 them, and the architect owns them in the app:
@@ -64,8 +78,6 @@ field stays absent.
 Write the value only when you can point at the thing that says so, in the area you already read:
 
 - `protocol: "HTTP/REST"` — because you read the controller decorators, not because it's a service.
-- `domain: "billing"` — because the module's own naming and its callers say so, not because the
-  directory is called `billing` and you are guessing at work item.
 - `schemas` / `collections` — because you read the model definitions or the migration.
 - `authType` — because you read the guard, the middleware, or the client's auth header.
 
@@ -75,12 +87,13 @@ plausible ones.
 ## The vocabulary is closed
 
 Many fields declare an option list, and the server rejects anything outside it. The lists are
-often narrower than reality: `technologies` accepts five values; `primaryLanguage` names six of
-the twelve languages the analyser recognises.
+often narrower than reality: `technologies` accepts a handful of values, while a repository can
+name dozens of frameworks.
 
 Use the **exact declared spelling** — `HTTP/REST`, not `http` or `REST`. When the vocabulary has
-no entry for what you found, leave the field absent rather than picking the nearest thing; the
-sync report groups every dropped value by field, and a field rejecting the same value repeatedly
+no entry for what you found, leave the field absent rather than picking the nearest thing. Every
+value you write is checked against the contract when the board is closed: one the contract cannot
+hold is taken off the board and listed by field, and a field rejecting the same value repeatedly
 is a real gap to take to `/analyze-archetypes`, which is how the catalogue gets extended.
 
 ## Shape
@@ -94,13 +107,12 @@ contract marks as multi-valued. Nested objects are dropped on ingest and the boa
   "slug": "billing-api",
   "type": "service",
   "attributes": {
-    "domain": "billing",
     "protocol": "HTTP/REST",
     "authType": "JWT"
   }
 }
 ```
 
-The script folds its Tier-A values into this map at sync time without touching your keys, and
-anything an architect typed in the app survives every later sync — the plugin only ever
-re-derives its own fields.
+The script folds its Tier-A values into this map when the board is closed, without touching your
+keys. Each sync sends the whole map: a value you stop writing is removed from the board, and a
+value an architect typed over one of yours in the app is theirs and survives every later sync.
