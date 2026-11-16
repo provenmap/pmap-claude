@@ -1,7 +1,7 @@
 ---
 category: map
-description: "Map · Visually inspect the running app — pick components in a real browser, capture screenshots and metadata that feed work items"
-argument-hint: "[--url <url> | --env <name>] [--capture <url>] [--list | --show <id>]"
+description: "Map · Visually inspect the running app — pick components in a real browser to capture screenshots and metadata that feed work items, or screenshot every page with --pages"
+argument-hint: "[--pages [--scheduled]] [--url <url> | --env <name>] [--capture <url>] [--list | --show <id>]"
 allowed-tools: Read, Glob, Grep, Bash(node:*), AskUserQuestion
 ---
 
@@ -9,15 +9,15 @@ Open the running app in a real browser, let the user click-select components (wi
 
 Print every `display` verbatim; branch only on exit codes and named fields. Capture (steps 1–4) needs no credentials — never require `/configure` or `/login` first; only steps 5–7 talk to the server.
 
+**`--pages`** (every page, no picking; `--scheduled`: unattended) — read `${CLAUDE_PLUGIN_ROOT}/knowledge/ui-inspection/references/page-sweep.md` NOW and follow it exactly in place of steps 1–7.
+
 **1 Start** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-inspect.js --start [--url <url> | --env <name>]`, passing through any `--url`/`--env` argument. 0 → go to 2 · 1 unresolvable URL → **AskUserQuestion** for the app URL (offering the environments it lists), re-run with `--url <answer>` plus `--save-env <name>` if they want it remembered · 1 "already active" → `--poll` that session, or `--stop` if the user abandons it · 1 "no browser found" → cloud/headless: `--capture <url>` per the reference, else stop.
 
 **2 Poll** — the user is picking; wait: `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-inspect.js --poll --max-wait 240`. `selectStatus: "pending"` → poll again · `"complete"`/`"browser_closed"` with selections → go to 3 · `"cancelled"`, or `browser_closed` with nothing picked → stop · exit 3 → browser connection lost; relay `error`, offer `--start` again.
 
-**Steps 3–7 — read `${CLAUDE_PLUGIN_ROOT}/knowledge/ui-inspection/references/session-workflow.md` NOW and follow it exactly; improvise nothing.** It holds every call, flag, branch, confirm and the other modes (`--capture`/`--list`/`--show`/`--stop`). The map: **3** interpret per the ui-inspection skill · **4** the **user** chooses what it becomes — new work item / attach to a claimed work item / keep locally (stop, name `/work-items`) · **4.5** the preflight gate below · **5** propose or attach via `pmap-work-items.js` · **6** the **user** confirms the work item push, told first what leaves the machine · **7** the **user** confirms the page-capture push.
+**Steps 3–7 — read `session-workflow.md` in that folder NOW and follow it exactly; improvise nothing.** It holds every call, flag, branch, confirm and the other modes (`--capture`/`--list`/`--show`/`--stop`). The map: **3** interpret per the ui-inspection skill · **4** the **user** chooses what it becomes — new work item / attach to a claimed work item / keep locally (stop, name `/work-items`) · **4.5** the preflight gate, `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js` (exit 1 → the **connect-now offer** below) · **5** propose or attach via `pmap-work-items.js` · **6** the **user** confirms the work item push, told first what leaves the machine · **7** the **user** confirms the page-capture push.
 
-**4.5 Preflight** — run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js`, branch on its exit code. 0 → go (`repairs.boardsRecovered` non-empty = state restored from the server, per its `display`) · 1 (not connected / credentials rejected) → **connect-now offer** · 2 (binding unverified) → print `error`, stop, name `/status` · 11 branch mismatch → AskUserQuestion per the branch-mismatch prompt in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md`.
-
-**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command inspect` → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
+**Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command inspect` (`--pages`: `--facts '{"mode":"<mode>","outcome":"<outcome>","reasonText":"<error>"}'` per its reference) → Done · Left · Next, per `${CLAUDE_PLUGIN_ROOT}/knowledge/outcome/SKILL.md`.
 
 ## Connect-now offer
 

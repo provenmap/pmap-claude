@@ -15,6 +15,10 @@ other `pmap-inspect` modes, and how the picking browser behaves are in
 [references/session-workflow.md](references/session-workflow.md) — that reference is the
 command's contract; this skill is the interpretation method it calls into.
 
+`/inspect --pages` is a different job with no interpretation in it: a script captures every
+extracted page and the push stores the screenshots on the board. Its contract is
+[references/page-sweep.md](references/page-sweep.md).
+
 ## Reading a session
 
 - `selections[]` — components the user clicked. Each has `cssSelector`, `xpath`, `ax`

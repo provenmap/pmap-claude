@@ -69,7 +69,7 @@ labels. Keep steps consistent with the `insight` text — same names, no new cla
 | InsightDraft `name` | ≤100 | The finding as a claim, not a question and not a route: "Checkout has no fallback when Payments is down". |
 | InsightDraft `insight` | 5–500 | The finding and the evidence for it, per the rules above. Facts only — opinions go in `advice.text`. |
 | InsightDraft `impact` | ≤300, optional | One sentence: the consequence if a risk is left, or the gain if a strength or opportunity is used. |
-| InsightDraft `advice.text` | 5–500 | `recommendation` (with `effort`): the concrete action. `context`: background worth knowing. One object, never both. |
+| InsightDraft `advice.text` | 5–500 | `recommendation` (with `effort`): the concrete action — required for a `risk` or `opportunity`, and the push refuses `context` on either. `context`: background worth knowing, for a `strength` or `observation`. One object, never both. |
 | Trail stop `note` | ≤200 | One sentence per "The steps" above: what matters at this part for this finding. |
 | Push `info` | ≤350 | What this run surfaced, specifically: "3 auth risks incl. a hardcoded JWT secret". |
 | Context board `name` | ≤100 | The question's answer as a title: "Blast radius of Event Bus". |

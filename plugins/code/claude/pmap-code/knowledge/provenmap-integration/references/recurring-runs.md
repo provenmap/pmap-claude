@@ -22,6 +22,14 @@ documents — a run whose pull reports nothing drifted, missing or unlinked clos
 without proposing anything, so a daily cadence is cheap) and `/aspects --scheduled` (re-extract
 the named kinds onto the board and into every open comparison's tracked branches).
 
+A fifth is offered only after it has been run by hand: `/inspect --pages --env <name> --scheduled`
+(capture every extracted page of the running app again and upload the screenshots that changed).
+It uploads what a signed-in browser saw with nobody confirming it, and a published board shows
+those screenshots, so it must name its environment and only accepts one whose sweep was already
+pushed from the checkout with the user's confirmation. `/start` adds it to the task, environment
+named, when that is so; leave it out when the environment holds data that should not be seen on
+the board.
+
 ## 1. Local schedule in a desktop app — preferred
 
 Claude Code's desktop app calls it a local routine (**Code → Routines → New routine → Local**);

@@ -71,7 +71,7 @@ upgrading `confidence` to `verified`; `name` as an imperative work item and `ins
 **always set `recommendation` and `effort`**, never `recommendation` and `context` together; carry
 `key`, `tags` and `measurement` through unchanged.
 
-Edit the skeleton file in place. Extend the trail 2–4 stops (using `pack.edges` for grounding) for `critical` insights on high-fan-in nodes to show blast radius. Set `proposal: { action: "add", targetType: "node"|"edge", ... }` when signals reveal a dependency or resource that has no corresponding board element. Insights tagged `unmatched` are board-level facts — keep them, and note in `context` what would help anchor them (they carry no `recommendation`).
+Edit the skeleton file in place. Extend the trail 2–4 stops (using `pack.edges` for grounding) for `critical` insights on high-fan-in nodes to show blast radius. Set `proposal: { action: "add", targetType: "node"|"edge", ... }` when signals reveal a dependency or resource that has no corresponding board element. Insights tagged `unmatched` are board-level facts — keep them; their `recommendation` is what would anchor them next run (see `insight-shaping.md`).
 
 ## Step 5: Save and push
 

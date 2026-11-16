@@ -42,7 +42,9 @@ The first `InsightDraft`:
   **When `framing.angle` is present, it is the point of the insight**: `name` states that
   finding as a claim, `insight` opens with it and backs it with the `why[]` facts, and `advice`
   follows from it. Open the `framing.evidence` lines (`verify: "source"`) to write it exactly;
-  never contradict or inflate it.
+  never contradict or inflate it. A `risk` or `opportunity` candidate takes
+  `advice.kind: "recommendation"` with an `effort` — the action that follows from the finding,
+  from the code you read; the push refuses `context` on either.
 - `polarity`, `priority`, `measurement`, `proposal` — copy from the candidate when present.
 - `confidence` — `verified` only if `verify: "source"` and you read the file (the `framing.evidence`
   lines count once you have opened them); else `inferred`.

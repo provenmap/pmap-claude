@@ -7,8 +7,8 @@ insight quality IS work item quality. Each one is an `InsightDraft`. The exact m
 |---|---|---|
 | `name` | work item **name** | Imperative work item: "Fix TypeError in CheckoutSession.finalize" — never "Error observed in checkout" |
 | `insight` | description + directive ¶1 | Evidence only: what fails, where, how often, since when. No opinions. |
-| `advice.text` (kind: `"recommendation"`) | directive ¶2 | **The concrete corrective action a developer executes.** Use `recommendation` for all actionable insights. |
-| `advice.text` (kind: `"context"`) | directive ¶3 | Blast radius, related deploys, trend notes. Use `context` for `unmatched`/pure-observation insights — never both kinds. |
+| `advice.text` (kind: `"recommendation"`) | directive ¶2 | **The concrete corrective action a developer executes.** Every signal insight is a `risk`, so every one takes a `recommendation`: the push refuses `context` on a risk. |
+| `advice.text` (kind: `"context"`) | directive ¶3 | Only on the script-built `stats` insight, which you never edit. Blast radius, related deploys and trend notes go in `insight` or `impact`. |
 | `trail` stops | work item **anchors** | The trail's entry stop (and nearby stops) are the primary anchors. Anchors are what `/work-items --show` resolves back to source files — keep the trail tight. |
 | `priority`, `advice.effort` | carried verbatim | **Set both on every actionable insight.** `effort` lives inside `advice` (kind: `"recommendation"`). |
 | `key` | — | The signal's fingerprint: the row keeps its identity across runs. Carry it unchanged. |
@@ -18,13 +18,15 @@ insight quality IS work item quality. Each one is an `InsightDraft`. The exact m
 
 1. **Verify before claiming.** Read the matched node's source (from its `sourceReferences` /
    the signal's stack frames). Only upgrade `confidence` to `verified` after reading the code;
-   if the match looks wrong, say so in `advice.text` (kind: `"context"`) and leave confidence at `likely`/`inferred` —
-   or fix the mapping via the teach-once loop instead of shipping a mis-anchored insight.
+   if the match looks wrong, fix the mapping via the teach-once loop instead of shipping a
+   mis-anchored insight — or, when it stays uncertain, leave confidence at `likely`/`inferred` and
+   say so in `insight`.
 2. **Name = the work.** ≤100 chars, imperative, specific.
    `insight` and `advice.text` are each at most 500 characters: the push refuses a longer one.
 3. **Insight = the evidence.** Counts, window, sample error, users affected. The measurement
    carries the primary number; the prose carries the story.
-4. **advice (recommendation) = the directive.** One concrete action ("Guard `session.customer` against
+4. **advice (recommendation) = the directive.** The skeleton's advice is a placeholder that says
+   "Not written yet" — replace it on every insight; the push refuses it. One concrete action ("Guard `session.customer` against
    null before `finalize()`; add the regression test"), not a category ("improve error handling").
 5. **advice.effort** from scope of the fix: `trivial` (guard/config), `small` (one component),
    `medium` (component + tests + migration), `large`/`epic` (cross-component).
@@ -49,7 +51,8 @@ insight quality IS work item quality. Each one is an `InsightDraft`. The exact m
 
 ## Unmatched insights
 
-Keep them (they are real production facts), leave `advice` empty or set `kind: "context"` with
-what would anchor them next run — usually one `map.json` entry or a tag on the node. If the same
+Keep them (they are real production facts). They are still risks, so they still recommend: the
+action is what anchors them next run — usually one `map.json` entry or a tag on the node, named
+exactly — plus where to look meanwhile, with `effort: "trivial"`. If the same
 signal stays unmatched across runs, propose the mapping to the user again with the accumulated
 evidence.

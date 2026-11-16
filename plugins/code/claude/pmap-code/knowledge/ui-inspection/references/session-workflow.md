@@ -1,7 +1,7 @@
 # Running an inspection session — steps 3–7
 
-The `/inspect` command holds the entry steps (`--start`, `--poll`) and the preflight gate. This
-reference holds everything after the picks are in: interpreting the session, deciding what it
+The `/inspect` command holds the entry steps (`--start`, `--poll`) and the connect-now offer. This
+reference holds everything after the picks are in, the preflight gate included: interpreting the session, deciding what it
 becomes, executing that decision, and the two optional pushes — how a session becomes local
 evidence for revising and implementing work items. Follow it exactly: every call, flag, branch, and
 confirm below is part of the command's contract.
@@ -33,8 +33,18 @@ Ask with **AskUserQuestion**: "What should this session become?"
   work item.
 - **Keep locally** — stop after the readout; name `/work-items` as the next command.
 
-Capture (steps 1–4) is local and deliberately works without credentials. The command's preflight
-gate (Step 4.5) applies only from here on, where `/inspect` first talks to the server.
+Capture (steps 1–4) is local and deliberately works without credentials. The preflight gate below
+applies only from here on, where `/inspect` first talks to the server.
+
+## Step 4.5 — Preflight
+
+Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-preflight.js` and branch on its exit code:
+
+- 0 → go (`repairs.boardsRecovered` non-empty = state restored from the server, per its `display`).
+- 1 (not connected / credentials rejected) → the command's **connect-now offer**.
+- 2 (binding unverified) → print `error`, stop, name `/status`.
+- 11 branch mismatch → AskUserQuestion per the branch-mismatch prompt in
+  `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/SKILL.md`.
 
 ## Step 5 — Execute the decision
 
@@ -93,6 +103,8 @@ question when both apply — one question, two checkboxes, never two rounds.
 
 ## Other modes
 
+- **Every page, no picking**: `/inspect --pages` — its own workflow, in `page-sweep.md` beside this
+  file.
 - **Agent-driven capture** (no human, headless — also the fallback in cloud/headless sessions
   where no local browser can open): `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-inspect.js --capture <url>`
   screenshots a page and records an element map. Print its `display`, then Read the screenshot if

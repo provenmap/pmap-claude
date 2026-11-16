@@ -287,7 +287,8 @@ The CLI runs validation gates before writing/pushing:
 
 1. Zod schema (structural validity).
 2. Trail validation: every stop's `board` resolves in the pack; every `node` resolves on that board; `via` is present iff `from` is set; exactly one entry stop; no duplicate `id`s within a trail; `proposed: true` stops name a `node`.
-3. Grounding against the context pack (when present): every stop's `board` and `node` exist in the pack, and every `via.edge` is a real `pack.edges[].slug` that joins the two stops (HARD — the server rejects the push otherwise; only a board with `droppedEdges` downgrades a missing edge to a warning).
+3. Advice: a `risk` or `opportunity` carries `advice.kind: "recommendation"` with an `effort` (HARD — write the action from the code you read, not a restatement of the finding).
+4. Grounding against the context pack (when present): every stop's `board` and `node` exist in the pack, and every `via.edge` is a real `pack.edges[].slug` that joins the two stops (HARD — the server rejects the push otherwise; only a board with `droppedEdges` downgrades a missing edge to a warning).
 
 Two channels: **`validationErrors[]` + exit 3** is blocking — fix the listed fields and retry (errors carry a JSON path, the bad value, and the fix; copy any "did you mean" pack row verbatim). **`warnings[]` + exit 0** is non-blocking and already saved — review once and improve if cheap, but **do not loop** on warnings.
 

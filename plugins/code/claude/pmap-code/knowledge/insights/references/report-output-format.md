@@ -40,7 +40,7 @@ contract every insight flow shares.
 | `impact` | string (≤300) | No | Consequence if a risk is unaddressed or an opportunity is leveraged. |
 | `measurement` | `Measurement` | No | Quantitative supporting data. Attachable to any polarity. |
 | `tags` | string[] (≤10) | No | Free-text classification keywords for grouping/filtering. |
-| `advice` | `Advice` | No | Exactly one advice object — a recommendation or context. |
+| `advice` | `Advice` | Yes | Exactly one advice object — a recommendation or context. A `risk` or `opportunity` takes a recommendation. |
 | `trail` | `Stop[]` | Yes | Minimum 1 stop. The traversal path that grounds this finding. |
 | `proposal` | `Proposal` \| null | No | Structural change proposed by this finding. |
 
@@ -73,7 +73,7 @@ contract every insight flow shares.
 
 ## Advice
 
-Exactly one advice object per finding — either a recommendation or context. Never both. Omit the field only when there is genuinely nothing to say.
+Exactly one advice object per finding — either a recommendation or context, never both. A `risk` or `opportunity` must recommend: the push refuses `context` on either, because a finding that says what is wrong and nothing about what to do leaves the reader to work out the rest.
 
 ```json
 { "kind": "recommendation", "text": "Read the secret from JWT_SECRET env variable; rotate via deployment.", "effort": "small" }
@@ -85,7 +85,7 @@ Exactly one advice object per finding — either a recommendation or context. Ne
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `kind` | `"recommendation"` \| `"context"` | Yes | `recommendation` when there is a concrete action. `context` for observations/strengths or risks with no clear action. |
+| `kind` | `"recommendation"` \| `"context"` | Yes | `recommendation` when there is a concrete action — always for a `risk` or `opportunity`. `context` only for a `strength` or `observation`. |
 | `text` | string (5–500) | Yes | The action (recommendation) or background (context). |
 | `effort` | enum | When `kind: "recommendation"` | `trivial` \| `small` \| `medium` \| `large` \| `epic`. Required for recommendations; omit for context. |
 
