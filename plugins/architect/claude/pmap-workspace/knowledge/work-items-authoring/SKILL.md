@@ -72,6 +72,9 @@ open`) or rejects it.
 | `list_epics`           | the workspace's epics — the groups work items are filed under                                                                          |
 | `create_epic`          | a new epic (name + why); holds no work itself                                                                                          |
 | `set_work_item_epic`   | file a work item under an epic, or take it out (any status)                                                                            |
+| `update_epic`          | rename an epic or rewrite its why                                                                                                      |
+| `set_epic_status`      | close an epic or reopen it; its work items keep their own status                                                                       |
+| `list_decisions`       | the workspace's decisions with their ADR numbers and status, to find the one a work item follows                                       |
 | `get_decision`         | an ADR's record by `ADR-n` or `#n`: status, owner, what it supersedes; only an accepted decision binds the work that follows it         |
 | `propose_decision`     | put a draft decision forward as proposed; a person accepts or rejects it in the platform, no tool does                                 |
 

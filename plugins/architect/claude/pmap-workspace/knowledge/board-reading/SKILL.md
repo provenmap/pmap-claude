@@ -15,6 +15,13 @@ description: How to orient on and evolve a ProvenMap board over MCP — read the
 
 To orient on a board, read in this order (each call is cheap; batch where possible):
 
+0. `get_workspace` — once, when the workspace itself is the question: its name, description,
+   your role, the root board and counts of boards, app boards, context boards and open work
+   items. `list_context_boards` lists the drawn answers (they sit outside the tree, so
+   `get_board_tree` never shows them), each with the question it answers;
+   `get_context_board` summarises one: the boards it was drawn from and its key nodes. Check
+   the list before drawing a new context board for a question that may already be answered.
+
 1. `get_board_tree` — one level of layer boards (slug, name, drill path, `childCount`): `depth` ≤ 2
    (default 1), 100 rows per call with `more`/`offset` to page. Drill by calling again with a
    child's slug; never walk the whole tree — workspaces hold thousands of boards.

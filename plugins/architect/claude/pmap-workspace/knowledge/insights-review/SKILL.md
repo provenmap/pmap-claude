@@ -39,6 +39,9 @@ session analysis as a draft batch.
 | `get_insight_skill`   | one template's full methodology: instructions + references — the faithful-run input                                                  |
 | `create_insight`      | record an analysis as a **draft batch**: `insights: InsightDraft[]`, each with its own `trail` (no narrative field — the insights are the record) |
 | `promote_insights`    | reviewed insight ids → one draft work item each                                                                                        |
+| `set_insight_status`  | set one insight's review status                                                                                                     |
+| `mark_insights_reviewed` | mark a batch of insight ids reviewed in one call, after the architect has read them                                              |
+| `pin_insight`         | pin an insight so its stat stays on the board's hub, or unpin it (`pinned: false`)                                                  |
 
 ## Review workflow
 

@@ -84,6 +84,11 @@ reconciles on push; on analyzer-owned rows only the human fields are writable):
   not depend on to; `only`: only allowed may depend on target, e.g. one component owns a store).
   The code plugin proves each rule on every sync.
 
+- `delete_aspect_rows {workBoardSlug, kind, slugs}` (at most 20 slugs, one kind per call)
+  — takes back rows authored by mistake. The deletion is journaled like the authoring: it sits
+  in the working copy until committed or discarded. The authz registry is not a row and cannot
+  be deleted this way.
+
 Author only what the interview actually settled — an intended aspect is a claim the architect
 is making, never filler.
 
