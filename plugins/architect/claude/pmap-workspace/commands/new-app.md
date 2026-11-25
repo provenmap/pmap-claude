@@ -27,8 +27,9 @@ Work landscape-modeling's /new-app grill agenda in bounded rounds, reading root
 
 ### Step 2 — place on the landscape
 
-`get_write_session` first — architect-core's non-empty-session gate. Then the placement plan
-(node + edges, right archetype + container; landscape-modeling's plan file) →
+`get_write_session` first — architect-core's non-empty-session gate. `list_context_tags`, then the
+placement plan (node + edges, right archetype + container, tags per landscape-modeling's tagging
+rule; landscape-modeling's plan file) →
 `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --render-plan --file <plan.json> --known-slugs <root slugs>`:
 exit 3 → fix, re-run. Print `display` **verbatim**, ask `goAhead` as given (on *Let me pick*, then `pick.rounds`),
 then from `--plan-approve`'s wire: `create_nodes` + `create_edges` on root → `create_board`.

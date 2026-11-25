@@ -36,7 +36,7 @@ Then work landscape-modeling's agenda; it closes on one `apply_diagram_info` cal
 
 ### Step 3 — draw the landscape
 
-`get_archetypes` first. Write landscape-modeling's plan file, then
+`get_archetypes` + `list_context_tags` first. Write landscape-modeling's plan file, then
 `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --render-plan --file <plan.json>`: exit 3 → fix,
 re-run. Print `display` **verbatim**, ask `goAhead` as given (on *Let me pick*, then `pick.rounds`), then from
 `--plan-approve`'s wire: ONE `create_nodes` → ONE `create_edges`. Archetypes follow the kind (map) or

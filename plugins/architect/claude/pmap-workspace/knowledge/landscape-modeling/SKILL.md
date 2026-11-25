@@ -224,10 +224,27 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --validate diagram --file <
 ```
 
 Confirmation posture (the platform's own): present the plan as a table (system, kind,
-archetype, container, repo/scope), get **one** conversational go-ahead, then proceed through the batch without
+archetype, container, repo/scope, tags), get **one** conversational go-ahead, then proceed through the batch without
 re-asking per call. The whole scaffold gathers in the working copy, so walking away mid-setup
 is recoverable — but discard reverts the WHOLE token session (every board it touched): confirm
 with the named boards + counts first (architect-core).
+
+## Tagging what you draw
+
+Tags come from the organisation's own vocabulary and nowhere else. Call `list_context_tags` with
+`get_archetypes`, before the plan, and give each system and actor the tags that fit it:
+
+- at most one `domain:` tag, the business area it serves;
+- up to three other tags, each one the source supports (the architect's words, a document, a
+  scanned repo);
+- never a name the list lacks: `create_nodes` refuses the whole call, and a tag is the
+  organisation's to coin, not yours.
+
+The tags go on the plan file's nodes as `tags` (a wire key, so `--plan-approve` keeps them) and
+show in the rendered table, so the one go-ahead covers them and there is no second write. A
+system nothing fits stays untagged. Say in the closing how many elements carry no tag and that
+people add tags in **Settings → Context Tags**. An organisation with no tags yet gets no
+tagging, said once.
 
 ## Reading across systems — the root's folded views
 
@@ -345,7 +362,8 @@ the wire never carries:
 
 - every system node: `kind` (`repo` · `new-app` · `no-repo` · `SaaS` · `planned`, or `actor` for
   people and user types; found mode's systems are all `planned`) and, when it has one, `repo`
-  (repo / scope);
+  (repo / scope). Its `tags` (the tagging rule above) are wire, not plan-only: they reach
+  `create_nodes`;
 - every system, actor and connection: `source` — `architect` (the architect said so),
   `scan` (with `evidence`: `<repo>` or `<repo>: <dependency>`), `apphost`, `document` (with
   `why`: which document) or `suggested` (with `why`: the one-line reason). A new landscape

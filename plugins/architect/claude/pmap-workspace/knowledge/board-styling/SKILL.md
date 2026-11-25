@@ -8,7 +8,7 @@ description: How to style a ProvenMap board so it reads professionally — compo
 Styling is judgment guided by facts. The pipeline is always the same four moves:
 
 1. **Signals** — `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-architect.js --style-signals --board <slug>`
-   computes deterministic facts (hubs, external cohort, container profiles, archetype profiles,
+   computes deterministic facts (hubs, the least-connected nodes, external cohort, container profiles, archetype profiles,
    arrangement suggestion) and writes a signals file (path in the JSON output). Its `display` is a
    bounded summary you print verbatim; **author from `signals` on the payload**, which carries
    every element's own reason. Never re-derive these facts by hand.
@@ -91,7 +91,9 @@ Styling is judgment guided by facts. The pipeline is always the same four moves:
 - **A freshly drawn root landscape** (`/setup` Step 3.5) commits styled, not raw:
   the same case, shaped by the C4-context root composition above (`flow` + `horizontal`,
   externals small) unless the signals argue otherwise. Styled means composed and sized — not
-  tokened throughout.
+  tokened throughout. Sized means the signals' tiers: each `prominence` node `lg`, each `minor`
+  node `sm`, the rest the default, each with the signal's own reason. Peers left one size
+  read as one tier of equal weight, which a landscape rarely is.
 - **Root boards are C4-shaped.** The system under discussion is the one xl node; people and
   externals surround it; flows are labelled edges.
 - **Edges: token the deviation, never the norm.** Read the board's dominant flow first. Only
