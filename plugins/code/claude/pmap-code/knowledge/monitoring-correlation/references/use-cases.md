@@ -24,7 +24,8 @@ A push replaces the unreviewed insights of every earlier `/monitor` push on the 
 pulls **every** configured watch into the one signals file and pushes once. Never push one watch
 alone: the others' insights would be removed with nothing to replace them. A finding keeps its
 row across runs (its `key` is the signal id) and a stats insight keeps its row (`watch:<id>`);
-a keyed row the new push does not name is still deleted, so the every-watch rule holds. For the same reason
+a keyed row the new push does not name is deleted (or kept as cleared when a work item cites it),
+so the every-watch rule holds. For the same reason
 a watch whose source cannot be reached stops the run before the push (the stop names the watch
 and its connect line); it is never skipped.
 

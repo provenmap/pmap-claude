@@ -55,6 +55,9 @@ included — a publish anywhere under it counts.
 | `{kind:"appComparison.declared"}`              | milestone | control `new-comparison` on an epic playbook (a migration names the run's epic) |
 | `{kind:"boundary.rules", proven?}`             | milestone | control `boundary-rules` (a rule is declared); code `/sync` with `proven: true` (every rule holds or is violated) |
 | `{kind:"changes.recorded", withinDays?}`       | milestone | code `/changes`; `withinDays: 14` for "the weeks are being recorded" |
+| `{kind:"watch.reported", watch?, withinDays?}` | milestone | code `/monitor`; `watch: "failing-systems"` for errors filed on nodes (insights tagged `watch:<watch>`) |
+| `{kind:"watch.scheduled", withinDays?}`        | milestone | code `/scheduled-runs`; a scheduled `/monitor` run that did not stop, `withinDays: 7` for "runs every day" |
+| `{kind:"watch.workItem", watch?, until}`       | outcome   | control `attention-queue` (`until: "handedOff"`); code `/work-items` (`"claimed"`); code `/monitor` (`"cleared"`: closed as implemented, its error no longer reported since the hand-off). Read from the app's work items, not the run's ledger: counts a watch's work item handed off after the run started, from any door |
 | `{kind:"workItem.claimed", stepRef?, all?}`   | outcome   | code `/work-items` (a developer claims the run's work item)       |
 | `{kind:"workItem.confirmed", stepRef?, all?}` | outcome   | code `/sync` after delivery (a push verifies the run's work item) |
 

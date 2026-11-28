@@ -9,15 +9,15 @@ insight quality IS work item quality. Each one is an `InsightDraft`. The exact m
 | `insight` | description + directive ¶1 | Evidence only: what fails, where, how often, since when. No opinions. |
 | `advice.text` (kind: `"recommendation"`) | directive ¶2 | **The concrete corrective action a developer executes.** Every signal insight is a `risk`, so every one takes a `recommendation`: the push refuses `context` on a risk. |
 | `advice.text` (kind: `"context"`) | directive ¶3 | Only on the script-built `stats` insight, which you never edit. Blast radius, related deploys and trend notes go in `insight` or `impact`. |
-| `trail` stops | work item **anchors** | The trail's entry stop (and nearby stops) are the primary anchors. Anchors are what `/work-items --show` resolves back to source files — keep the trail tight. |
+| `trail` stops | work item **anchors** | Every stop becomes an anchor and its `note` the anchor's note. Anchors are what `/work-items --show` resolves back to source files. The script builds the trail from the chain you read in the code (`run-workflow.md` 4a–4b); you never edit its stops. |
 | `priority`, `advice.effort` | carried verbatim | **Set both on every actionable insight.** `effort` lives inside `advice` (kind: `"recommendation"`). |
 | `key` | — | The signal's fingerprint: the row keeps its identity across runs. Carry it unchanged. |
 | `stats` | — | Only on the script-built insight tagged `stats`. Carry it unchanged; never edit that insight. |
 
 ## Per-insight checklist (skeleton → work-item-ready)
 
-1. **Verify before claiming.** Read the matched node's source (from its `sourceReferences` /
-   the signal's stack frames). Only upgrade `confidence` to `verified` after reading the code;
+1. **Verify before claiming.** You read the failing code and its callers for the trace
+   (`run-workflow.md` 4a). Set `confidence` to `verified` only where that code shows the failure;
    if the match looks wrong, fix the mapping via the teach-once loop instead of shipping a
    mis-anchored insight — or, when it stays uncertain, leave confidence at `likely`/`inferred` and
    say so in `insight`.
@@ -39,12 +39,15 @@ insight quality IS work item quality. Each one is an `InsightDraft`. The exact m
 
 ## Trails and proposals — only when they earn their place
 
-- **Multi-stop trail** (blast radius): for `critical` insights on high-fan-in nodes, extend the
-  trail 2–4 stops using the context pack's `edges`/`degree` (ground every consecutive stop pair
-  against `pack.edges`; `via: { kind: "edge", edge: "<slug>" }` for each hop). This is what
-  makes the portal overlay explain impact. Branches share the same `from` value; label each with `branchLabel`.
-- **Proposal**: only when signals reveal a **structural** truth the board is missing — a
-  recurring timeout on a dependency that has no edge, a resource generating cost with no node.
+- **The trail is the path the failure travels**, and the script draws it: your part is the chain
+  of files in `traces.json`, read from the code. The script joins the nodes those files belong to
+  along `pack.edges` and the drill-downs between boards, so every hop shown is one the board
+  draws. Two nodes the code joins and the board does not are a jump, listed in `traceGaps[]`.
+  Trace every finding the code lets you trace, whatever its priority: a path does not wait for
+  `critical`. Do not add dependents the chain never touched to show "blast radius" — a stop is a
+  file you read.
+- **Proposal**: only when signals reveal a **structural** truth the board is missing — a call in
+  `traceGaps[]` to a real dependency that has no edge, a resource generating cost with no node.
   Set `proposal: { action: "add", targetType: "node"|"edge", ... }` on the insight and mark the
   new node as `proposed: true` in the trail. Never propose structure to "fix" a mapping problem —
   that is what `map.json` is for.

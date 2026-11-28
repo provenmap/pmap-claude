@@ -4,7 +4,7 @@ description: How /monitor turns raw monitoring output (Sentry issues, CloudWatch
 user-invokable: false
 metadata:
   author: ProvenMap
-  version: 0.5.8
+  version: 0.5.9
 ---
 
 # Monitoring Correlation — Signals → Board Elements → Intent-Ready Insights
@@ -14,11 +14,14 @@ monitoring tools become insights anchored to the same nodes and edges `/analyze`
 the portal, where architects promote them to work items. The division of labour is strict:
 
 - **You (the model)**: pull vendor data via MCP tools, normalize it into the signals schema below,
-  and — after the deterministic correlation — turn each prefilled insight stub into an
-  work-item-ready insight (see `references/insight-shaping.md`).
+  and — after the deterministic correlation — read the code behind each matched signal into a
+  call chain, then turn each prefilled insight stub into a work-item-ready insight (see
+  `references/insight-shaping.md`).
 - **The CLI (`pmap-insights.js --correlate`)**: everything mechanical — locator→element matching,
-  mapping overrides, scope/key assignment from the context pack, skeleton generation. Never
-  hand-match signals to elements or generate scope keys; that is the correlator's job.
+  mapping overrides, scope/key assignment from the context pack, skeleton generation, and the
+  trail: it joins the nodes of your call chain along the board's edges and drill-downs. Never
+  hand-match signals to elements, generate scope keys or write trail stops; that is the
+  correlator's job.
 
 ## The normalized signals file
 
@@ -102,12 +105,49 @@ Unmatched signals are never dropped: they become board-level insights tagged `un
 Proposals are the **teach-once loop**: confirm once with the user, write the mapping, and every
 future run resolves that locator deterministically.
 
+## The traces file
+
+`.provenmap/monitoring/traces.json` — the call chain you read in the code for each matched signal
+(`references/run-workflow.md` 4a), passed back to the correlator with `--traces`:
+
+```jsonc
+{
+  "version": 1,
+  "traces": [
+    {
+      "signal": "sentry:CHECKOUT-4Q2", // the signal's `id`
+      "steps": [
+        // call order, the entry point first; 2–8 steps; one is the failing file
+        { "path": "src/routes/checkout.ts", "line": 41, "note": "POST /api/checkout handler calls finalize()" },
+        { "path": "src/services/checkout.service.ts", "line": 88, "note": "finalize() reads session.customer without a null check" },
+        { "path": "src/clients/payments.ts", "line": 17, "note": "charge() is the call in flight when it throws" },
+      ],
+    },
+  ],
+}
+```
+
+How the script turns a chain into a trail (so you can predict it):
+
+- Each `path` lands on a node by the code-path rules above (a `map.json` pin first). A file no
+  node claims is left off and named in `warnings[]`; several files on one node are one stop.
+- The finding's node stays the entry stop. Its callers branch one way (`called from`), what it
+  calls the other (`calls`).
+- Two nodes on one board are joined by the edge between them (`via.edge`). Across boards the trail
+  goes up the drill-down to the node that owns the board, across the edge on the shared board,
+  and down again (`via.layer`).
+- No edge between them → the stop is a `jump` (no connection claimed) and the pair is listed in
+  `traceGaps[]`. The script never routes through a node your chain did not name.
+- A matched node the chain never reached stays on the trail as a `jump` anchor.
+
 ## Keys and the stats insight
 
 - **`key`.** Every finding in the skeleton carries `key` = its signal `id` (whitespace made `-`).
   A push updates a keyed insight in place instead of deleting and re-filing it, so a finding keeps
   its row across runs, and a draft promoted to a work item keeps its insight. A keyed finding absent
-  from the new push is still deleted: the problem is gone.
+  from the new push is deleted: the problem is gone. One a work item cites is kept as cleared
+  instead, and a later push that finds the key again reopens it, so the work item can tell
+  whether its fix held.
 - **The stats insight.** A watch whose config carries a `stat` definition gets one extra insight,
   `key` `watch:<id>`, tagged `stats`: one reading per node its signals matched (unmatched signals sit
   on the bound board). The correlator builds all of it, prose included. Never reshape it, and carry
@@ -120,6 +160,7 @@ future run resolves that locator deterministically.
 | `.provenmap/monitoring/config.json`        | `/monitor setup` | watches, window, skill slug           |
 | `.provenmap/monitoring/signals.json`       | you, each run    | normalized signals                    |
 | `.provenmap/monitoring/map.json`           | user-confirmed   | teach-once locator→slug pins          |
+| `.provenmap/monitoring/traces.json`        | you, each run    | call chains read from the code        |
 | `.provenmap/monitoring/skeleton.json`      | correlator → you | prefilled payload you finish and push |
 | `.provenmap/discover/packs/<board>.context.json` | correlator       | context pack (quality-gate oracle)    |
 
@@ -128,5 +169,5 @@ future run resolves that locator deterministically.
 - `references/run-workflow.md` — `/monitor`'s steps 2–6 (acquire → correlate → shape → push → report): every call, flag, exit branch and prompt. The command delegates to it; follow it exactly.
 - `references/use-cases.md` — the watches `/monitor setup` offers (failing systems, cloud cost, issues on nodes), the config shape and each watch's `stat`, why a run pulls every watch, and how a custom watch is drafted, dry-run and saved.
 - `references/vendor-recipes.md` — per-vendor MCP tools (or the `gh` / `aws` CLI) → signals mapping, connect one-liners, auth per surface. **Adding a vendor = adding a recipe here; no code changes.**
-- `references/insight-shaping.md` — work-item-ready authoring rules, priority/effort heuristics, when to add paths or graph suggestions.
+- `references/insight-shaping.md` — work-item-ready authoring rules, priority/effort heuristics, what the trail shows, when to propose structure.
 - `references/scheduling.md` — the `/monitor setup` sequence; the recurring-run surfaces (local desktop routine or scheduled task, cloud routine, session loop) and the unattended-credentials pattern live in `${CLAUDE_PLUGIN_ROOT}/knowledge/provenmap-integration/references/recurring-runs.md`.

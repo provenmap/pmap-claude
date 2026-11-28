@@ -61,17 +61,75 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --correlate .provenmap/monit
 The command also writes the context pack to `.provenmap/discover/packs/<boardSlug>.context.json` — the
 oracle for Step 5's quality gates.
 
-## Step 4: Shape the insights (your judgment)
+## Step 4: Trace the code, then shape (your judgment)
 
 Read `.provenmap/monitoring/skeleton.json` — one prefilled insight per signal (`key`, element
 anchors, priority, measurement, tags already set). An insight tagged `stats` is a watch's stat,
-built entirely by script: leave every field of it unchanged. For **each** other one, apply the work-item-ready
-authoring rules in `insight-shaping.md`: verify against the matched element's source before
-upgrading `confidence` to `verified`; `name` as an imperative work item and `insight` as evidence;
-**always set `recommendation` and `effort`**, never `recommendation` and `context` together; carry
-`key`, `tags` and `measurement` through unchanged.
+built entirely by script: leave every field of it unchanged.
 
-Edit the skeleton file in place. Extend the trail 2–4 stops (using `pack.edges` for grounding) for `critical` insights on high-fan-in nodes to show blast radius. Set `proposal: { action: "add", targetType: "node"|"edge", ... }` when signals reveal a dependency or resource that has no corresponding board element. Insights tagged `unmatched` are board-level facts — keep them; their `recommendation` is what would anchor them next run (see `insight-shaping.md`).
+### 4a Trace — read the code before you write a word
+
+A finding on one node says where a problem surfaced. The path it travelled is in the code, so read
+it. For **each** insight whose entry stop names a node and whose signal points at code (a
+`code-path` locator, or a matched node whose source you can open):
+
+1. Open the failing file at the frame's line. Read the function that fails.
+2. Follow the call **back** to what starts it — the route handler, consumer, scheduled job or page.
+   A stack trace names the frames; confirm each one in the code.
+3. Follow it **forward** to what the failing line was calling when it failed — the client, query,
+   queue or service.
+
+Write the chains to `.provenmap/monitoring/traces.json` (schema in `../SKILL.md`): one entry per
+signal, `steps[]` in call order, the entry point first. The rules the script cannot check:
+
+- **Only files you opened.** A step is a file you read in this run, with the `line` where the call
+  happens. Never list a file from memory, from the stack trace alone, or because the board
+  suggests it.
+- **The failing file is one of the steps.** A chain that never touches the finding's node is
+  ignored.
+- **`note` says what the file does in this call**, in one clause, from its code: "POST /checkout
+  handler calls `finalize()`", "`finalize()` reads `session.customer` without a null check". It
+  becomes the stop's note on the board and the anchor's note on a promoted work item.
+- **No chain, no entry.** A cost signal, an alarm with no code behind it, a chain you could not
+  follow: leave that signal out of the file. Its finding keeps its anchors. Never guess a chain.
+
+With no signal traced, skip 4b.
+
+### 4b Ground — the script draws the trail
+
+Rerun the Step 3 command with the traces (keep `--from-server` if Step 3 needed it):
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --correlate .provenmap/monitoring/signals.json --traces .provenmap/monitoring/traces.json --out .provenmap/monitoring/skeleton.json
+```
+
+The script places each file on the node that claims it and joins the nodes the way the board
+draws them: along an edge, or up and down a drill-down. Print `warnings[]` and `display` (the
+`Paths:` line) verbatim. This rewrites the skeleton, which is why it runs before 4c.
+
+- **Exit code 3** → `validationErrors[]` names the field in `traces.json`: fix it and rerun.
+- A warning that no step lands on the finding's node → add the failing file to that chain and
+  rerun once; if it still does not land, drop the chain.
+- `traceGaps[]` lists calls the code makes and the board does not draw (`from` calls `to`). The
+  trail jumps there; no connection is shown. Carry each gap into 4c.
+
+**Never write, reorder or delete a trail stop yourself** — the one exception is the `proposed`
+stop of a proposal (`insight-shaping.md`).
+
+### 4c Shape
+
+For **each** insight not tagged `stats`, apply the work-item-ready authoring rules in
+`insight-shaping.md`. You have read the code in 4a, so `confidence` is `verified` where the code
+shows the failure and stays `likely` where you could not read it; `name` as an imperative work
+item and `insight` as evidence;
+**always set `recommendation` and `effort`**, never `recommendation` and `context` together; carry
+`key`, `tags`, `measurement` and `trail` through unchanged.
+
+Edit the skeleton file in place. A gap from 4b is a fact about the board: name the undrawn call in
+`insight`, and set `proposal: { action: "add", targetType: "edge", ... }` when it is a real
+dependency the board is missing. Set a `node` proposal when signals reveal a resource that has no
+board element. Insights tagged `unmatched` are board-level facts — keep them; their
+`recommendation` is what would anchor them next run (see `insight-shaping.md`).
 
 ## Step 5: Save and push
 
@@ -87,16 +145,19 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight .provenmap/mo
 
 **Optional — propose work items (unattended/scheduled runs):** append `--propose-work-items` to also turn
 the highest-signal insights (a concrete `recommendation` + `high`/`critical` priority) into **draft
-work items**. The drafts carry the insight's name, directive and anchors, but no back-link to the
-insight row: a push answers with the batch id it minted, never with row ids. They are NOT pullable
-until an architect reviews and locks them — the queue fills itself, under human review. Default off; interactive runs usually leave
-promotion to the architect.
+work items**. Each draft carries the insight's name, directive and anchors, and links to its
+insight row, so the insight outlives the problem: when a later run stops finding it, the board
+keeps it as cleared instead of deleting it. One work item per insight: a problem already cited
+by a work item, in any status, is not proposed again. Drafts are NOT pullable until an architect
+reviews and locks them — the queue fills itself, under human review. Default off; interactive
+runs usually leave promotion to the architect.
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-insights.js --save-insight .provenmap/monitoring/skeleton.json --board-slug <boardSlug> --require-pack --push --propose-work-items
 ```
 
-The result's `proposedWorkItemIds[]` lists what was proposed.
+The result's `proposedWorkItemIds[]` lists the new drafts; `alreadyProposedWorkItemIds[]` lists
+the work items that already cite an insight this run reported again (nothing was filed for them).
 
 ## Step 6: Report
 
@@ -109,7 +170,8 @@ in Step 3), then:
 
 If `--propose-work-items` proposed any (`proposedWorkItemIds[]`), add: "N work items proposed as drafts —
 they appear for review on the board's work items tab and become pullable once an architect locks
-them."
+them." If `alreadyProposedWorkItemIds[]` is not empty, add: "M problems still reported already have a
+work item; none was filed again."
 
 ## Scheduled (`--scheduled`)
 
@@ -124,10 +186,16 @@ binding.
    moves, so a run never stops because someone is on a feature branch; the signals, the
    board context and every `.provenmap/` file are read as on any run. Never run `git fetch`,
    `git pull` or `git switch`. A preflight exit 2 whose `status` is `fetch_failed` stops the run.
-2. **A prompt becomes a stop.** The connect-now offer, the
+2. **The trace reads the pinned checkout.** Step 4a opens files under
+   `.provenmap/worktrees/@pinned`, the code the board describes; paths in `traces.json` stay
+   repo-relative.
+3. **A prompt becomes a stop.** The connect-now offer, the
    `--propose-work-items` choice (unattended runs pass it) and the mapping prompt of Step 3 are not
-   asked: each unmet gate stops the run — relay the CLI's `error` verbatim — and goes to step 3.
-3. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command monitor --facts '{"mode":"scheduled","outcome":"<outcome>","reasonText":"<error>"}'`.
+   asked: each unmet gate stops the run — relay the CLI's `error` verbatim — and goes to step 5.
+4. **The run's findings are counted by script.** Step 5's `--save-insight` notes on the open run
+   what it pushed and proposed (signals per watch, new drafts, drafts already proposed); the
+   record below carries them. Put none of them in `--facts`.
+5. **Outcome:** `node ${CLAUDE_PLUGIN_ROOT}/scripts/pmap-status.js --brief --command monitor --facts '{"mode":"scheduled","outcome":"<outcome>","reasonText":"<error>"}'`.
    `outcome` is `up_to_date` when the correlation found no new signal and nothing was pushed,
    `refreshed` when Step 5 pushed an insight batch, and `stopped` on any exit that ends the run
    early. `reasonText` is the stopping CLI's `error` line verbatim, and only for `stopped` (omit

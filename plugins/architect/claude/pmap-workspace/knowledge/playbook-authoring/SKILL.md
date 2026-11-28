@@ -115,8 +115,8 @@ id · summary · kind · what proves it done. Compose from
   save naming a tool the workspace does not expose.
 - **The end proof.** `endProof` names the step whose completion ends the run, and it must be
   a proof: a `publish` step, an `acknowledge` step, a `playbook` step, a `work-item` step with
-  `until: "confirmed"`, or a `command`/`control` step whose fact is `board.published` or
-  `workItem.confirmed`. A confirmed work item is proven only
+  `until: "confirmed"`, or a `command`/`control` step whose fact is `board.published`,
+  `workItem.confirmed`, or `watch.workItem` with `until: "cleared"`. A confirmed work item is proven only
   when a later push verifies it, so a run ending there can wait a long time; prefer a publish
   or an acknowledge unless delivery is the point of the playbook.
 

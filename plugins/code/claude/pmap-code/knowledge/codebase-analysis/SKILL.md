@@ -98,11 +98,11 @@ dispatch prompt carries it); an unknown name fails the sync. The defaults:
 | `type`           | Use for                                                            | Draws as            | Owner  |
 | ---------------- | ------------------------------------------------------------------ | ------------------- | ------ |
 | `uses`           | Direct import / runtime use with no more specific reading          | plain arrow         | script (skeleton + rollup) |
-| `sync_call`      | Request/response across a boundary: HTTP, gRPC, RPC client calls   | plain arrow         | model  |
+| `sync_call`      | Request/response across a boundary: HTTP, gRPC, RPC client calls; an in-process request sent to its handler | plain arrow | model; script for a skeleton `dispatches` hand-off |
 | `reads_from`     | ORM/repository/cache reads                                         | plain arrow         | model  |
 | `writes_to`      | ORM/repository/cache/storage writes                                | closed arrow        | model  |
 | `async_message`  | Queue/topic publish; for a consumer, draw queue → consumer         | dotted arrow        | model  |
-| `domain_event`   | A domain event raised by one component and handled by another      | dotted arrow        | model  |
+| `domain_event`   | A domain event raised by one component and handled by another      | dotted arrow        | model; script for a skeleton `dispatches` hand-off |
 | `data_flow`      | Bulk data movement: ETL, sync jobs, pipelines, exports             | double arrow, both ends | model  |
 | `dependency`     | Build- or type-level coupling with no runtime call                 | dotted arrow        | model  |
 | `implements`     | A class/module implementing an interface or contract               | triangle            | model  |
@@ -117,7 +117,12 @@ An edge with `metadata.provenance` is rollup-backed: the script owns its
 was drawn; the board holds only the drawn set, and a hub lists its undrawn
 consumers on the node's `metadata.fanIn`), its `provenance` (file pairs,
 import kinds, top imported symbols) and the script-written fact
-`description`. You own `type` and `detailedDescription`.
+`description`. You own `type` and `detailedDescription`. A crossing that carries
+an in-process hand-off arrives typed from its provenance kinds instead of `uses`:
+`request` (a command sent to its handler) as `sync_call`, `notification` (a
+domain event to its handlers) as `domain_event`; `implementation` (a call
+through an interface to its one implementer) stays `uses`. That type stays the
+script's — it follows the facts, and goes when they go — until you re-type it.
 Edges without provenance are model-only and persist. **Reclassifying a rollup
 edge is just changing its `type`** (reasoning in `detailedDescription`) — the
 next `--rollup --apply` refreshes the facts in place and keeps your type;

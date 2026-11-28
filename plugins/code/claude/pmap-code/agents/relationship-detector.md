@@ -59,7 +59,7 @@ You are a relationship detection specialist focused on identifying connections b
 
 **`imports` edges come from the prepass skeleton.**
 
-When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`repo.json`, or `<board-slug>.json` for a drill-down) already contains the resolved `imports` graph for **every supported language** (JS/TS via tsconfig aliases, workspace package names and barrel follow; Python/Go/Java/Ruby/Rust/C# via each one's module→path convention). Duplicates are collapsed into `count`, with `kinds` breaking that down by import kind (`static`, `type`, `reexport`, `export-star`, `dynamic`, `side-effect`): **type-only imports are kept and tagged, not dropped**, and edges into popular hubs are **kept and tagged `hubTarget: true`**, never deleted. The skeleton also carries deterministic `references` edges from agent-native markdown artifacts (a command naming the script it runs, a skill naming a doc — emit these as `uses`). Use those edges directly; do **NOT** re-parse imports in any language. Your job is the **semantic** edge types that require reading code — `reads_from`/`writes_to`, `sync_call`, `async_message`, `data_flow`, and cross-language calls. The import-pattern table below is the fallback for standalone invocation only, when no skeleton exists.
+When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`repo.json`, or `<board-slug>.json` for a drill-down) already contains the resolved `imports` graph for **every supported language** (JS/TS via tsconfig aliases, workspace package names and barrel follow; Python/Go/Java/Ruby/Rust/C# via each one's module→path convention). Duplicates are collapsed into `count`, with `kinds` breaking that down by import kind (`static`, `type`, `reexport`, `export-star`, `dynamic`, `side-effect`): **type-only imports are kept and tagged, not dropped**, and edges into popular hubs are **kept and tagged `hubTarget: true`**, never deleted. The skeleton also carries deterministic `references` edges from agent-native markdown artifacts (a command naming the script it runs, a skill naming a doc — emit these as `uses`), and `dispatches` edges for in-process hand-offs the code proves but no import shows (C# today: a request sent to its `IRequestHandler`, a notification raised where it is constructed to every `INotificationHandler`, a call through an interface to its one implementer); `kinds` names the hand-off (`request`, `notification`, `implementation`); the rollup types a request crossing `sync_call` and a notification crossing `domain_event`, and leaves an implementation crossing `uses` — keep them. Use those edges directly; do **NOT** re-parse imports in any language. Your job is the **semantic** edge types that require reading code — `reads_from`/`writes_to`, `sync_call`, `async_message`, `data_flow`, and cross-language calls. The import-pattern table below is the fallback for standalone invocation only, when no skeleton exists.
 
 **Relationship Detection by Language:**
 
@@ -127,6 +127,18 @@ When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`re
 | **Swift** | RabbitMq-nio, NATS.swift | channel.publish() | consumer.handle() |
 | **Scala** | Akka Streams, fs2-kafka | producer.send(), Source.single() | Consumer.plainStream(), topic.subscribe() |
 
+### In-Process Dispatch Patterns (mediators, domain events)
+
+A dispatcher hides the edge: the sender imports the message type, never the handler. Draw sender → handler. Skip the dispatcher itself and wrappers that run around every dispatch (MediatR `IPipelineBehavior<,>`) — an edge from every sender to them says nothing.
+
+| Language | Library | Hand-off | Handler | Edge |
+|----------|---------|----------|---------|------|
+| **C#** | MediatR | `mediator.Send(new XCommand(…))` (also wrapped, e.g. `IdentifiedCommand<XCommand, R>`) | `IRequestHandler<XCommand, R>` | `sync_call` sender → handler |
+| **C#** | MediatR | `mediator.Publish(evt)`; an aggregate's `AddDomainEvent(new XEvent(…))` dispatched later | `INotificationHandler<XEvent>` (every one) | `domain_event` raiser → each handler |
+| **Java/Kotlin** | Spring | `publisher.publishEvent(new XEvent(…))` | `@EventListener` method taking `XEvent`, `ApplicationListener<XEvent>` | `domain_event` publisher → listener |
+| **JS/TS** | NestJS CQRS | `commandBus.execute(new XCommand())`, `queryBus.execute(new XQuery())` | `@CommandHandler(XCommand)`, `@QueryHandler(XQuery)` | `sync_call` sender → handler |
+| **JS/TS** | NestJS CQRS | `eventBus.publish(new XEvent())`, aggregate `apply(new XEvent())` | `@EventsHandler(XEvent)` | `domain_event` publisher → handler |
+
 **Edge Filtering Rules:**
 
 **CRITICAL: Apply these filters BEFORE creating edges. They reduce visual noise and ensure the architecture diagram shows meaningful relationships, not implementation details.**
@@ -163,7 +175,12 @@ When invoked by `/analyze`, the prepass skeleton in `.provenmap/skeletons/` (`re
    - Identify publish operations → `async_message` edges (publisher → queue)
    - Identify consume operations → `async_message` edges (queue → consumer)
 
-5. **Cross-Language Relationships**
+5. **In-Process Dispatch**
+   - With a skeleton, `dispatches` edges already carry the C# mediator and single-implementer hand-offs: keep them
+   - Otherwise (or another stack), match each message type handed to a dispatcher to the handler that names it (table above)
+   - Request/command → `sync_call` sender → handler; event/notification → `domain_event` raiser → every handler
+
+6. **Cross-Language Relationships**
    - Detect API URLs pointing to other services
    - Match service names/ports to identify connections
    - Create edges between services of different languages
@@ -175,10 +192,11 @@ Edge `type` is a server edge archetype name — an unknown name fails the sync �
 | Type | Description | Draws as |
 |------|-------------|----------|
 | `uses` | Direct code import / generic internal usage | plain arrow |
-| `sync_call` | HTTP, gRPC or RPC request/response call | plain arrow |
+| `sync_call` | HTTP, gRPC or RPC request/response call; an in-process request sent to its handler | plain arrow |
 | `reads_from` | Database/cache read operation | plain arrow |
 | `writes_to` | Database/cache/storage write operation | closed arrow |
 | `async_message` | Message queue/topic publish or consume | dotted arrow |
+| `domain_event` | A domain event raised by one component and handled by another | dotted arrow |
 | `data_flow` | Bulk data movement (ETL, sync job, pipeline) | double arrow, both ends |
 | `dependency` | Build- or type-level coupling, no runtime call | dotted arrow |
 | `implements` / `extends` | Interface implementation / inheritance | triangle |
